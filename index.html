@@ -1211,35 +1211,35 @@
       </div>
     </div>
 
-    <!-- SLIDE 3 -->
+    <!-- SLIDE 6: Priority -->
     <div class="slide" id="slide-6">
       <div class="slide-label">Step 5 of 5</div>
-      <h1 class="slide-question">Rank what matters most to you</h1>
-      <p class="slide-sub">Drag to reorder — most important at the top.</p>
-      <div class="rank-list" id="rank-list">
-        <div class="rank-item" draggable="true" data-value="Better nutrition">
-          <div class="rank-num">1</div>
-          <div class="rank-text">
-            <div class="rank-title">Better nutrition</div>
-            <div class="rank-sub">Higher fiber, lower sat fat, more vitamins</div>
-          </div>
-          <div class="rank-drag-hint">⠇</div>
+      <h1 class="slide-question">What matters most to you?</h1>
+      <p class="slide-sub">Select your primary goal for this blend.</p>
+      <div class="options-grid cols-2" id="priority-options">
+        <div class="opt-card" data-value="cost" onclick="selectPriority(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">💰</span>
+          <div class="opt-title">Lower Cost</div>
+          <div class="opt-desc">Minimise ingredient cost per kg</div>
         </div>
-        <div class="rank-item" draggable="true" data-value="Lower cost">
-          <div class="rank-num">2</div>
-          <div class="rank-text">
-            <div class="rank-title">Lower cost</div>
-            <div class="rank-sub">Reduce ingredient cost per lb</div>
-          </div>
-          <div class="rank-drag-hint">⠇</div>
+        <div class="opt-card" data-value="nutrition" onclick="selectPriority(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🥗</span>
+          <div class="opt-title">Better Nutrition</div>
+          <div class="opt-desc">Higher fiber, lower sat fat, more protein</div>
         </div>
-        <div class="rank-item" draggable="true" data-value="Sustainability / low carbon">
-          <div class="rank-num">3</div>
-          <div class="rank-text">
-            <div class="rank-title">Sustainability / low carbon</div>
-            <div class="rank-sub">Reduce CO₂ emissions per kg</div>
-          </div>
-          <div class="rank-drag-hint">⠇</div>
+        <div class="opt-card" data-value="balance" onclick="selectPriority(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">⚖️</span>
+          <div class="opt-title">Balance</div>
+          <div class="opt-desc">Best trade-off between cost and nutrition</div>
+        </div>
+        <div class="opt-card" data-value="sustainability" onclick="selectPriority(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🌱</span>
+          <div class="opt-title">Sustainability</div>
+          <div class="opt-desc">Lowest carbon footprint per kg</div>
         </div>
       </div>
 
@@ -1265,7 +1265,7 @@
 
       <div class="quiz-nav">
         <button class="btn-back" onclick="goTo(5)">←</button>
-        <button class="btn-next" id="btn-3" onclick="calculate()">See My Results →</button>
+        <button class="btn-next" id="btn-6" disabled onclick="calculate()">See My Results →</button>
       </div>
     </div>
 
@@ -1540,7 +1540,7 @@ const CONFIG = {
   document.querySelectorAll('.slide-sub')[4].textContent      = CONFIG.quiz.q2Sub;
   document.querySelectorAll('.slide-question')[5].textContent = CONFIG.quiz.q3Title;
   document.querySelectorAll('.slide-sub')[5].textContent      = CONFIG.quiz.q3Sub;
-  document.querySelectorAll('.btn-next')[5].textContent       = CONFIG.quiz.ctaButton;
+  document.getElementById('btn-6').textContent               = CONFIG.quiz.ctaButton;
 
   // Hero title with italic
   const titleEl = document.getElementById('hero-title');
@@ -1638,9 +1638,9 @@ async function loadData() {
 const state = {
   businessType: null,
   country: null,
-  q1: null, // fat %
-  q2: null, // format
-  priorities: ['Better nutrition','Lower cost','Sustainability / low carbon'],
+  q1: null,        // fat %
+  q2: null,        // format
+  priority: null,  // 'cost' | 'nutrition' | 'balance' | 'sustainability'
   mustFiber: false,
   mustProtein: false,
 };
@@ -1691,35 +1691,12 @@ function toggleCheck(el, which) {
   if (which === 'protein') state.mustProtein = el.classList.contains('checked');
 }
 
-/* ── DRAG RANKING ────────────────────────────────── */
-let dragSrc = null;
-document.querySelectorAll('.rank-item').forEach(item => {
-  item.addEventListener('dragstart', e => { dragSrc = item; item.classList.add('dragging'); });
-  item.addEventListener('dragend',   () => { item.classList.remove('dragging'); updateRankNums(); updatePriorities(); });
-  item.addEventListener('dragover',  e => { e.preventDefault(); item.classList.add('drag-over'); });
-  item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-  item.addEventListener('drop', e => {
-    e.preventDefault();
-    item.classList.remove('drag-over');
-    if (dragSrc && dragSrc !== item) {
-      const list = item.parentNode;
-      const allItems = [...list.querySelectorAll('.rank-item')];
-      const srcIdx = allItems.indexOf(dragSrc);
-      const tgtIdx = allItems.indexOf(item);
-      if (srcIdx < tgtIdx) item.after(dragSrc);
-      else item.before(dragSrc);
-    }
-  });
-});
-
-function updateRankNums() {
-  document.querySelectorAll('.rank-item').forEach((item, i) => {
-    item.querySelector('.rank-num').textContent = i+1;
-  });
-}
-
-function updatePriorities() {
-  state.priorities = [...document.querySelectorAll('.rank-item')].map(i => i.dataset.value);
+/* ── PRIORITY SELECTION ──────────────────────────── */
+function selectPriority(el) {
+  document.querySelectorAll('#priority-options .opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.priority = el.dataset.value;
+  document.getElementById('btn-6').disabled = false;
 }
 
 /* ── BEEF TRIM NAME LOOKUP ───────────────────────── */
@@ -1747,10 +1724,11 @@ const CL_ORDER_LEAN = [
      Calories       : 0.20  (lower = better)
      Saturated Fat  : 0.15  (lower = better)
 
-   Priority weights applied to the three dimension scores:
-     #1 priority : 1.00
-     #2 priority : 0.30
-     #3 priority : 0.10
+   Priority weight sets (wN=nutrition, wC=cost, wS=sustainability):
+     cost           : wN=0.15, wC=1.00, wS=0.10
+     nutrition      : wN=1.00, wC=0.15, wS=0.10
+     balance        : wN=0.50, wC=0.50, wS=0.00  (sustainability excluded)
+     sustainability : wN=0.15, wC=0.10, wS=1.00
 
    Trim eligibility per recipe (two bounds):
      Ceiling (leanest allowed) : user's Q1 trim — e.g. if they use 80CL,
@@ -1767,8 +1745,8 @@ const CL_ORDER_LEAN = [
 
 function scoringEngine() {
   const format  = state.q2;
-  const p       = state.priorities; // p[0]=1st priority, p[1]=2nd, p[2]=3rd
-  const userFat = state.q1;         // user's Q1 fat % selection
+  const priority = state.priority; // 'cost' | 'nutrition' | 'balance' | 'sustainability'
+  const userFat = state.q1;        // user's Q1 fat % selection
 
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
   const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
@@ -1866,18 +1844,20 @@ function scoringEngine() {
   const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
   // ── Step 3: apply priority weights ────────────────────────────
-  // #1=1.0, #2=0.6, #3=0.15
-  // Tighter gap between #1 and #2 (was 0.3) lets the second priority
-  // meaningfully compete — enabling 60/40 to win when cost+nutrition balance.
-  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.6, [p[2]]: 0.15 };
-  const wN = priorityWeights['Better nutrition']              ?? 0;
-  const wC = priorityWeights['Lower cost']                    ?? 0;
-  const wS = priorityWeights['Sustainability / low carbon']   ?? 0;
+  // Each priority maps to a fixed weight set across the three dimensions.
+  // Balance uses equal nutrition+cost weights with no sustainability bias.
+  const WEIGHT_SETS = {
+    cost:           { n: 0.15, c: 1.00, s: 0.10 },
+    nutrition:      { n: 1.00, c: 0.15, s: 0.10 },
+    balance:        { n: 0.50, c: 0.50, s: 0.00 },
+    sustainability: { n: 0.15, c: 0.10, s: 1.00 },
+  };
+  const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
 
   const finalScores = pool.map((_, i) =>
-    wN * nutritionScore[i] +
-    wC * nCost[i] +
-    wS * nCO2[i]
+    w.n * nutritionScore[i] +
+    w.c * nCost[i] +
+    w.s * nCO2[i]
   );
 
   // ── Step 4: pick the winner ────────────────────────────────────
@@ -1924,7 +1904,6 @@ function getBlendNutrient(nutrient, recipeName, trimName) {
 
 /* ── MAIN CALCULATE ──────────────────────────────── */
 async function calculate() {
-  updatePriorities();
   await loadData();
 
   // Scoring engine returns both recipe and trim in one pass
@@ -2218,7 +2197,8 @@ function restart() {
   document.getElementById('results-page').style.display = 'none';
   document.getElementById('quiz-shell').style.display = 'flex';
   state.businessType = null; state.country = null;
-  state.q1 = null; state.q2 = null; state.mustFiber = false; state.mustProtein = false;
+  state.q1 = null; state.q2 = null; state.priority = null;
+  state.mustFiber = false; state.mustProtein = false;
   document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.check-item').forEach(c => c.classList.remove('checked'));
   document.getElementById('country-coming-soon').style.display = 'none';
@@ -2226,6 +2206,7 @@ function restart() {
   document.getElementById('btn-3').disabled = true;
   document.getElementById('btn-4').disabled = true;
   document.getElementById('btn-5').disabled = true;
+  document.getElementById('btn-6').disabled = true;
   goTo(1);
 }
 

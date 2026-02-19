@@ -67,15 +67,28 @@
   .dim-row { display: flex; justify-content: space-between; gap: 8px; }
   .dim-name { color: rgba(207,255,142,0.45); }
   .dim-val  { color: rgba(207,255,142,0.8); font-weight: 600; }
+
+  .price-input-group { display:flex; flex-direction:column; gap:4px; }
+  .price-input-group label { font-size:11px; color:rgba(207,255,142,0.55); }
+  .price-input-group input { background:rgba(207,255,142,0.08); color:#cfff8e;
+    border:1px solid rgba(207,255,142,0.2); border-radius:5px;
+    padding:5px 8px; font-size:12px; width:90px; }
+  .price-input-group input:focus { outline:none; border-color:rgba(207,255,142,0.5); }
+  .priority-chip { display:inline-block; padding:3px 10px; border-radius:100px;
+    font-size:11px; font-weight:700; margin-right:4px; }
+  .pc-cost    { background:rgba(255,200,50,0.2);  color:#ffc832; }
+  .pc-nutrition  { background:rgba(100,220,100,0.2); color:#64dc64; }
+  .pc-balance { background:rgba(150,150,255,0.2); color:#9696ff; }
+  .pc-sustain { background:rgba(100,200,150,0.2); color:#64c896; }
 </style>
 </head>
 <body>
 
 <h1>🔍 Fable Recipe Validator</h1>
-<p class="subtitle">Runs all priority permutations through the scoring engine and shows what gets picked — and what never does.</p>
+<p class="subtitle">Tests all 4 priorities × 2 formats through the scoring engine. Adjust prices to see how results shift.</p>
 
 <div class="q1-selector">
-  <label>User's Q1 beef trim:</label>
+  <label>Q1 beef trim:</label>
   <select id="q1-select">
     <option value="0.1">90CL — 10% fat</option>
     <option value="0.15">85CL — 15% fat</option>
@@ -83,6 +96,13 @@
     <option value="0.25">75CL — 25% fat</option>
   </select>
   <button class="run-btn" onclick="runValidator()">Run Validator</button>
+</div>
+
+<div id="price-controls" style="margin-bottom:28px; display:none;">
+  <p style="font-size:12px; color:rgba(207,255,142,0.5); margin-bottom:10px;">
+    Adjust beef prices ($/kg) to test sensitivity. Changes apply immediately on next run.
+  </p>
+  <div id="price-inputs" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
 </div>
 
 <div id="output"><p class="loading">Loading data from Supabase…</p></div>
@@ -148,9 +168,23 @@ function getBlendNutrient(nutrient, recipeName, trimName, format) {
   return s * fablePct + b * beefPct;
 }
 
+/* ── Weight sets — mirrors index.html exactly ── */
+const WEIGHT_SETS = {
+  cost:           { n: 0.15, c: 1.00, s: 0.10 },
+  nutrition:      { n: 1.00, c: 0.15, s: 0.10 },
+  balance:        { n: 0.50, c: 0.50, s: 0.00 },
+  sustainability: { n: 0.15, c: 0.10, s: 1.00 },
+};
+
+const PRIORITY_LABELS = {
+  cost:           { label: 'Lower Cost',        cls: 'pc-cost'    },
+  nutrition:      { label: 'Better Nutrition',   cls: 'pc-nutrition'  },
+  balance:        { label: 'Balance',            cls: 'pc-balance' },
+  sustainability: { label: 'Sustainability',     cls: 'pc-sustain' },
+};
+
 /* ── Scoring engine (mirrors index.html exactly) ── */
-function scoringEngine(format, priorities, userFat, mustFiber = false, mustProtein = false) {
-  const p = priorities;
+function scoringEngine(format, priority, userFat) {
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
   const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
 
@@ -169,43 +203,29 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
     return bestIdx;
   }
 
-  function buildCandidates(applyConstraints) {
-    const out = [];
-    for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
-      // Burger / Meatball must never use rehydrated (water-containing) recipes
-      if (format === 'Burger / Meatball' && waterPct > 0) continue;
-
-      const floorIdx = naturalTrimIdx(beefPct, fablePct);
-      const lo = Math.min(floorIdx, ceilIdx);
-      const hi = Math.max(floorIdx, ceilIdx);
-
-      for (let i = lo; i <= hi; i++) {
-        const trimName = CL_ORDER_LEAN[i];
-        const trimData = BEEF_PRICES[trimName];
-        if (!trimData) continue;
-
-        const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-        const fiber   = shiitakeFiber * fablePct;
-        const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
-        const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
-        const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
-        const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-        const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
-
-        if (applyConstraints) {
-          if (mustFiber   && fiber   < 5)  continue;
-          if (mustProtein && protein < 10) continue;
-        }
-        out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                   fiber, protein, cals, satFat, cost, co2, blendedFat });
-      }
+  const out = [];
+  for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+    if (format === 'Burger / Meatball' && waterPct > 0) continue;
+    const floorIdx = naturalTrimIdx(beefPct, fablePct);
+    const lo = Math.min(floorIdx, ceilIdx);
+    const hi = Math.max(floorIdx, ceilIdx);
+    for (let i = lo; i <= hi; i++) {
+      const trimName = CL_ORDER_LEAN[i];
+      const trimData = BEEF_PRICES[trimName];
+      if (!trimData) continue;
+      const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
+      const fiber   = shiitakeFiber * fablePct;
+      const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
+      const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
+      const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
+      const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+      const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+      out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
+                 fiber, protein, cals, satFat, cost, co2, blendedFat });
     }
-    return out;
   }
 
-  const candidates = buildCandidates(true);
-  const pool = candidates.length > 0 ? candidates : buildCandidates(false);
-  if (pool.length === 0) return [];
+  if (out.length === 0) return [];
 
   function normalise(values, lowerBetter) {
     const min = Math.min(...values), max = Math.max(...values);
@@ -213,6 +233,7 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
     return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
   }
 
+  const pool = out;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
@@ -220,22 +241,16 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
   const nCost    = normalise(pool.map(c => c.cost),    true);
   const nCO2     = normalise(pool.map(c => c.co2),     true);
 
-  // Raw linear composite then sqrt for diminishing returns
-  const nutritionRaw = pool.map((_, i) =>
+  const nutritionRaw   = pool.map((_, i) =>
     0.35 * nFiber[i] + 0.30 * nProtein[i] + 0.20 * nCals[i] + 0.15 * nSatFat[i]
   );
   const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
-  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.6, [p[2]]: 0.15 };
-  const wN = priorityWeights['Better nutrition']            ?? 0;
-  const wC = priorityWeights['Lower cost']                  ?? 0;
-  const wS = priorityWeights['Sustainability / low carbon'] ?? 0;
-
+  const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
   const finalScores = pool.map((_, i) =>
-    wN * nutritionScore[i] + wC * nCost[i] + wS * nCO2[i]
+    w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i]
   );
 
-  // Return all candidates sorted best first, with scores attached
   return pool
     .map((c, i) => ({
       ...c,
@@ -243,40 +258,49 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
       costScore: nCost[i],
       sustainScore: nCO2[i],
       finalScore: finalScores[i],
-      nFiber: nFiber[i], nProtein: nProtein[i], nCals: nCals[i], nSatFat: nSatFat[i],
     }))
     .sort((a, b) => b.finalScore - a.finalScore);
 }
 
-/* ── All 6 permutations of 3 priorities ── */
-function permutations(arr) {
-  if (arr.length <= 1) return [arr];
-  return arr.flatMap((v, i) =>
-    permutations([...arr.slice(0,i), ...arr.slice(i+1)]).map(p => [v, ...p])
-  );
+/* ── Build editable price inputs after data loads ── */
+function buildPriceInputs() {
+  const wrap = document.getElementById('price-inputs');
+  wrap.innerHTML = '';
+  CL_ORDER_LEAN.slice().reverse().forEach(trimName => {
+    const data = BEEF_PRICES[trimName];
+    if (!data) return;
+    const cl = trimName.replace(' Beef Trim','');
+    const div = document.createElement('div');
+    div.className = 'price-input-group';
+    div.innerHTML = `<label>${cl} ($/kg)</label>
+      <input type="number" step="0.01" min="0" value="${data.price.toFixed(2)}"
+        onchange="BEEF_PRICES['${trimName}'].price = parseFloat(this.value) || ${data.price}">`;
+    wrap.appendChild(div);
+  });
+  document.getElementById('price-controls').style.display = 'block';
 }
 
 /* ── Render ── */
 async function runValidator() {
   document.getElementById('output').innerHTML = '<p class="loading">Running…</p>';
   await loadData();
+  buildPriceInputs();
 
   const userFat = parseFloat(document.getElementById('q1-select').value);
   const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0] || '80CL Beef Trim';
   const formats = Object.keys(RECIPES);
-  const perms = permutations(PRIORITIES);
+  const priorities = Object.keys(WEIGHT_SETS);
 
   let html = '';
-
-  // Summary stats across all formats
   const allWinners = new Set();
   const allRecipes = new Set();
-  let totalPermutations = 0;
-
   formats.forEach(fmt => Object.keys(RECIPES[fmt]).forEach(r => allRecipes.add(fmt + '::' + r)));
 
   for (const format of formats) {
-    const recipeKeys = Object.keys(RECIPES[format]);
+    const recipeKeys = Object.keys(RECIPES[format]).filter(r => {
+      const [,,w] = RECIPES[format][r];
+      return !(format === 'Burger / Meatball' && w > 0);
+    });
     const winnerCounts = {};
     recipeKeys.forEach(r => winnerCounts[r] = 0);
 
@@ -284,43 +308,39 @@ async function runValidator() {
     html += `<div class="format-title">📋 ${format} — Q1 trim: ${userTrimName}</div>`;
     html += `<table>
       <thead><tr>
-        <th>#</th>
-        <th>Priority Order</th>
+        <th>Priority</th>
+        <th>Weights (N/C/S)</th>
         <th>Winner Recipe</th>
         <th>Beef Trim</th>
         <th>Final Score</th>
-        <th>Nutrition</th>
+        <th>Nutr.</th>
         <th>Cost</th>
         <th>Sustain.</th>
         <th>Fiber</th>
         <th>Protein</th>
         <th>Calories</th>
         <th>Sat Fat</th>
+        <th>$/kg</th>
         <th>Runner-up</th>
       </tr></thead><tbody>`;
 
-    perms.forEach((perm, idx) => {
-      const ranked = scoringEngine(format, perm, userFat);
+    priorities.forEach(priority => {
+      const ranked = scoringEngine(format, priority, userFat);
       if (ranked.length === 0) return;
-      totalPermutations++;
 
-      const winner = ranked[0];
+      const winner   = ranked[0];
       const runnerUp = ranked[1];
       winnerCounts[winner.recipeName] = (winnerCounts[winner.recipeName] || 0) + 1;
       allWinners.add(format + '::' + winner.recipeName);
 
-      const maxScore = ranked[0].finalScore;
-      const barWidth = Math.round(winner.finalScore / (maxScore || 1) * 80);
+      const w = WEIGHT_SETS[priority];
+      const { label, cls } = PRIORITY_LABELS[priority];
+      const maxScore = winner.finalScore;
+      const barWidth = Math.round(maxScore / 1.15 * 80);
 
       html += `<tr class="winner-row">
-        <td>${idx + 1}</td>
-        <td>
-          <div class="priority-label">
-            <span class="p-chip rank-1">1. ${perm[0].replace('Sustainability / low carbon','Sustain.').replace('Better nutrition','Nutrition').replace('Lower cost','Cost')}</span>
-            <span class="p-chip">2. ${perm[1].replace('Sustainability / low carbon','Sustain.').replace('Better nutrition','Nutrition').replace('Lower cost','Cost')}</span>
-            <span class="p-chip">3. ${perm[2].replace('Sustainability / low carbon','Sustain.').replace('Better nutrition','Nutrition').replace('Lower cost','Cost')}</span>
-          </div>
-        </td>
+        <td><span class="priority-chip ${cls}">${label}</span></td>
+        <td class="detail-col">${w.n}/${w.c}/${w.s}</td>
         <td><strong>${winner.recipeName}</strong></td>
         <td>${winner.trimName.replace(' Beef Trim','')}</td>
         <td>
@@ -334,53 +354,57 @@ async function runValidator() {
         <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
         <td class="detail-col">${winner.fiber.toFixed(1)}g</td>
         <td class="detail-col">${winner.protein.toFixed(1)}g</td>
-        <td class="detail-col">${winner.cals.toFixed(0)} cal</td>
+        <td class="detail-col">${winner.cals.toFixed(0)}</td>
         <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
+        <td class="detail-col">$${winner.cost.toFixed(2)}</td>
         <td class="detail-col" style="color:rgba(207,255,142,0.35)">
-          ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} (${runnerUp.finalScore.toFixed(3)})` : '—'}
+          ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} ($${runnerUp.finalScore.toFixed(3)})` : '—'}
         </td>
       </tr>`;
     });
 
     html += `</tbody></table>`;
 
-    // Win counts per recipe
+    // Win counts per eligible recipe
     html += `<table style="max-width:500px; margin-bottom:12px;">
       <thead><tr><th>Recipe</th><th>Times Selected</th><th>Usage</th></tr></thead><tbody>`;
     recipeKeys.forEach(r => {
       const count = winnerCounts[r] || 0;
-      const pct = Math.round(count / 6 * 100);
-      const barW = pct;
+      const pct = Math.round(count / priorities.length * 100);
       const unused = count === 0;
       html += `<tr>
         <td ${unused ? 'style="color:#ff9999"' : ''}>${r}${unused ? ' ⚠️' : ''}</td>
-        <td>${count} / 6</td>
+        <td>${count} / ${priorities.length}</td>
         <td><div class="score-bar-wrap">
-          <div class="score-bar" style="width:${barW}px;background:${unused?'#ff6666':'#cfff8e'}"></div>
+          <div class="score-bar" style="width:${pct}px;background:${unused?'#ff6666':'#cfff8e'}"></div>
           <span class="score-val">${pct}%</span>
         </div></td>
       </tr>`;
     });
-    html += `</tbody></table>`;
-    html += `</div>`;
+    html += `</tbody></table></div>`;
   }
 
-  // Global unused recipes
+  // Global unused
   const unusedRecipes = [];
-  allRecipes.forEach(key => { if (!allWinners.has(key)) unusedRecipes.push(key); });
+  allRecipes.forEach(key => {
+    const [fmt, r] = key.split('::');
+    const [,,w] = RECIPES[fmt][r];
+    if (fmt === 'Burger / Meatball' && w > 0) return; // legitimately excluded
+    if (!allWinners.has(key)) unusedRecipes.push(key);
+  });
 
   html = `
     <div class="summary-grid">
       <div class="summary-card"><div class="label">Q1 Trim</div><div class="value">${userTrimName.replace(' Beef Trim','')}</div></div>
-      <div class="summary-card"><div class="label">Permutations tested</div><div class="value">${totalPermutations}</div></div>
-      <div class="summary-card"><div class="label">Formats</div><div class="value">${formats.length}</div></div>
+      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length} × ${formats.length} formats</div></div>
+      <div class="summary-card"><div class="label">Eligible recipes</div><div class="value">${allRecipes.size}</div></div>
       <div class="summary-card"><div class="label">Never selected</div><div class="value" style="color:${unusedRecipes.length>0?'#ff9999':'#cfff8e'}">${unusedRecipes.length}</div></div>
     </div>
     ${unusedRecipes.length > 0 ? `
     <div class="unused-section" style="margin-bottom:28px;">
-      <div class="unused-title">⚠️ Recipes never selected across any permutation:</div>
+      <div class="unused-title">⚠️ Eligible recipes never selected:</div>
       ${unusedRecipes.map(k => `<span class="unused-chip">${k.replace('::','  →  ')}</span>`).join('')}
-    </div>` : `<p class="all-used" style="margin-bottom:28px;">✅ All recipes are selected at least once across permutations.</p>`}
+    </div>` : `<p class="all-used" style="margin-bottom:28px;">✅ All eligible recipes are selected at least once.</p>`}
   ` + html;
 
   document.getElementById('output').innerHTML = html;
@@ -388,7 +412,7 @@ async function runValidator() {
 
 // Auto-run on load
 window.addEventListener('DOMContentLoaded', () => {
-  loadData().then(() => runValidator());
+  loadData().then(() => { buildPriceInputs(); runValidator(); });
 });
 </script>
 </body>
