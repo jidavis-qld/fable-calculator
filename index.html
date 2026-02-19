@@ -1920,7 +1920,7 @@ async function calculate() {
 
   // Hero bubbles
   const blendName = beefPct*100+'/'+(fablePct+waterPct)*100;
-  renderBubbles(beefPct, fablePct, waterPct);
+  renderBubbles(beefPct, fablePct, waterPct, trimName);
 
   // Key stats
   document.getElementById('stat-price').textContent = '$'+blendPrice.toFixed(2);
@@ -1929,8 +1929,9 @@ async function calculate() {
   document.getElementById('stat-carbon').textContent = carbonPct+'%';
 
   // Hero title
-  document.getElementById('hero-subtitle').textContent = 
-    `A ${Math.round(beefPct*100)}/${Math.round((fablePct+waterPct)*100)} ${trimName}/Shiitake blend — ${state.q2}`;
+  const trimShort = trimName.replace(' Beef Trim', '');
+  document.getElementById('hero-subtitle').textContent =
+    `A ${Math.round(beefPct*100)}/${Math.round((fablePct+waterPct)*100)} ${trimShort}/Shiitake blend — ${state.q2}`;
 
   // Cost section
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
@@ -1951,9 +1952,9 @@ async function calculate() {
   window.scrollTo(0, 0);
 }
 
-function renderBubbles(beefPct, fablePct, waterPct) {
+function renderBubbles(beefPct, fablePct, waterPct, trimName) {
   const container = document.getElementById('blend-bubbles');
-  const trimShort = beefTrimName(state.q1).replace(' Beef Trim','');
+  const trimShort = trimName.replace(' Beef Trim', '');
   const hasWater = waterPct > 0;
 
   container.innerHTML = `
