@@ -1629,36 +1629,16 @@ function beefTrimName(fatPct) {
 }
 
 /* ── CALCULATE BEST RECIPE ───────────────────────── */
-function pickRecipe() {
-  const format = state.q2;
-  const ranks  = RECIPE_RANKS[format];
-  const p = state.priorities;
 
-  // Score each recipe: lower = better
-  // weighted score: 1st priority weight=3, 2nd=2, 3rd=1
-  let best = null, bestScore = Infinity;
-  for (const [recipeName, recipeRanks] of Object.entries(ranks)) {
-    const score = (3 * recipeRanks[p[0]]) + (2 * recipeRanks[p[1]]) + (1 * recipeRanks[p[2]]);
-
-    // Hard constraint: must be high in fiber (≥5g per 100g)
-    // Uses the high_fiber flag from us_recipe_ranks in Supabase
-    if (state.mustFiber && !recipeRanks.high_fiber) continue;
-
-    // Hard constraint: must be high in protein (≥10g per 100g)
-    // Check blended protein for the closest trim to user's fat target
-    if (state.mustProtein) {
-      const candidateTrim = pickClosestTrim(recipeName);
-      const protein = getBlendNutrient('Protein', recipeName, candidateTrim);
-      if (protein < 10) continue;
-    }
-
-    if (score < bestScore) { bestScore = score; best = recipeName; }
-  }
-  return best || '70/30, rehydrated';
-}
+// CL grades ordered from fattiest to leanest
+// When we need more protein we step up through leaner trims
+const CL_ORDER_LEAN = [
+  '60CL Beef Trim','65CL Beef Trim','70CL Beef Trim',
+  '75CL Beef Trim','80CL Beef Trim','85CL Beef Trim','90CL Beef Trim'
+];
 
 function pickClosestTrim(recipeName) {
-  // Find trim whose blended fat (beef fat × beef_pct + shiitake fat × fable_pct)
+  // Find trim whose total blended fat (beef fat × beef_pct + shiitake fat × fable_pct)
   // is closest to the user's target fat % (state.q1)
   const [beefPct, fablePct] = RECIPES[state.q2][recipeName];
   const shiitakeFat = (HEALTH_REF.shiitake['Total Fat']?.val ?? 0) / 100;
@@ -1674,7 +1654,52 @@ function pickClosestTrim(recipeName) {
 }
 
 function pickBeefTrim(recipeName) {
-  return pickClosestTrim(recipeName);
+  // Step 1: find the closest trim by fat target
+  const closestTrim = pickClosestTrim(recipeName);
+  if (!state.mustProtein) return closestTrim;
+
+  // Step 2: check if closest trim already hits >=10g protein
+  if (getBlendNutrient('Protein', recipeName, closestTrim) >= 10) return closestTrim;
+
+  // Step 3: step up through leaner trims (increasing CL) until protein >=10g
+  const startIdx = CL_ORDER_LEAN.indexOf(closestTrim);
+  for (let i = startIdx + 1; i < CL_ORDER_LEAN.length; i++) {
+    const trim = CL_ORDER_LEAN[i];
+    if (getBlendNutrient('Protein', recipeName, trim) >= 10) return trim;
+  }
+
+  // Step 4: no trim in this recipe can hit 10g — return null to signal recipe failure
+  return null;
+}
+
+function pickRecipe() {
+  const format = state.q2;
+  const ranks  = RECIPE_RANKS[format];
+  const p = state.priorities;
+
+  // Sort all recipes by weighted priority score (lower = better)
+  const scored = Object.entries(ranks)
+    .map(([recipeName, recipeRanks]) => ({
+      recipeName,
+      recipeRanks,
+      score: (3 * recipeRanks[p[0]]) + (2 * recipeRanks[p[1]]) + (1 * recipeRanks[p[2]])
+    }))
+    .sort((a, b) => a.score - b.score);
+
+  for (const { recipeName, recipeRanks } of scored) {
+    // Hard constraint: must be high in fiber (>=5g) — from us_recipe_ranks_view
+    if (state.mustFiber && !recipeRanks.high_fiber) continue;
+
+    // Hard constraint: must be high in protein (>=10g)
+    // pickBeefTrim tries the closest trim first, then steps up through leaner CLs
+    // Returns null only if no trim can satisfy the protein requirement for this recipe
+    if (state.mustProtein && pickBeefTrim(recipeName) === null) continue;
+
+    return recipeName;
+  }
+
+  // Fallback: no recipe satisfies all constraints — return best scoring recipe regardless
+  return scored[0]?.recipeName || '70/30, rehydrated';
 }
 
 function getBlendNutrient(nutrient, recipeName, trimName) {
