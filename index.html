@@ -1198,6 +1198,7 @@
         </div>
       </div>
       <div class="quiz-nav">
+        <button class="btn-back" onclick="goTo(3)">←</button>
         <button class="btn-next" id="btn-4" disabled onclick="goTo(5)">Continue →</button>
       </div>
     </div>
@@ -1545,17 +1546,18 @@ const CONFIG = {
   document.querySelectorAll('.section-title')[2].textContent           = CONFIG.sections.sustainability.heading;
   document.querySelectorAll('.section-note')[1].textContent            = CONFIG.sections.sustainability.disclaimer;
 
-  // Quiz copy
-  document.querySelectorAll('.slide-label')[0].textContent  = CONFIG.quiz.q1Label;
-  document.querySelectorAll('.slide-label')[1].textContent  = CONFIG.quiz.q2Label;
-  document.querySelectorAll('.slide-label')[2].textContent  = CONFIG.quiz.q3Label;
-  document.querySelectorAll('.slide-question')[0].textContent = CONFIG.quiz.q1Title;
-  document.querySelectorAll('.slide-sub')[0].textContent      = CONFIG.quiz.q1Sub;
-  document.querySelectorAll('.slide-question')[1].textContent = CONFIG.quiz.q2Title;
-  document.querySelectorAll('.slide-sub')[1].textContent      = CONFIG.quiz.q2Sub;
-  document.querySelectorAll('.slide-question')[2].textContent = CONFIG.quiz.q3Title;
-  document.querySelectorAll('.slide-sub')[2].textContent      = CONFIG.quiz.q3Sub;
-  document.querySelectorAll('.btn-next')[2].textContent       = CONFIG.quiz.ctaButton;
+  // Quiz copy — slides 4, 5, 6 are the actual questions (indices 3, 4, 5)
+  // Slides 1 (welcome), 2 (business), 3 (country) come before them in the DOM
+  document.querySelectorAll('.slide-label')[3].textContent    = CONFIG.quiz.q1Label;
+  document.querySelectorAll('.slide-label')[4].textContent    = CONFIG.quiz.q2Label;
+  document.querySelectorAll('.slide-label')[5].textContent    = CONFIG.quiz.q3Label;
+  document.querySelectorAll('.slide-question')[3].textContent = CONFIG.quiz.q1Title;
+  document.querySelectorAll('.slide-sub')[3].textContent      = CONFIG.quiz.q1Sub;
+  document.querySelectorAll('.slide-question')[4].textContent = CONFIG.quiz.q2Title;
+  document.querySelectorAll('.slide-sub')[4].textContent      = CONFIG.quiz.q2Sub;
+  document.querySelectorAll('.slide-question')[5].textContent = CONFIG.quiz.q3Title;
+  document.querySelectorAll('.slide-sub')[5].textContent      = CONFIG.quiz.q3Sub;
+  document.querySelectorAll('.btn-next')[5].textContent       = CONFIG.quiz.ctaButton;
 
   // Hero title with italic
   const titleEl = document.getElementById('hero-title');
@@ -1664,9 +1666,10 @@ const state = {
 function goTo(step) {
   document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
   document.getElementById('slide-'+step).classList.add('active');
-  const total = 5;
-  document.getElementById('progress-bar').style.width = ((step-2)/total*100)+'%';
-  document.getElementById('step-count').textContent = (step-1)+' / '+total;
+  const total = 5; // steps 2–6 are the 5 real steps
+  const progressStep = Math.max(0, step - 1); // slide 1=0, slide 2=1, ..., slide 6=5
+  document.getElementById('progress-bar').style.width = (progressStep / total * 100) + '%';
+  document.getElementById('step-count').textContent = progressStep + ' / ' + total;
 }
 
 function selectOpt(el, group) {
