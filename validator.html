@@ -220,11 +220,13 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
   const nCost    = normalise(pool.map(c => c.cost),    true);
   const nCO2     = normalise(pool.map(c => c.co2),     true);
 
-  const nutritionScore = pool.map((_, i) =>
+  // Raw linear composite then sqrt for diminishing returns
+  const nutritionRaw = pool.map((_, i) =>
     0.35 * nFiber[i] + 0.30 * nProtein[i] + 0.20 * nCals[i] + 0.15 * nSatFat[i]
   );
+  const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
-  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.3, [p[2]]: 0.1 };
+  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.6, [p[2]]: 0.15 };
   const wN = priorityWeights['Better nutrition']            ?? 0;
   const wC = priorityWeights['Lower cost']                  ?? 0;
   const wS = priorityWeights['Sustainability / low carbon'] ?? 0;

@@ -1853,16 +1853,23 @@ function scoringEngine() {
   const nCO2     = normalise(pool.map(c => c.co2),     true);  // lower better
 
   // Nutrition composite score (weights sum to 1.0)
-  const nutritionScore = pool.map((_, i) =>
+  // Raw linear composite first...
+  const nutritionRaw = pool.map((_, i) =>
     0.35 * nFiber[i] +
     0.30 * nProtein[i] +
     0.20 * nCals[i] +
     0.15 * nSatFat[i]
   );
+  // ...then apply square root to model diminishing returns.
+  // The jump from 0→0.5 fable is large; from 0.5→1.0 is smaller.
+  // sqrt compresses the top end, making 60/40 more competitive vs 50/50.
+  const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
   // ── Step 3: apply priority weights ────────────────────────────
-  // Priority weights: #1=1.0, #2=0.3, #3=0.1
-  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.3, [p[2]]: 0.1 };
+  // #1=1.0, #2=0.6, #3=0.15
+  // Tighter gap between #1 and #2 (was 0.3) lets the second priority
+  // meaningfully compete — enabling 60/40 to win when cost+nutrition balance.
+  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.6, [p[2]]: 0.15 };
   const wN = priorityWeights['Better nutrition']              ?? 0;
   const wC = priorityWeights['Lower cost']                    ?? 0;
   const wS = priorityWeights['Sustainability / low carbon']   ?? 0;
