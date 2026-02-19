@@ -1356,7 +1356,7 @@
           </div>
           <div class="vs-label">vs</div>
           <div class="price-block">
-            <div class="pb-label">100% Beef Trim</div>
+            <div class="pb-label" id="price-beef-label">100% Beef Trim</div>
             <div class="pb-val" id="price-beef">—</div>
             <div class="pb-unit">per lb</div>
           </div>
@@ -1861,7 +1861,9 @@ async function calculate() {
   const trimPrice     = BEEF_PRICES[trimName].price;
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
   const fiber         = getBlendNutrient('Dietary Fiber', recipeName, trimName);
-  const beefOnlyPrice = BEEF_PRICES[trimName].price;
+  // beefOnlyPrice = the price of the user's originally selected fat % trim (Q1)
+  const userTrimName  = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === state.q1)?.[0] || trimName;
+  const beefOnlyPrice = BEEF_PRICES[userTrimName].price;
 
   // Carbon
   const blendCO2   = fablePct * SHIITAKE_CO2 + beefPct * BEEF_CO2;
@@ -1886,7 +1888,8 @@ async function calculate() {
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
   renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice);
   document.getElementById('price-blend').textContent = '$'+blendPrice.toFixed(2);
-  document.getElementById('price-beef').textContent  = '$'+beefOnlyPrice.toFixed(2);
+  document.getElementById('price-beef-label').textContent = '100% ' + userTrimName;
+  renderBeefPriceBlock(beefOnlyPrice);
 
   // Nutrition
   renderNutrition(recipeName, trimName, beefPct, fablePct);
@@ -1923,6 +1926,35 @@ function renderBubbles(beefPct, fablePct, waterPct) {
   document.querySelector('.bubble-note').style.display = hasWater ? '' : 'none';
 }
 
+function renderBeefPriceBlock(beefOnlyPrice) {
+  const el = document.getElementById('price-beef');
+  el.innerHTML = `$<input
+    type="number"
+    id="beef-only-price-input"
+    value="${beefOnlyPrice.toFixed(2)}"
+    min="0" step="any"
+    inputmode="decimal"
+    style="width:70px;border:none;border-bottom:1px dashed currentColor;background:transparent;font:inherit;color:inherit;text-align:center;-moz-appearance:textfield;"
+  />`;
+  // Remove spinner arrows via inline style tag if not already present
+  if (!document.getElementById('no-spinner-style')) {
+    const s = document.createElement('style');
+    s.id = 'no-spinner-style';
+    s.textContent = 'input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }';
+    document.head.appendChild(s);
+  }
+  document.getElementById('beef-only-price-input').addEventListener('input', function() {
+    const newPrice = parseFloat(this.value) || 0;
+    document.getElementById('price-beef').querySelector('input').value;
+    // Also update the beef price input in the cost table if present
+    const costInput = document.getElementById('beef-price-input');
+    if (costInput) {
+      costInput.value = newPrice.toFixed(2);
+      costInput.dispatchEvent(new Event('input'));
+    }
+  });
+}
+
 function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice) {
   const tbody = document.getElementById('cost-tbody');
   tbody.innerHTML = '';
@@ -1937,7 +1969,8 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
       id="beef-price-input"
       value="${trimPrice.toFixed(2)}"
       min="0" step="0.01"
-      style="width:60px;border:none;border-bottom:1px dashed #999;background:transparent;font:inherit;text-align:right;"
+      style="width:60px;border:none;border-bottom:1px dashed #999;background:transparent;font:inherit;text-align:right;-moz-appearance:textfield;"
+      inputmode="decimal"
       title="Click to edit your beef price"
     /></span></td>
     <td id="beef-cost-cell">$${(beefPct*trimPrice).toFixed(2)}</td>
@@ -1972,7 +2005,9 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
     document.getElementById('beef-cost-cell').textContent  = '$' + newBeefCost.toFixed(2);
     document.getElementById('cost-total-cell').textContent = '$' + newBlendPrice.toFixed(2);
     document.getElementById('price-blend').textContent     = '$' + newBlendPrice.toFixed(2);
-    document.getElementById('price-beef').textContent      = '$' + newBeefOnlyPrice.toFixed(2);
+    // Sync beef-only comparison bubble
+    const beefOnlyInput = document.getElementById('beef-only-price-input');
+    if (beefOnlyInput) beefOnlyInput.value = newBeefPrice.toFixed(2);
   });
 }
 
