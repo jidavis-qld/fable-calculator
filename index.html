@@ -1054,14 +1054,103 @@
     <div class="progress-bar-wrap">
       <div class="progress-bar" id="progress-bar" style="width:0%"></div>
     </div>
-    <div class="step-count" id="step-count">1 / 3</div>
+    <div class="step-count" id="step-count">1 / 5</div>
   </div>
 
   <div class="quiz-body">
 
     <!-- SLIDE 1 -->
+    <!-- SLIDE 1: Welcome -->
     <div class="slide active" id="slide-1">
-      <div class="slide-label">Step 1 of 3</div>
+      <div class="slide-label" style="opacity:0">Intro</div>
+      <div style="text-align:center; padding: 20px 0 32px;">
+        <div style="font-size:56px; margin-bottom:16px;">🍄</div>
+        <h1 class="slide-question" style="margin-bottom:16px;">Welcome to the<br>Fable Infusion Calculator</h1>
+        <p class="slide-sub" style="max-width:360px; margin: 0 auto 32px;">Find the right Shiitake Infusion blend for your product — based on your cost, nutrition and sustainability goals.</p>
+      </div>
+      <div class="quiz-nav" style="justify-content:center;">
+        <button class="btn-next" onclick="goTo(2)" style="min-width:200px;">Get Started →</button>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Business Type -->
+    <div class="slide" id="slide-2">
+      <div class="slide-label">Step 1 of 5</div>
+      <h1 class="slide-question">What best describes your business?</h1>
+      <p class="slide-sub">This helps us tailor your results.</p>
+      <div class="options-grid cols-2" id="biz-options">
+        <div class="opt-card" data-value="Beef Processor" onclick="selectBiz(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🏭</span>
+          <div class="opt-title">Beef Processor</div>
+          <div class="opt-desc">You process and package beef products</div>
+        </div>
+        <div class="opt-card" data-value="Food Manufacturer" onclick="selectBiz(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🍽️</span>
+          <div class="opt-title">Food Manufacturer</div>
+          <div class="opt-desc">You make finished food products</div>
+        </div>
+        <div class="opt-card" data-value="Retail Grocer" onclick="selectBiz(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🛒</span>
+          <div class="opt-title">Retail Grocer</div>
+          <div class="opt-desc">Supermarket or specialty food retailer</div>
+        </div>
+        <div class="opt-card" data-value="Restaurant / Foodservice" onclick="selectBiz(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">👨‍🍳</span>
+          <div class="opt-title">Restaurant / Foodservice</div>
+          <div class="opt-desc">Restaurants, chains or meal kit providers</div>
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goTo(1)">←</button>
+        <button class="btn-next" id="btn-2" disabled onclick="goTo(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Country -->
+    <div class="slide" id="slide-3">
+      <div class="slide-label">Step 2 of 5</div>
+      <h1 class="slide-question">Where is your business based?</h1>
+      <p class="slide-sub">We'll use the right pricing and nutritional data for your region.</p>
+      <div class="options-grid cols-2" id="country-options">
+        <div class="opt-card" data-value="United States" onclick="selectCountry(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🇺🇸</span>
+          <div class="opt-title">United States</div>
+        </div>
+        <div class="opt-card" data-value="United Kingdom" onclick="selectCountry(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🇬🇧</span>
+          <div class="opt-title">United Kingdom</div>
+          <div class="opt-desc" style="color:#aaa;">Coming soon</div>
+        </div>
+        <div class="opt-card" data-value="Australia" onclick="selectCountry(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🇦🇺</span>
+          <div class="opt-title">Australia</div>
+          <div class="opt-desc" style="color:#aaa;">Coming soon</div>
+        </div>
+        <div class="opt-card" data-value="Europe" onclick="selectCountry(this)">
+          <div class="opt-check"></div>
+          <span class="opt-icon">🇪🇺</span>
+          <div class="opt-title">Europe</div>
+          <div class="opt-desc" style="color:#aaa;">Coming soon</div>
+        </div>
+      </div>
+      <div id="country-coming-soon" style="display:none; text-align:center; padding:16px; color:#cfff8e; font-size:14px; opacity:0.7;">
+        This region is coming soon. Please select United States to continue.
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goTo(2)">←</button>
+        <button class="btn-next" id="btn-3" disabled onclick="goTo(4)">Continue →</button>
+      </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+      <div class="slide-label">Step 3 of 5</div>
       <h1 class="slide-question">What fat percentage does your beef trim usually have?</h1>
       <p class="slide-sub">This helps us match your blend to the right cut.</p>
       <div class="options-grid cols-2" id="q1-options">
@@ -1109,13 +1198,13 @@
         </div>
       </div>
       <div class="quiz-nav">
-        <button class="btn-next" id="btn-1" disabled onclick="goTo(2)">Continue →</button>
+        <button class="btn-next" id="btn-4" disabled onclick="goTo(5)">Continue →</button>
       </div>
     </div>
 
     <!-- SLIDE 2 -->
-    <div class="slide" id="slide-2">
-      <div class="slide-label">Step 2 of 3</div>
+    <div class="slide" id="slide-5">
+      <div class="slide-label">Step 4 of 5</div>
       <h1 class="slide-question">What format are you making?</h1>
       <p class="slide-sub">Burgers and meatballs hold together differently to loose ground beef.</p>
       <div class="options-grid cols-2" id="q2-options">
@@ -1133,14 +1222,14 @@
         </div>
       </div>
       <div class="quiz-nav">
-        <button class="btn-back" onclick="goTo(1)">←</button>
-        <button class="btn-next" id="btn-2" disabled onclick="goTo(3)">Continue →</button>
+        <button class="btn-back" onclick="goTo(4)">←</button>
+        <button class="btn-next" id="btn-5" disabled onclick="goTo(6)">Continue →</button>
       </div>
     </div>
 
     <!-- SLIDE 3 -->
-    <div class="slide" id="slide-3">
-      <div class="slide-label">Step 3 of 3</div>
+    <div class="slide" id="slide-6">
+      <div class="slide-label">Step 5 of 5</div>
       <h1 class="slide-question">Rank what matters most to you</h1>
       <p class="slide-sub">Drag to reorder — most important at the top.</p>
       <div class="rank-list" id="rank-list">
@@ -1191,7 +1280,7 @@
       </div>
 
       <div class="quiz-nav">
-        <button class="btn-back" onclick="goTo(2)">←</button>
+        <button class="btn-back" onclick="goTo(5)">←</button>
         <button class="btn-next" id="btn-3" onclick="calculate()">See My Results →</button>
       </div>
     </div>
@@ -1408,9 +1497,9 @@ const CONFIG = {
 
   quiz: {
     /* Labels shown above each question */
-    q1Label:  "Step 1 of 3",
-    q2Label:  "Step 2 of 3",
-    q3Label:  "Step 3 of 3",
+    q1Label:  "Step 3 of 5",
+    q2Label:  "Step 4 of 5",
+    q3Label:  "Step 5 of 5",
 
     q1Title:  "What fat percentage does your beef trim usually have?",
     q1Sub:    "This helps us match your blend to the right cut.",
@@ -1562,6 +1651,8 @@ async function loadData() {
 
 /* ── STATE ───────────────────────────────────────── */
 const state = {
+  businessType: null,
+  country: null,
   q1: null, // fat %
   q2: null, // format
   priorities: ['Better nutrition','Lower cost','Sustainability / low carbon'],
@@ -1573,16 +1664,39 @@ const state = {
 function goTo(step) {
   document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
   document.getElementById('slide-'+step).classList.add('active');
-  const total = 3;
-  document.getElementById('progress-bar').style.width = ((step-1)/total*100)+'%';
-  document.getElementById('step-count').textContent = step+' / '+total;
+  const total = 5;
+  document.getElementById('progress-bar').style.width = ((step-2)/total*100)+'%';
+  document.getElementById('step-count').textContent = (step-1)+' / '+total;
 }
 
 function selectOpt(el, group) {
   document.querySelectorAll('#'+group+'-options .opt-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  if (group === 'q1') { state.q1 = parseFloat(el.dataset.value); document.getElementById('btn-1').disabled = false; }
-  if (group === 'q2') { state.q2 = el.dataset.value; document.getElementById('btn-2').disabled = false; }
+  if (group === 'q1') { state.q1 = parseFloat(el.dataset.value); document.getElementById('btn-4').disabled = false; }
+  if (group === 'q2') { state.q2 = el.dataset.value; document.getElementById('btn-5').disabled = false; }
+}
+
+function selectBiz(el) {
+  document.querySelectorAll('#biz-options .opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.businessType = el.dataset.value;
+  document.getElementById('btn-2').disabled = false;
+}
+
+function selectCountry(el) {
+  document.querySelectorAll('#country-options .opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const country = el.dataset.value;
+  state.country = country;
+  const comingSoon = document.getElementById('country-coming-soon');
+  const btn = document.getElementById('btn-3');
+  if (country !== 'United States') {
+    comingSoon.style.display = 'block';
+    btn.disabled = true;
+  } else {
+    comingSoon.style.display = 'none';
+    btn.disabled = false;
+  }
 }
 
 function toggleCheck(el, which) {
@@ -1945,11 +2059,15 @@ function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, ca
 function restart() {
   document.getElementById('results-page').style.display = 'none';
   document.getElementById('quiz-shell').style.display = 'flex';
+  state.businessType = null; state.country = null;
   state.q1 = null; state.q2 = null; state.mustFiber = false; state.mustProtein = false;
   document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.check-item').forEach(c => c.classList.remove('checked'));
-  document.getElementById('btn-1').disabled = true;
+  document.getElementById('country-coming-soon').style.display = 'none';
   document.getElementById('btn-2').disabled = true;
+  document.getElementById('btn-3').disabled = true;
+  document.getElementById('btn-4').disabled = true;
+  document.getElementById('btn-5').disabled = true;
   goTo(1);
 }
 
