@@ -1895,7 +1895,7 @@ async function calculate() {
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName);
 
   // Sustainability
-  renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct);
+  renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
 
   // Show results
   document.getElementById('quiz-shell').style.display = 'none';
@@ -2076,16 +2076,16 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
   chips.innerHTML = claims.map(c => `<div class="hc-chip">${c}</div>`).join('');
 }
 
-function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct) {
-  // Blend side
+function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
+  // Blend side — shows the recommended blend trim
   document.getElementById('sust-blend-rows').innerHTML = `
     <div class="sust-row"><span class="sust-ingredient">Shiitake Infusion</span><span class="sust-val">${SHIITAKE_CO2} kgCo2E/kg</span></div>
     <div class="sust-row"><span class="sust-ingredient">${trimName}</span><span class="sust-val">${BEEF_CO2} kgCo2E/kg</span></div>
     <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${blendCO2.toFixed(2)} kgCo2E/kg</span></div>
   `;
-  // Beef only side
+  // Beef only side — shows the user's Q1 selected trim as the reference
   document.getElementById('sust-beef-rows').innerHTML = `
-    <div class="sust-row"><span class="sust-ingredient">${trimName}</span><span class="sust-val">${BEEF_CO2} kgCo2E/kg</span></div>
+    <div class="sust-row"><span class="sust-ingredient">${userTrimName}</span><span class="sust-val">${BEEF_CO2} kgCo2E/kg</span></div>
     <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${beefCO2} kgCo2E/kg</span></div>
   `;
   // Callout
