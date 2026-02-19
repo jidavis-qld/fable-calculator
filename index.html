@@ -1812,20 +1812,53 @@ function renderBubbles(beefPct, fablePct, waterPct) {
 function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice) {
   const tbody = document.getElementById('cost-tbody');
   tbody.innerHTML = '';
-  const rows = [
-    [trimName, beefPct, trimPrice, beefPct * trimPrice],
-    ['Shiitake Infusion', fablePct, FABLE_PRICE, fablePct * FABLE_PRICE],
-  ];
-  if (waterPct > 0) rows.push(['Water', waterPct, 0, 0]);
-  rows.forEach(([name, pct, cpl, cost]) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${name}</td><td>${Math.round(pct*100)}%</td><td>$${cpl.toFixed(2)}</td><td>$${cost.toFixed(2)}</td>`;
-    tbody.appendChild(tr);
+
+  // Beef row
+  const beefRow = document.createElement('tr');
+  beefRow.innerHTML = `<td>${trimName}</td><td>${Math.round(beefPct*100)}%</td><td>$${trimPrice.toFixed(2)}</td><td>$${(beefPct*trimPrice).toFixed(2)}</td>`;
+  tbody.appendChild(beefRow);
+
+  // Fable row — cost/lb is editable, recalculates totals on input
+  const fableRow = document.createElement('tr');
+  fableRow.id = 'fable-cost-row';
+  fableRow.innerHTML = `
+    <td>Shiitake Infusion</td>
+    <td>${Math.round(fablePct*100)}%</td>
+    <td><span class="editable-price-wrap">$<input
+      type="number"
+      id="fable-price-input"
+      value="${FABLE_PRICE.toFixed(2)}"
+      min="0" step="0.01"
+      style="width:60px;border:none;border-bottom:1px dashed #999;background:transparent;font:inherit;text-align:right;"
+      title="Click to edit Fable price"
+    /></span></td>
+    <td id="fable-cost-cell">$${(fablePct*FABLE_PRICE).toFixed(2)}</td>
+  `;
+  tbody.appendChild(fableRow);
+
+  // Water row
+  if (waterPct > 0) {
+    const waterRow = document.createElement('tr');
+    waterRow.innerHTML = `<td>Water</td><td>${Math.round(waterPct*100)}%</td><td>$0.00</td><td>$0.00</td>`;
+    tbody.appendChild(waterRow);
+  }
+
+  // Total row
+  const totalPct = beefPct + fablePct + waterPct;
+  const totalRow = document.createElement('tr');
+  totalRow.id = 'cost-total-row';
+  totalRow.innerHTML = `<td></td><td>${Math.round(totalPct*100)}%</td><td></td><td id="cost-total-cell">$${blendPrice.toFixed(2)}</td>`;
+  tbody.appendChild(totalRow);
+
+  // Live recalculate when Fable price is edited
+  document.getElementById('fable-price-input').addEventListener('input', function() {
+    const newFablePrice = parseFloat(this.value) || 0;
+    const newFableCost  = fablePct * newFablePrice;
+    const newBlendPrice = beefPct * trimPrice + newFableCost + waterPct * WATER_PRICE;
+    document.getElementById('fable-cost-cell').textContent  = '$' + newFableCost.toFixed(2);
+    document.getElementById('cost-total-cell').textContent  = '$' + newBlendPrice.toFixed(2);
+    document.getElementById('price-blend').textContent      = '$' + newBlendPrice.toFixed(2);
   });
-  const total = document.createElement('tr');
-  const totalPct = rows.reduce((s, r) => s + r[1], 0);
-  total.innerHTML = `<td></td><td>${Math.round(totalPct*100)}%</td><td></td><td>$${blendPrice.toFixed(2)}</td>`;
-  tbody.appendChild(total);
 }
 
 function renderNutrition(recipeName, trimName, beefPct, fablePct) {
