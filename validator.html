@@ -172,6 +172,9 @@ function scoringEngine(format, priorities, userFat, mustFiber = false, mustProte
   function buildCandidates(applyConstraints) {
     const out = [];
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+      // Burger / Meatball must never use rehydrated (water-containing) recipes
+      if (format === 'Burger / Meatball' && waterPct > 0) continue;
+
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
       const lo = Math.min(floorIdx, ceilIdx);
       const hi = Math.max(floorIdx, ceilIdx);

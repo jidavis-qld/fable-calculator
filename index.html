@@ -1797,6 +1797,9 @@ function scoringEngine() {
   function buildCandidates(applyConstraints) {
     const out = [];
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+      // Burger / Meatball must never use rehydrated (water-containing) recipes
+      if (format === 'Burger / Meatball' && waterPct > 0) continue;
+
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
       // Eligible CL range: from floorIdx up to ceilIdx (both inclusive)
       // In CL_ORDER_LEAN, higher index = leaner = higher CL
