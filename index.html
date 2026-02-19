@@ -1686,9 +1686,36 @@ function pickRecipe() {
     }))
     .sort((a, b) => a.score - b.score);
 
+  // Also sort recipes by fable_pct descending — used to step up fiber if needed
+  const byFablePct = Object.entries(RECIPES[format])
+    .map(([recipeName, [beefPct, fablePct]]) => ({ recipeName, fablePct }))
+    .sort((a, b) => b.fablePct - a.fablePct);
+
   for (const { recipeName, recipeRanks } of scored) {
-    // Hard constraint: must be high in fiber (>=5g) — from us_recipe_ranks_view
-    if (state.mustFiber && !recipeRanks.high_fiber) continue;
+
+    // Hard constraint: must be high in fiber (>=5g per 100g)
+    // Fiber only comes from the fable/shiitake component, so if this recipe fails
+    // we step up to the next recipe with a higher fable percentage until one passes.
+    // We do NOT change the trim — trim has no fiber content.
+    if (state.mustFiber) {
+      const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
+      const [, fablePct] = RECIPES[format][recipeName];
+      const fiber = shiitakeFiber * fablePct;
+      if (fiber < 5) {
+        // Find the next recipe with a higher fable_pct that passes the fiber test
+        const currentFablePct = fablePct;
+        const fiberFallback = byFablePct.find(r =>
+          r.fablePct > currentFablePct &&
+          (shiitakeFiber * r.fablePct) >= 5
+        );
+        if (!fiberFallback) continue; // no recipe at all can hit fiber — skip
+        // Use the fiber-qualifying recipe instead
+        const fbRecipeName = fiberFallback.recipeName;
+        // Still check protein constraint on the fiber-qualifying recipe
+        if (state.mustProtein && pickBeefTrim(fbRecipeName) === null) continue;
+        return fbRecipeName;
+      }
+    }
 
     // Hard constraint: must be high in protein (>=10g)
     // pickBeefTrim tries the closest trim first, then steps up through leaner CLs
