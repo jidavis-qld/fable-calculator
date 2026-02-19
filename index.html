@@ -1813,27 +1813,26 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   const tbody = document.getElementById('cost-tbody');
   tbody.innerHTML = '';
 
-  // Beef row
+  // Beef row — cost/lb is editable, recalculates totals on input
   const beefRow = document.createElement('tr');
-  beefRow.innerHTML = `<td>${trimName}</td><td>${Math.round(beefPct*100)}%</td><td>$${trimPrice.toFixed(2)}</td><td>$${(beefPct*trimPrice).toFixed(2)}</td>`;
-  tbody.appendChild(beefRow);
-
-  // Fable row — cost/lb is editable, recalculates totals on input
-  const fableRow = document.createElement('tr');
-  fableRow.id = 'fable-cost-row';
-  fableRow.innerHTML = `
-    <td>Shiitake Infusion</td>
-    <td>${Math.round(fablePct*100)}%</td>
-    <td><span class="editable-price-wrap">$<input
+  beefRow.innerHTML = `
+    <td>${trimName}</td>
+    <td>${Math.round(beefPct*100)}%</td>
+    <td><span>$<input
       type="number"
-      id="fable-price-input"
-      value="${FABLE_PRICE.toFixed(2)}"
+      id="beef-price-input"
+      value="${trimPrice.toFixed(2)}"
       min="0" step="0.01"
       style="width:60px;border:none;border-bottom:1px dashed #999;background:transparent;font:inherit;text-align:right;"
-      title="Click to edit Fable price"
+      title="Click to edit your beef price"
     /></span></td>
-    <td id="fable-cost-cell">$${(fablePct*FABLE_PRICE).toFixed(2)}</td>
+    <td id="beef-cost-cell">$${(beefPct*trimPrice).toFixed(2)}</td>
   `;
+  tbody.appendChild(beefRow);
+
+  // Fable row — static
+  const fableRow = document.createElement('tr');
+  fableRow.innerHTML = `<td>Shiitake Infusion</td><td>${Math.round(fablePct*100)}%</td><td>$${FABLE_PRICE.toFixed(2)}</td><td>$${(fablePct*FABLE_PRICE).toFixed(2)}</td>`;
   tbody.appendChild(fableRow);
 
   // Water row
@@ -1850,14 +1849,16 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   totalRow.innerHTML = `<td></td><td>${Math.round(totalPct*100)}%</td><td></td><td id="cost-total-cell">$${blendPrice.toFixed(2)}</td>`;
   tbody.appendChild(totalRow);
 
-  // Live recalculate when Fable price is edited
-  document.getElementById('fable-price-input').addEventListener('input', function() {
-    const newFablePrice = parseFloat(this.value) || 0;
-    const newFableCost  = fablePct * newFablePrice;
-    const newBlendPrice = beefPct * trimPrice + newFableCost + waterPct * WATER_PRICE;
-    document.getElementById('fable-cost-cell').textContent  = '$' + newFableCost.toFixed(2);
-    document.getElementById('cost-total-cell').textContent  = '$' + newBlendPrice.toFixed(2);
-    document.getElementById('price-blend').textContent      = '$' + newBlendPrice.toFixed(2);
+  // Live recalculate when beef price is edited
+  document.getElementById('beef-price-input').addEventListener('input', function() {
+    const newBeefPrice  = parseFloat(this.value) || 0;
+    const newBeefCost   = beefPct * newBeefPrice;
+    const newBlendPrice = newBeefCost + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+    const newBeefOnlyPrice = newBeefPrice;
+    document.getElementById('beef-cost-cell').textContent  = '$' + newBeefCost.toFixed(2);
+    document.getElementById('cost-total-cell').textContent = '$' + newBlendPrice.toFixed(2);
+    document.getElementById('price-blend').textContent     = '$' + newBlendPrice.toFixed(2);
+    document.getElementById('price-beef').textContent      = '$' + newBeefOnlyPrice.toFixed(2);
   });
 }
 
