@@ -1480,103 +1480,85 @@ const CONFIG = {
   }
 })();
 
-/* ── DATA TABLES ──────────────────────────────────── */
+/* ── SUPABASE CONFIG ──────────────────────────────── */
+const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
 
-const BEEF_PRICES = {
-  '90CL Beef Trim': { fat: 0.1,  price: 3.95 },
-  '85CL Beef Trim': { fat: 0.15, price: 3.57 },
-  '80CL Beef Trim': { fat: 0.2,  price: 3.22 },
-  '75CL Beef Trim': { fat: 0.25, price: 2.85 },
-  '70CL Beef Trim': { fat: 0.3,  price: 2.485 },
-  '65CL Beef Trim': { fat: 0.35, price: 1.91 },
-  '60CL Beef Trim': { fat: 0.4,  price: 1.60 },
-};
+async function sbFetch(table) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  return res.json();
+}
 
-const FABLE_PRICE  = 4.98;
-const WATER_PRICE  = 0;
-const SHIITAKE_CO2 = 2.53;
-const BEEF_CO2     = 22.4;
+/* ── DATA TABLES (loaded from Supabase) ───────────── */
+let BEEF_PRICES  = {};   // { '80CL Beef Trim': { fat, price }, ... }
+let RECIPES      = {};   // { 'Burger / Meatball': { '50/50, no water': [beef, fable, water] } }
+let RECIPE_RANKS = {};   // { 'Burger / Meatball': { '50/50, no water': { 'Better nutrition': 1, ... } } }
+let HEALTH_REF   = { shiitake: {}, beef: {} };
+let FABLE_PRICE  = 4.98;
+let WATER_PRICE  = 0;
+let SHIITAKE_CO2 = 0;
+let BEEF_CO2     = 0;
 
-// Recipes: [beefPct, fablePct, waterPct]
-const RECIPES = {
-  'Burger / Meatball': {
-    '50/50, no water':   [0.50, 0.50, 0.00],
-    '60/40, no water':   [0.60, 0.40, 0.00],
-    '70/30, no water':   [0.70, 0.30, 0.00],
-    '50/50, rehydrated': [0.50, 0.43, 0.07],
-    '60/40, rehydrated': [0.60, 0.35, 0.05],
-    '70/30, rehydrated': [0.70, 0.26, 0.04],
-  },
-  'Ground Beef (unformed)': {
-    '50/50, no water':   [0.50, 0.50, 0.00],
-    '60/40, no water':   [0.60, 0.40, 0.00],
-    '70/30, no water':   [0.70, 0.30, 0.00],
-    '50/50, rehydrated': [0.50, 0.43, 0.07],
-    '60/40, rehydrated': [0.60, 0.35, 0.05],
-    '70/30, rehydrated': [0.70, 0.26, 0.04],
-  },
-};
+async function loadData() {
+  const [nutrition, beefPrices, recipes, ranks, co2] = await Promise.all([
+    sbFetch('us_nutrition'),
+    sbFetch('beef_prices'),
+    sbFetch('us_recipes'),
+    sbFetch('us_recipe_ranks'),
+    sbFetch('co2_kg_e'),
+  ]);
 
-// Recipe priority ranks [nutrition, cost, sustainability] for each format+recipe
-// Taken from Recipe Options sheet rows 8-10
-const RECIPE_RANKS = {
-  'Burger / Meatball': {
-    '50/50, no water':   { 'Better nutrition': 1, 'Lower cost': 2, 'Sustainability / low carbon': 3 },
-    '60/40, no water':   { 'Better nutrition': 1, 'Lower cost': 3, 'Sustainability / low carbon': 2 },
-    '70/30, no water':   { 'Better nutrition': 2, 'Lower cost': 1, 'Sustainability / low carbon': 3 },
-    '50/50, rehydrated': { 'Better nutrition': 3, 'Lower cost': 1, 'Sustainability / low carbon': 2 },
-    '60/40, rehydrated': { 'Better nutrition': 2, 'Lower cost': 3, 'Sustainability / low carbon': 1 },
-    '70/30, rehydrated': { 'Better nutrition': 3, 'Lower cost': 2, 'Sustainability / low carbon': 1 },
-  },
-  'Ground Beef (unformed)': {
-    '50/50, no water':   { 'Better nutrition': 1, 'Lower cost': 2, 'Sustainability / low carbon': 3 },
-    '60/40, no water':   { 'Better nutrition': 1, 'Lower cost': 3, 'Sustainability / low carbon': 2 },
-    '70/30, no water':   { 'Better nutrition': 2, 'Lower cost': 1, 'Sustainability / low carbon': 3 },
-    '50/50, rehydrated': { 'Better nutrition': 3, 'Lower cost': 1, 'Sustainability / low carbon': 2 },
-    '60/40, rehydrated': { 'Better nutrition': 2, 'Lower cost': 3, 'Sustainability / low carbon': 1 },
-    '70/30, rehydrated': { 'Better nutrition': 3, 'Lower cost': 2, 'Sustainability / low carbon': 1 },
-  },
-};
+  // Build BEEF_PRICES
+  beefPrices.forEach(r => {
+    BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_kg) };
+  });
 
-// Fiber per recipe (constant across beef types)
-const RECIPE_FIBER = {
-  '50/50, no water':   8.5,
-  '60/40, no water':   6.8,
-  '70/30, no water':   5.1,
-  '50/50, rehydrated': 7.31,
-  '60/40, rehydrated': 5.95,
-  '70/30, rehydrated': 4.42,
-};
+  // Build RECIPES
+  recipes.forEach(r => {
+    if (!RECIPES[r.format]) RECIPES[r.format] = {};
+    RECIPES[r.format][r.recipe] = [
+      parseFloat(r.beef_pct),
+      parseFloat(r.fable_pct),
+      parseFloat(r.water_pct)
+    ];
+  });
 
-// Health reference nutrition per 100g
-const HEALTH_REF = {
-  shiitake: {
-    'Energy (Calories)': { val: 160, unit: 'Cal' },
-    'Total Fat':         { val: 11,  unit: 'g' },
-    'Saturated Fat':     { val: 5,   unit: 'g' },
-    'Trans Fat':         { val: 0,   unit: 'g' },
-    'Cholesterol':       { val: 0,   unit: 'mg' },
-    'Sodium':            { val: 0,   unit: 'mg' },
-    'Total Carbohydrate':{ val: 19,  unit: 'g' },
-    'Dietary Fiber':     { val: 17,  unit: 'g' },
-    'Total Sugars':      { val: 0,   unit: 'g' },
-    'Added Sugars':      { val: 0,   unit: 'g' },
-    'Protein':           { val: 5,   unit: 'g' },
-    'Vitamin D':         { val: 30.4,unit: 'mcg' },
-    'Calcium':           { val: 90,  unit: 'mg' },
-    'Iron':              { val: 2.1, unit: 'mg' },
-    'Potassium':         { val: 90,  unit: 'mg' },
-  },
-  beef: {  // 80CL reference — will scale for other CLs
-    '90CL Beef Trim': { 'Energy (Calories)':176,'Total Fat':10,'Saturated Fat':3.9,'Trans Fat':0.54,'Cholesterol':65,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':20,'Vitamin D':0.1,'Calcium':12,'Iron':2.2,'Potassium':321 },
-    '85CL Beef Trim': { 'Energy (Calories)':215,'Total Fat':15,'Saturated Fat':5.7,'Trans Fat':0.86,'Cholesterol':68,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':18.6,'Vitamin D':0.1,'Calcium':15,'Iron':2.1,'Potassium':295 },
-    '80CL Beef Trim': { 'Energy (Calories)':254,'Total Fat':20,'Saturated Fat':7.6,'Trans Fat':1.2,'Cholesterol':71,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':17.2,'Vitamin D':0.1,'Calcium':18,'Iron':1.9,'Potassium':270 },
-    '75CL Beef Trim': { 'Energy (Calories)':293,'Total Fat':25,'Saturated Fat':9.6,'Trans Fat':1.527,'Cholesterol':75,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':15.8,'Vitamin D':0.1,'Calcium':21,'Iron':1.767,'Potassium':244.3 },
-    '70CL Beef Trim': { 'Energy (Calories)':332,'Total Fat':30,'Saturated Fat':11.8,'Trans Fat':1.8,'Cholesterol':78,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':14.4,'Vitamin D':0.1,'Calcium':24,'Iron':1.617,'Potassium':218 },
-    '65CL Beef Trim': { 'Energy (Calories)':371,'Total Fat':35,'Saturated Fat':13.63,'Trans Fat':2.141,'Cholesterol':81.3,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':13,'Vitamin D':0.1,'Calcium':27,'Iron':1.467,'Potassium':192.7 },
-    '60CL Beef Trim': { 'Energy (Calories)':410,'Total Fat':40,'Saturated Fat':15.6,'Trans Fat':2.46,'Cholesterol':84.6,'Sodium':66,'Total Carbohydrate':0,'Dietary Fiber':0,'Total Sugars':0,'Added Sugars':0,'Protein':11.6,'Vitamin D':0.1,'Calcium':30,'Iron':1.317,'Potassium':167 },
-  }
-};
+  // Build RECIPE_RANKS
+  ranks.forEach(r => {
+    if (!RECIPE_RANKS[r.format]) RECIPE_RANKS[r.format] = {};
+    RECIPE_RANKS[r.format][r.recipe] = {
+      'Better nutrition':          r.nutrition_rank,
+      'Lower cost':                r.cost_rank,
+      'Sustainability / low carbon': r.sustainability_rank,
+      high_fiber:                  r.high_fiber,
+    };
+  });
+
+  // Build HEALTH_REF from us_nutrition
+  const NUTRIENT_UNITS = {
+    'Energy (Calories)': 'Cal', 'Total Fat': 'g', 'Saturated Fat': 'g',
+    'Trans Fat': 'g', 'Cholesterol': 'mg', 'Sodium': 'mg',
+    'Total Carbohydrate': 'g', 'Dietary Fiber': 'g', 'Total Sugars': 'g',
+    'Added Sugars': 'g', 'Protein': 'g', 'Vitamin D': 'mcg',
+    'Calcium': 'mg', 'Iron': 'mg', 'Potassium': 'mg',
+  };
+  nutrition.forEach(r => {
+    if (r.ingredient === 'shiitake') {
+      HEALTH_REF.shiitake[r.nutrient] = { val: parseFloat(r.value), unit: NUTRIENT_UNITS[r.nutrient] || '' };
+    } else {
+      if (!HEALTH_REF.beef[r.ingredient]) HEALTH_REF.beef[r.ingredient] = {};
+      HEALTH_REF.beef[r.ingredient][r.nutrient] = parseFloat(r.value);
+    }
+  });
+
+  // Build CO2 values
+  co2.forEach(r => {
+    if (r.ingredient === 'shiitake') SHIITAKE_CO2 = parseFloat(r.co2_per_kg);
+    if (r.ingredient === 'beef')     BEEF_CO2     = parseFloat(r.co2_per_kg);
+  });
+}
 
 /* ── STATE ───────────────────────────────────────── */
 const state = {
@@ -1653,43 +1635,46 @@ function pickRecipe() {
   const p = state.priorities;
 
   // Score each recipe: lower = better
+  // weighted score: 1st priority weight=3, 2nd=2, 3rd=1
   let best = null, bestScore = Infinity;
   for (const [recipeName, recipeRanks] of Object.entries(ranks)) {
-    // weighted score: 1st priority weight=3, 2nd=2, 3rd=1
     const score = (3 * recipeRanks[p[0]]) + (2 * recipeRanks[p[1]]) + (1 * recipeRanks[p[2]]);
-    
-    // Check fiber constraint
-    if (state.mustFiber && RECIPE_FIBER[recipeName] < 5) continue;
+
+    // Hard constraint: must be high in fiber (≥5g per 100g)
+    // Uses the high_fiber flag from us_recipe_ranks in Supabase
+    if (state.mustFiber && !recipeRanks.high_fiber) continue;
+
+    // Hard constraint: must be high in protein (≥10g per 100g)
+    // Check blended protein for the closest trim to user's fat target
+    if (state.mustProtein) {
+      const candidateTrim = pickClosestTrim(recipeName);
+      const protein = getBlendNutrient('Protein', recipeName, candidateTrim);
+      if (protein < 10) continue;
+    }
 
     if (score < bestScore) { bestScore = score; best = recipeName; }
   }
   return best || '70/30, rehydrated';
 }
 
-function pickBeefTrim(recipeName) {
-  // Find beef trim closest to user's current fat %, adjusted by recipe beef pct
-  const [beefPct] = RECIPES[state.q2][recipeName];
+function pickClosestTrim(recipeName) {
+  // Find trim whose blended fat (beef fat × beef_pct + shiitake fat × fable_pct)
+  // is closest to the user's target fat % (state.q1)
+  const [beefPct, fablePct] = RECIPES[state.q2][recipeName];
+  const shiitakeFat = (HEALTH_REF.shiitake['Total Fat']?.val ?? 0) / 100;
   const userFat = state.q1;
-  // Target blended fat ≈ userFat; iterate CLs
+
   let bestTrim = null, bestDiff = Infinity;
   for (const [name, data] of Object.entries(BEEF_PRICES)) {
-    const blendedFat = data.fat * beefPct;
-    const diff = Math.abs(blendedFat - userFat * beefPct);
+    const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
+    const diff = Math.abs(blendedFat - userFat);
     if (diff < bestDiff) { bestDiff = diff; bestTrim = name; }
   }
-  // If must be high protein, ensure protein ≥ 10g
-  if (state.mustProtein) {
-    // Get protein for this trim+recipe
-    const proto = getBlendNutrient('Protein', recipeName, bestTrim);
-    if (proto < 10) {
-      // try trimmer cuts
-      for (const name of ['90CL Beef Trim','85CL Beef Trim','80CL Beef Trim']) {
-        const p = getBlendNutrient('Protein', recipeName, name);
-        if (p >= 10) { bestTrim = name; break; }
-      }
-    }
-  }
   return bestTrim;
+}
+
+function pickBeefTrim(recipeName) {
+  return pickClosestTrim(recipeName);
 }
 
 function getBlendNutrient(nutrient, recipeName, trimName) {
@@ -1700,15 +1685,16 @@ function getBlendNutrient(nutrient, recipeName, trimName) {
 }
 
 /* ── MAIN CALCULATE ──────────────────────────────── */
-function calculate() {
+async function calculate() {
   updatePriorities();
+  await loadData();
 
   const recipeName = pickRecipe();
   const trimName   = pickBeefTrim(recipeName);
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];
-  const trimPrice  = BEEF_PRICES[trimName].price;
-  const blendPrice = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-  const fiber      = RECIPE_FIBER[recipeName];
+  const trimPrice     = BEEF_PRICES[trimName].price;
+  const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+  const fiber         = getBlendNutrient('Dietary Fiber', recipeName, trimName);
   const beefOnlyPrice = BEEF_PRICES[trimName].price;
 
   // Carbon
