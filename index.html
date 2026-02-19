@@ -1789,58 +1789,62 @@ function pickBeefTrim(recipeName) {
 function pickRecipe() {
   const format = state.q2;
   const ranks  = RECIPE_RANKS[format];
-  const p = state.priorities;
+  const p = state.priorities; // ordered array: p[0] = #1 priority, p[1] = #2, p[2] = #3
 
-  // Sort all recipes by weighted priority score (lower = better)
-  const scored = Object.entries(ranks)
-    .map(([recipeName, recipeRanks]) => ({
-      recipeName,
-      recipeRanks,
-      score: (3 * recipeRanks[p[0]]) + (2 * recipeRanks[p[1]]) + (1 * recipeRanks[p[2]])
-    }))
-    .sort((a, b) => a.score - b.score);
+  // Convert priority order into rank numbers for each dimension
+  // e.g. if p = ['Lower cost', 'Better nutrition', 'Sustainability / low carbon']
+  // then nutrition_rank = 2, cost_rank = 1, sustainability_rank = 3
+  const nutritionRank     = p.indexOf('Better nutrition') + 1;
+  const costRank          = p.indexOf('Lower cost') + 1;
+  const sustainabilityRank = p.indexOf('Sustainability / low carbon') + 1;
 
-  // Also sort recipes by fable_pct descending — used to step up fiber if needed
+  // Direct exact-match lookup — find the single recipe whose ranks match the user's priorities
+  const matchedEntry = Object.entries(ranks).find(([, recipeRanks]) =>
+    recipeRanks['Better nutrition']            === nutritionRank &&
+    recipeRanks['Lower cost']                  === costRank &&
+    recipeRanks['Sustainability / low carbon'] === sustainabilityRank
+  );
+
+  // Recipes sorted by fable_pct descending — used to step up fiber if needed
   const byFablePct = Object.entries(RECIPES[format])
     .map(([recipeName, [beefPct, fablePct]]) => ({ recipeName, fablePct }))
     .sort((a, b) => b.fablePct - a.fablePct);
 
-  for (const { recipeName, recipeRanks } of scored) {
+  // Helper: try a candidate recipe, applying fiber & protein constraints
+  // Returns the recipe name to use, or null if it can't satisfy constraints
+  function tryRecipe(recipeName) {
+    const [, fablePct] = RECIPES[format][recipeName];
+    const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
 
     // Hard constraint: must be high in fiber (>=5g per 100g)
-    // Fiber only comes from the fable/shiitake component, so if this recipe fails
-    // we step up to the next recipe with a higher fable percentage until one passes.
-    // We do NOT change the trim — trim has no fiber content.
-    if (state.mustFiber) {
-      const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
-      const [, fablePct] = RECIPES[format][recipeName];
-      const fiber = shiitakeFiber * fablePct;
-      if (fiber < 5) {
-        // Find the next recipe with a higher fable_pct that passes the fiber test
-        const currentFablePct = fablePct;
-        const fiberFallback = byFablePct.find(r =>
-          r.fablePct > currentFablePct &&
-          (shiitakeFiber * r.fablePct) >= 5
-        );
-        if (!fiberFallback) continue; // no recipe at all can hit fiber — skip
-        // Use the fiber-qualifying recipe instead
-        const fbRecipeName = fiberFallback.recipeName;
-        // Still check protein constraint on the fiber-qualifying recipe
-        if (state.mustProtein && pickBeefTrim(fbRecipeName) === null) continue;
-        return fbRecipeName;
-      }
+    // Fiber only comes from fable_pct, so step up to higher fable_pct recipe if needed
+    if (state.mustFiber && (shiitakeFiber * fablePct) < 5) {
+      const fiberFallback = byFablePct.find(r =>
+        r.fablePct > fablePct &&
+        (shiitakeFiber * r.fablePct) >= 5
+      );
+      if (!fiberFallback) return null; // no recipe in this format can hit fiber
+      // Check protein on the fiber-upgraded recipe too
+      if (state.mustProtein && pickBeefTrim(fiberFallback.recipeName) === null) return null;
+      return fiberFallback.recipeName;
     }
 
     // Hard constraint: must be high in protein (>=10g)
-    // pickBeefTrim tries the closest trim first, then steps up through leaner CLs
-    // Returns null only if no trim can satisfy the protein requirement for this recipe
-    if (state.mustProtein && pickBeefTrim(recipeName) === null) continue;
+    // pickBeefTrim steps up CL until protein passes, returns null if impossible
+    if (state.mustProtein && pickBeefTrim(recipeName) === null) return null;
 
     return recipeName;
   }
 
-  // Fallback: no recipe satisfies all constraints — return best scoring recipe regardless
-  return scored[0]?.recipeName || '70/30, rehydrated';
+  // Try the directly matched recipe first
+  if (matchedEntry) {
+    const result = tryRecipe(matchedEntry[0]);
+    if (result !== null) return result;
+  }
+
+  // Fallback: if direct match fails constraints (or no match found), use the first entry
+  const fallbackName = matchedEntry?.[0] || Object.keys(ranks)[0] || '70/30, rehydrated';
+  return fallbackName;
 }
 
 function getBlendNutrient(nutrient, recipeName, trimName) {
