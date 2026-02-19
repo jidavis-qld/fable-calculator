@@ -1737,100 +1737,158 @@ const CL_ORDER_LEAN = [
   '75CL Beef Trim','80CL Beef Trim','85CL Beef Trim','90CL Beef Trim'
 ];
 
-function pickClosestTrim(recipeName) {
-  // Find trim whose total blended fat (beef fat × beef_pct + shiitake fat × fable_pct)
-  // is closest to the user's target fat % (state.q1)
-  const [beefPct, fablePct] = RECIPES[state.q2][recipeName];
+/* ══════════════════════════════════════════════════════════════
+   SCORING ENGINE
+   Finds the best recipe × trim combination for the user's priorities.
+
+   Nutrition composite weights (all normalised 0–1 before applying):
+     Dietary Fiber  : 0.35  (higher = better — key Fable differentiator)
+     Protein        : 0.30  (higher = better)
+     Calories       : 0.20  (lower = better)
+     Saturated Fat  : 0.15  (lower = better)
+
+   Priority weights applied to the three dimension scores:
+     #1 priority : 1.00
+     #2 priority : 0.30
+     #3 priority : 0.10
+
+   Trim eligibility:
+     Blended fat (beef_fat × beef_pct + shiitake_fat × fable_pct)
+     must be ≤ user's Q1 target fat %. Can go leaner, never fattier.
+
+   Hard constraints (applied after scoring — a candidate is dropped
+   if it cannot satisfy them):
+     mustFiber   : blended dietary fiber >= 5g per 100g
+     mustProtein : blended protein >= 10g per 100g
+══════════════════════════════════════════════════════════════ */
+
+function scoringEngine() {
+  const format  = state.q2;
+  const p       = state.priorities; // p[0]=1st priority, p[1]=2nd, p[2]=3rd
+  const userFat = state.q1;         // user's Q1 fat % — blended fat must not exceed this
+
+  const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
+  const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
+
+  // ── Step 1: build all candidate combinations ──────────────────
+  // For each recipe × each trim, check fat eligibility and compute raw scores
+  const candidates = [];
+
+  for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+    for (const [trimName, trimData] of Object.entries(BEEF_PRICES)) {
+      // Hard fat constraint: blended fat must be ≤ user's Q1 fat %
+      const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
+      if (blendedFat > userFat + 0.001) continue; // +0.001 for float tolerance
+
+      // Raw nutrient values for this combo
+      const fiber   = shiitakeFiber * fablePct + 0; // beef has no fiber
+      const protein = getBlendNutrient('Protein',        recipeName, trimName);
+      const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName);
+      const satFat  = getBlendNutrient('Saturated Fat',  recipeName, trimName);
+      const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+      const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+
+      // Hard constraints
+      if (state.mustFiber   && fiber   < 5)  continue;
+      if (state.mustProtein && protein < 10) continue;
+
+      candidates.push({ recipeName, trimName, beefPct, fablePct, waterPct,
+                        fiber, protein, cals, satFat, cost, co2, blendedFat });
+    }
+  }
+
+  // If all candidates were filtered out by constraints, relax and try again without them
+  // (edge case — still give a result rather than crash)
+  const pool = candidates.length > 0 ? candidates : (() => {
+    const relaxed = [];
+    for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+      for (const [trimName, trimData] of Object.entries(BEEF_PRICES)) {
+        const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
+        if (blendedFat > userFat + 0.001) continue;
+        const fiber   = shiitakeFiber * fablePct;
+        const protein = getBlendNutrient('Protein', recipeName, trimName);
+        const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName);
+        const satFat  = getBlendNutrient('Saturated Fat', recipeName, trimName);
+        const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+        const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+        relaxed.push({ recipeName, trimName, beefPct, fablePct, waterPct,
+                       fiber, protein, cals, satFat, cost, co2, blendedFat });
+      }
+    }
+    return relaxed;
+  })();
+
+  if (pool.length === 0) return { recipeName: Object.keys(RECIPES[format])[0], trimName: CL_ORDER_LEAN[4] };
+
+  // ── Step 2: normalise each raw dimension across the pool ───────
+  // For "lower is better" dims we invert so that 1.0 = best in pool
+  function normalise(values, lowerBetter) {
+    const min = Math.min(...values), max = Math.max(...values);
+    if (max === min) return values.map(() => 1.0); // all equal — everyone scores 1
+    return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
+  }
+
+  const nFiber   = normalise(pool.map(c => c.fiber),   false); // higher better
+  const nProtein = normalise(pool.map(c => c.protein), false); // higher better
+  const nCals    = normalise(pool.map(c => c.cals),    true);  // lower better
+  const nSatFat  = normalise(pool.map(c => c.satFat),  true);  // lower better
+  const nCost    = normalise(pool.map(c => c.cost),    true);  // lower better
+  const nCO2     = normalise(pool.map(c => c.co2),     true);  // lower better
+
+  // Nutrition composite score (weights sum to 1.0)
+  const nutritionScore = pool.map((_, i) =>
+    0.35 * nFiber[i] +
+    0.30 * nProtein[i] +
+    0.20 * nCals[i] +
+    0.15 * nSatFat[i]
+  );
+
+  // ── Step 3: apply priority weights ────────────────────────────
+  // Priority weights: #1=1.0, #2=0.3, #3=0.1
+  const priorityWeights = { [p[0]]: 1.0, [p[1]]: 0.3, [p[2]]: 0.1 };
+  const wN = priorityWeights['Better nutrition']              ?? 0;
+  const wC = priorityWeights['Lower cost']                    ?? 0;
+  const wS = priorityWeights['Sustainability / low carbon']   ?? 0;
+
+  const finalScores = pool.map((_, i) =>
+    wN * nutritionScore[i] +
+    wC * nCost[i] +
+    wS * nCO2[i]
+  );
+
+  // ── Step 4: pick the winner ────────────────────────────────────
+  let bestIdx = 0;
+  for (let i = 1; i < finalScores.length; i++) {
+    if (finalScores[i] > finalScores[bestIdx]) bestIdx = i;
+  }
+
+  return { recipeName: pool[bestIdx].recipeName, trimName: pool[bestIdx].trimName };
+}
+
+// Kept for backwards compatibility — used in mustProtein constraint check
+function pickBeefTrim(recipeName) {
+  const result = scoringEngine();
+  // If the engine returned this recipe, use its trim; otherwise find closest eligible trim
+  if (result.recipeName === recipeName) return result.trimName;
+
+  // Fallback: find the leanest eligible trim for the given recipe
   const shiitakeFat = (HEALTH_REF.shiitake['Total Fat']?.val ?? 0) / 100;
+  const [beefPct, fablePct] = RECIPES[state.q2][recipeName];
   const userFat = state.q1;
 
   let bestTrim = null, bestDiff = Infinity;
   for (const [name, data] of Object.entries(BEEF_PRICES)) {
     const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
+    if (blendedFat > userFat + 0.001) continue;
     const diff = Math.abs(blendedFat - userFat);
     if (diff < bestDiff) { bestDiff = diff; bestTrim = name; }
   }
   return bestTrim;
 }
 
-function pickBeefTrim(recipeName) {
-  // Step 1: find the closest trim by fat target
-  const closestTrim = pickClosestTrim(recipeName);
-  if (!state.mustProtein) return closestTrim;
-
-  // Step 2: check if closest trim already hits >=10g protein
-  if (getBlendNutrient('Protein', recipeName, closestTrim) >= 10) return closestTrim;
-
-  // Step 3: step up through leaner trims (increasing CL) until protein >=10g
-  const startIdx = CL_ORDER_LEAN.indexOf(closestTrim);
-  for (let i = startIdx + 1; i < CL_ORDER_LEAN.length; i++) {
-    const trim = CL_ORDER_LEAN[i];
-    if (getBlendNutrient('Protein', recipeName, trim) >= 10) return trim;
-  }
-
-  // Step 4: no trim in this recipe can hit 10g — return null to signal recipe failure
-  return null;
-}
-
+// pickRecipe() is now a thin wrapper — the engine returns both recipe and trim together
 function pickRecipe() {
-  const format = state.q2;
-  const ranks  = RECIPE_RANKS[format];
-  const p = state.priorities; // ordered array: p[0] = #1 priority, p[1] = #2, p[2] = #3
-
-  // Convert priority order into rank numbers for each dimension
-  // e.g. if p = ['Lower cost', 'Better nutrition', 'Sustainability / low carbon']
-  // then nutrition_rank = 2, cost_rank = 1, sustainability_rank = 3
-  const nutritionRank     = p.indexOf('Better nutrition') + 1;
-  const costRank          = p.indexOf('Lower cost') + 1;
-  const sustainabilityRank = p.indexOf('Sustainability / low carbon') + 1;
-
-  // Direct exact-match lookup — find the single recipe whose ranks match the user's priorities
-  const matchedEntry = Object.entries(ranks).find(([, recipeRanks]) =>
-    recipeRanks['Better nutrition']            === nutritionRank &&
-    recipeRanks['Lower cost']                  === costRank &&
-    recipeRanks['Sustainability / low carbon'] === sustainabilityRank
-  );
-
-  // Recipes sorted by fable_pct descending — used to step up fiber if needed
-  const byFablePct = Object.entries(RECIPES[format])
-    .map(([recipeName, [beefPct, fablePct]]) => ({ recipeName, fablePct }))
-    .sort((a, b) => b.fablePct - a.fablePct);
-
-  // Helper: try a candidate recipe, applying fiber & protein constraints
-  // Returns the recipe name to use, or null if it can't satisfy constraints
-  function tryRecipe(recipeName) {
-    const [, fablePct] = RECIPES[format][recipeName];
-    const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
-
-    // Hard constraint: must be high in fiber (>=5g per 100g)
-    // Fiber only comes from fable_pct, so step up to higher fable_pct recipe if needed
-    if (state.mustFiber && (shiitakeFiber * fablePct) < 5) {
-      const fiberFallback = byFablePct.find(r =>
-        r.fablePct > fablePct &&
-        (shiitakeFiber * r.fablePct) >= 5
-      );
-      if (!fiberFallback) return null; // no recipe in this format can hit fiber
-      // Check protein on the fiber-upgraded recipe too
-      if (state.mustProtein && pickBeefTrim(fiberFallback.recipeName) === null) return null;
-      return fiberFallback.recipeName;
-    }
-
-    // Hard constraint: must be high in protein (>=10g)
-    // pickBeefTrim steps up CL until protein passes, returns null if impossible
-    if (state.mustProtein && pickBeefTrim(recipeName) === null) return null;
-
-    return recipeName;
-  }
-
-  // Try the directly matched recipe first
-  if (matchedEntry) {
-    const result = tryRecipe(matchedEntry[0]);
-    if (result !== null) return result;
-  }
-
-  // Fallback: if direct match fails constraints (or no match found), use the first entry
-  const fallbackName = matchedEntry?.[0] || Object.keys(ranks)[0] || '70/30, rehydrated';
-  return fallbackName;
+  return scoringEngine().recipeName;
 }
 
 function getBlendNutrient(nutrient, recipeName, trimName) {
@@ -1845,8 +1903,8 @@ async function calculate() {
   updatePriorities();
   await loadData();
 
-  const recipeName = pickRecipe();
-  const trimName   = pickBeefTrim(recipeName);
+  // Scoring engine returns both recipe and trim in one pass
+  const { recipeName, trimName } = scoringEngine();
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];
   const trimPrice     = BEEF_PRICES[trimName].price;
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
