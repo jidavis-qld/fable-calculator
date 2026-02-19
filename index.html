@@ -1375,7 +1375,7 @@
             <tr>
               <th>Nutrient</th>
               <th>Shiitake Infused</th>
-              <th>100% Beef</th>
+              <th id="nutrition-beef-header">100% Beef</th>
               <th>Difference</th>
             </tr>
           </thead>
@@ -1892,7 +1892,7 @@ async function calculate() {
   renderBeefPriceBlock(beefOnlyPrice);
 
   // Nutrition
-  renderNutrition(recipeName, trimName, beefPct, fablePct);
+  renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct);
@@ -2011,7 +2011,7 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   });
 }
 
-function renderNutrition(recipeName, trimName, beefPct, fablePct) {
+function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) {
   const nutrients = [
     { key: 'Energy (Calories)', label: 'Energy (Calories)', bold: true },
     { key: 'Total Fat',         label: 'Total Fat',         bold: true },
@@ -2037,11 +2037,12 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct) {
 
   const tbody = document.getElementById('nutrition-tbody');
   tbody.innerHTML = '';
+  document.getElementById('nutrition-beef-header').textContent = '100% ' + userTrimName;
   const claims = [];
 
   nutrients.forEach(({ key, label, bold, sub }) => {
     const blendVal = getBlendNutrient(key, recipeName, trimName);
-    const beefVal  = HEALTH_REF.beef[trimName]?.[key] ?? 0;
+    const beefVal  = HEALTH_REF.beef[userTrimName]?.[key] ?? 0;
     const unit     = HEALTH_REF.shiitake[key]?.unit ?? '';
 
     let diffPct = beefVal > 0 ? Math.round(blendVal / beefVal * 100) : null;
