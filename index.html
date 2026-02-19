@@ -1586,7 +1586,7 @@ async function loadData() {
 
   // Build BEEF_PRICES
   beefPrices.forEach(r => {
-    BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_kg) };
+    BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_lb) };
   });
 
   // Build RECIPES

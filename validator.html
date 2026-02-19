@@ -111,7 +111,7 @@
 /* ── Supabase config ── */
 const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
-const FABLE_PRICE = 4.98 / 0.453592;
+const FABLE_PRICE = 4.98;
 const WATER_PRICE = 0.001;
 
 async function sbFetch(table) {
@@ -140,7 +140,7 @@ async function loadData() {
     sbFetch('us_recipes'),   sbFetch('co2_kg_e'),
   ]);
   beefPrices.forEach(r => {
-    BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_kg) };
+    BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_lb) };
   });
   recipes.forEach(r => {
     if (!RECIPES[r.format]) RECIPES[r.format] = {};
@@ -272,10 +272,9 @@ function buildPriceInputs() {
     const cl = trimName.replace(' Beef Trim','');
     const div = document.createElement('div');
     div.className = 'price-input-group';
-    const priceLb = data.price * 0.453592;
     div.innerHTML = `<label>${cl} ($/lb)</label>
-      <input type="number" step="0.01" min="0" value="${priceLb.toFixed(2)}"
-        onchange="BEEF_PRICES['${trimName}'].price = (parseFloat(this.value) || ${priceLb.toFixed(2)}) / 0.453592">`;
+      <input type="number" step="0.01" min="0" value="${data.price.toFixed(2)}"
+        onchange="BEEF_PRICES['${trimName}'].price = parseFloat(this.value) || ${data.price.toFixed(2)}">`;
     wrap.appendChild(div);
   });
   document.getElementById('price-controls').style.display = 'block';
@@ -357,7 +356,7 @@ async function runValidator() {
         <td class="detail-col">${winner.protein.toFixed(1)}g</td>
         <td class="detail-col">${winner.cals.toFixed(0)}</td>
         <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
-        <td class="detail-col">$${(winner.cost * 0.453592).toFixed(2)}</td>
+        <td class="detail-col">$${winner.cost.toFixed(2)}</td>
         <td class="detail-col" style="color:rgba(207,255,142,0.35)">
           ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} ($${runnerUp.finalScore.toFixed(3)})` : '—'}
         </td>
