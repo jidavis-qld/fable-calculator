@@ -1752,9 +1752,12 @@ const CL_ORDER_LEAN = [
      #2 priority : 0.30
      #3 priority : 0.10
 
-   Trim eligibility:
-     Blended fat (beef_fat × beef_pct + shiitake_fat × fable_pct)
-     must be ≤ user's Q1 target fat %. Can go leaner, never fattier.
+   Trim eligibility per recipe (two bounds):
+     Ceiling (leanest allowed) : user's Q1 trim — e.g. if they use 80CL,
+       the engine cannot recommend 85CL or 90CL beef.
+     Floor (fattiest allowed)  : the trim whose blended fat is closest to
+       the user's Q1 fat % for that specific recipe (trim selector result).
+     Only trims between floor and ceiling (inclusive) are candidates.
 
    Hard constraints (applied after scoring — a candidate is dropped
    if it cannot satisfy them):
@@ -1765,58 +1768,69 @@ const CL_ORDER_LEAN = [
 function scoringEngine() {
   const format  = state.q2;
   const p       = state.priorities; // p[0]=1st priority, p[1]=2nd, p[2]=3rd
-  const userFat = state.q1;         // user's Q1 fat % — blended fat must not exceed this
+  const userFat = state.q1;         // user's Q1 fat % selection
 
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
   const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
 
-  // ── Step 1: build all candidate combinations ──────────────────
-  // For each recipe × each trim, check fat eligibility and compute raw scores
-  const candidates = [];
+  // User's Q1 trim = the ceiling (leanest allowed beef CL)
+  // e.g. if user picked 80CL, engine cannot go to 85CL or 90CL
+  const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
+  const ceilIdx = CL_ORDER_LEAN.indexOf(userTrimName); // index in fatty→lean order
 
-  for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
-    for (const [trimName, trimData] of Object.entries(BEEF_PRICES)) {
-      // Hard fat constraint: blended fat must be ≤ user's Q1 fat %
-      const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-      if (blendedFat > userFat + 0.001) continue; // +0.001 for float tolerance
-
-      // Raw nutrient values for this combo
-      const fiber   = shiitakeFiber * fablePct + 0; // beef has no fiber
-      const protein = getBlendNutrient('Protein',        recipeName, trimName);
-      const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName);
-      const satFat  = getBlendNutrient('Saturated Fat',  recipeName, trimName);
-      const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-      const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
-
-      // Hard constraints
-      if (state.mustFiber   && fiber   < 5)  continue;
-      if (state.mustProtein && protein < 10) continue;
-
-      candidates.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                        fiber, protein, cals, satFat, cost, co2, blendedFat });
-    }
+  // For a given recipe, find the "natural" trim — the one whose blended fat
+  // is closest to userFat. This is the floor (fattiest allowed for that recipe).
+  function naturalTrimIdx(beefPct, fablePct) {
+    let bestIdx = 0, bestDiff = Infinity;
+    CL_ORDER_LEAN.forEach((name, i) => {
+      const data = BEEF_PRICES[name];
+      if (!data) return;
+      const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
+      const diff = Math.abs(blendedFat - userFat);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    });
+    return bestIdx;
   }
 
-  // If all candidates were filtered out by constraints, relax and try again without them
-  // (edge case — still give a result rather than crash)
-  const pool = candidates.length > 0 ? candidates : (() => {
-    const relaxed = [];
+  // ── Step 1: build all candidate combinations ──────────────────
+  // Only trims between floor (natural) and ceiling (Q1 trim) are eligible
+  function buildCandidates(applyConstraints) {
+    const out = [];
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
-      for (const [trimName, trimData] of Object.entries(BEEF_PRICES)) {
+      const floorIdx = naturalTrimIdx(beefPct, fablePct);
+      // Eligible CL range: from floorIdx up to ceilIdx (both inclusive)
+      // In CL_ORDER_LEAN, higher index = leaner = higher CL
+      const lo = Math.min(floorIdx, ceilIdx);
+      const hi = Math.max(floorIdx, ceilIdx);
+
+      for (let i = lo; i <= hi; i++) {
+        const trimName = CL_ORDER_LEAN[i];
+        const trimData = BEEF_PRICES[trimName];
+        if (!trimData) continue;
+
         const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-        if (blendedFat > userFat + 0.001) continue;
-        const fiber   = shiitakeFiber * fablePct;
-        const protein = getBlendNutrient('Protein', recipeName, trimName);
-        const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName);
-        const satFat  = getBlendNutrient('Saturated Fat', recipeName, trimName);
+        const fiber   = shiitakeFiber * fablePct; // beef has no fiber
+        const protein = getBlendNutrient('Protein',             recipeName, trimName);
+        const cals    = getBlendNutrient('Energy (Calories)',   recipeName, trimName);
+        const satFat  = getBlendNutrient('Saturated Fat',       recipeName, trimName);
         const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
         const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
-        relaxed.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                       fiber, protein, cals, satFat, cost, co2, blendedFat });
+
+        if (applyConstraints) {
+          if (state.mustFiber   && fiber   < 5)  continue;
+          if (state.mustProtein && protein < 10) continue;
+        }
+
+        out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
+                   fiber, protein, cals, satFat, cost, co2, blendedFat });
       }
     }
-    return relaxed;
-  })();
+    return out;
+  }
+
+  // Try with constraints first; fall back to unconstrained if nothing passes
+  const candidates = buildCandidates(true);
+  const pool = candidates.length > 0 ? candidates : buildCandidates(false);
 
   if (pool.length === 0) return { recipeName: Object.keys(RECIPES[format])[0], trimName: CL_ORDER_LEAN[4] };
 
