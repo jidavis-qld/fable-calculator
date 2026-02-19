@@ -1574,14 +1574,16 @@ let FABLE_PRICE  = 4.98;
 let WATER_PRICE  = 0;
 let SHIITAKE_CO2 = 0;
 let BEEF_CO2     = 0;
+let SCORING_CONFIG = {};  // loaded from scoring_config table in Supabase
 
 async function loadData() {
-  const [nutrition, beefPrices, recipes, ranks, co2] = await Promise.all([
+  const [nutrition, beefPrices, recipes, ranks, co2, scoringCfg] = await Promise.all([
     sbFetch('us_nutrition'),
     sbFetch('beef_prices'),
     sbFetch('us_recipes'),
     sbFetch('us_recipe_ranks_view'),
     sbFetch('co2_kg_e'),
+    sbFetch('scoring_config'),
   ]);
 
   // Build BEEF_PRICES
@@ -1632,6 +1634,9 @@ async function loadData() {
     if (r.ingredient === 'shiitake') SHIITAKE_CO2 = parseFloat(r.co2_per_kg);
     if (r.ingredient === 'beef')     BEEF_CO2     = parseFloat(r.co2_per_kg);
   });
+
+  // Build SCORING_CONFIG — keyed by config key for easy lookup
+  scoringCfg.forEach(r => { SCORING_CONFIG[r.key] = parseFloat(r.value); });
 }
 
 /* ── STATE ───────────────────────────────────────── */
@@ -1816,41 +1821,47 @@ function scoringEngine() {
   if (pool.length === 0) return { recipeName: Object.keys(RECIPES[format])[0], trimName: CL_ORDER_LEAN[4] };
 
   // ── Step 2: normalise each raw dimension across the pool ───────
-  // For "lower is better" dims we invert so that 1.0 = best in pool
+  // Standard normalise: maps [min, max] → [0, 1]
   function normalise(values, lowerBetter) {
     const min = Math.min(...values), max = Math.max(...values);
-    if (max === min) return values.map(() => 1.0); // all equal — everyone scores 1
+    if (max === min) return values.map(() => 1.0);
     return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
   }
+  // Padded normalise: extends the range by `pad` × spread on each side,
+  // so real differences occupy the middle of the scale (less extreme 0/1 scoring).
+  function normalisePadded(values, lowerBetter, pad) {
+    const min = Math.min(...values), max = Math.max(...values);
+    const spread = max - min;
+    if (spread === 0) return values.map(() => 1.0);
+    const lo = min - spread * pad, hi = max + spread * pad;
+    return values.map(v => lowerBetter ? (hi - v) / (hi - lo) : (v - lo) / (hi - lo));
+  }
+
+  const cfg = SCORING_CONFIG;
+  const costPad = cfg.cost_pad ?? 1.5;
 
   const nFiber   = normalise(pool.map(c => c.fiber),   false); // higher better
   const nProtein = normalise(pool.map(c => c.protein), false); // higher better
   const nCals    = normalise(pool.map(c => c.cals),    true);  // lower better
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);  // lower better
-  const nCost    = normalise(pool.map(c => c.cost),    true);  // lower better
+  const nCost    = normalisePadded(pool.map(c => c.cost), true, costPad);  // lower better, padded
   const nCO2     = normalise(pool.map(c => c.co2),     true);  // lower better
 
-  // Nutrition composite score (weights sum to 1.0)
-  // Raw linear composite first...
+  // Nutrition composite: weighted sum then sqrt for diminishing returns
   const nutritionRaw = pool.map((_, i) =>
-    0.35 * nFiber[i] +
-    0.30 * nProtein[i] +
-    0.20 * nCals[i] +
-    0.15 * nSatFat[i]
+    (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
+    (cfg.nutr_w_protein  ?? 0.30) * nProtein[i] +
+    (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
+    (cfg.nutr_w_satfat   ?? 0.15) * nSatFat[i]
   );
-  // ...then apply square root to model diminishing returns.
-  // The jump from 0→0.5 fable is large; from 0.5→1.0 is smaller.
-  // sqrt compresses the top end, making 60/40 more competitive vs 50/50.
   const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
   // ── Step 3: apply priority weights ────────────────────────────
-  // Each priority maps to a fixed weight set across the three dimensions.
-  // Balance uses equal nutrition+cost weights with no sustainability bias.
   const WEIGHT_SETS = {
-    cost:           { n: 0.15, c: 1.00, s: 0.10 },
-    nutrition:      { n: 1.00, c: 0.15, s: 0.10 },
-    balance:        { n: 0.50, c: 0.50, s: 0.00 },
-    sustainability: { n: 0.15, c: 0.10, s: 1.00 },
+    cost:           { n: cfg.cost_n           ?? 0.15, c: cfg.cost_c           ?? 1.00, s: cfg.cost_s           ?? 0.10 },
+    nutrition:      { n: cfg.nutrition_n      ?? 1.00, c: cfg.nutrition_c      ?? 0.15, s: cfg.nutrition_s      ?? 0.10 },
+    balance:        { n: cfg.balance_n        ?? 0.50, c: cfg.balance_c        ?? 0.50, s: cfg.balance_s        ?? 0.00 },
+    sustainability: { n: cfg.sustainability_n ?? 0.15, c: cfg.sustainability_c ?? 0.10, s: cfg.sustainability_s ?? 1.00 },
   };
   const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
 

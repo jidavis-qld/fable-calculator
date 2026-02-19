@@ -124,6 +124,7 @@ async function sbFetch(table) {
 /* ── Data stores ── */
 let BEEF_PRICES = {}, RECIPES = {}, HEALTH_REF = { shiitake: {}, beef: {} };
 let SHIITAKE_CO2 = 0, BEEF_CO2 = 0;
+let SCORING_CONFIG = {};
 let dataLoaded = false;
 
 const CL_ORDER_LEAN = [
@@ -135,9 +136,10 @@ const PRIORITIES = ['Better nutrition', 'Lower cost', 'Sustainability / low carb
 
 async function loadData() {
   if (dataLoaded) return;
-  const [nutrition, beefPrices, recipes, co2] = await Promise.all([
+  const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
     sbFetch('us_nutrition'), sbFetch('beef_prices'),
     sbFetch('us_recipes'),   sbFetch('co2_kg_e'),
+    sbFetch('scoring_config'),
   ]);
   beefPrices.forEach(r => {
     BEEF_PRICES[r.trim] = { fat: parseFloat(r.fat_pct), price: parseFloat(r.price_per_lb) };
@@ -158,6 +160,7 @@ async function loadData() {
     if (r.ingredient === 'shiitake') SHIITAKE_CO2 = parseFloat(r.co2_per_kg);
     if (r.ingredient === 'beef')     BEEF_CO2     = parseFloat(r.co2_per_kg);
   });
+  scoringCfg.forEach(r => { SCORING_CONFIG[r.key] = parseFloat(r.value); });
   dataLoaded = true;
 }
 
@@ -168,13 +171,16 @@ function getBlendNutrient(nutrient, recipeName, trimName, format) {
   return s * fablePct + b * beefPct;
 }
 
-/* ── Weight sets — mirrors index.html exactly ── */
-const WEIGHT_SETS = {
-  cost:           { n: 0.15, c: 1.00, s: 0.10 },
-  nutrition:      { n: 1.00, c: 0.15, s: 0.10 },
-  balance:        { n: 0.50, c: 0.50, s: 0.00 },
-  sustainability: { n: 0.15, c: 0.10, s: 1.00 },
-};
+/* ── Weight sets — built dynamically from SCORING_CONFIG ── */
+function getWeightSets() {
+  const cfg = SCORING_CONFIG;
+  return {
+    cost:           { n: cfg.cost_n           ?? 0.15, c: cfg.cost_c           ?? 1.00, s: cfg.cost_s           ?? 0.10 },
+    nutrition:      { n: cfg.nutrition_n      ?? 1.00, c: cfg.nutrition_c      ?? 0.15, s: cfg.nutrition_s      ?? 0.10 },
+    balance:        { n: cfg.balance_n        ?? 0.50, c: cfg.balance_c        ?? 0.50, s: cfg.balance_s        ?? 0.00 },
+    sustainability: { n: cfg.sustainability_n ?? 0.15, c: cfg.sustainability_c ?? 0.10, s: cfg.sustainability_s ?? 1.00 },
+  };
+}
 
 const PRIORITY_LABELS = {
   cost:           { label: 'Lower Cost',        cls: 'pc-cost'    },
@@ -232,20 +238,34 @@ function scoringEngine(format, priority, userFat) {
     if (max === min) return values.map(() => 1.0);
     return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
   }
+  function normalisePadded(values, lowerBetter, pad) {
+    const min = Math.min(...values), max = Math.max(...values);
+    const spread = max - min;
+    if (spread === 0) return values.map(() => 1.0);
+    const lo = min - spread * pad, hi = max + spread * pad;
+    return values.map(v => lowerBetter ? (hi - v) / (hi - lo) : (v - lo) / (hi - lo));
+  }
+
+  const cfg = SCORING_CONFIG;
+  const costPad = cfg.cost_pad ?? 1.5;
 
   const pool = out;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);
-  const nCost    = normalise(pool.map(c => c.cost),    true);
+  const nCost    = normalisePadded(pool.map(c => c.cost), true, costPad);
   const nCO2     = normalise(pool.map(c => c.co2),     true);
 
-  const nutritionRaw   = pool.map((_, i) =>
-    0.35 * nFiber[i] + 0.30 * nProtein[i] + 0.20 * nCals[i] + 0.15 * nSatFat[i]
+  const nutritionRaw = pool.map((_, i) =>
+    (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
+    (cfg.nutr_w_protein  ?? 0.30) * nProtein[i] +
+    (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
+    (cfg.nutr_w_satfat   ?? 0.15) * nSatFat[i]
   );
   const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
+  const WEIGHT_SETS = getWeightSets();
   const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
   const finalScores = pool.map((_, i) =>
     w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i]
@@ -289,6 +309,7 @@ async function runValidator() {
   const userFat = parseFloat(document.getElementById('q1-select').value);
   const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0] || '80CL Beef Trim';
   const formats = Object.keys(RECIPES);
+  const WEIGHT_SETS = getWeightSets();
   const priorities = Object.keys(WEIGHT_SETS);
 
   let html = '';
