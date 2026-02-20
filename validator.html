@@ -70,31 +70,31 @@
                      border-bottom: 2px solid #cfff8e; padding-bottom: 10px; margin-bottom: 20px; }
   .section-subhead { font-size: 13px; color: #6b7a5c; margin-top: -14px; margin-bottom: 20px; }
 
-  /* ── Winner hero card ── */
-  .winner-card { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
-                 padding: 20px 24px; margin-bottom: 20px; display: flex;
-                 align-items: flex-start; gap: 24px; flex-wrap: wrap; }
-  .winner-label-wrap { display: flex; flex-direction: column; gap: 6px; }
-  .winner-badge { display: inline-block; background: #2e4214; color: #cfff8e;
-                  font-size: 11px; font-weight: 700; padding: 3px 10px;
-                  border-radius: 100px; letter-spacing: 0.04em; }
-  .winner-name { font-size: 22px; font-weight: 700; color: #1a1a1a; }
-  .winner-trim { font-size: 14px; color: #6b7a5c; margin-top: 2px; }
-  .winner-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
-  .wstat { display: flex; flex-direction: column; }
-  .wstat-val { font-size: 20px; font-weight: 700; color: #2e4214; }
-  .wstat-label { font-size: 11px; color: #6b7a5c; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
-
-  /* ── Comparison table ── */
+  /* ── Unified table ── */
+  .tbl-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
+              overflow: hidden; margin-bottom: 0; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 0; }
   th { background: #2e4214; color: #ffffff; font-weight: 600;
        font-size: 17px; padding: 11px 14px; text-align: left; white-space: nowrap; }
   td { padding: 11px 14px; border-bottom: 1px solid #e8ede3; vertical-align: middle;
        color: #2a2a2a; font-weight: 400; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #f5f9f0; }
-  .tbl-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
-              overflow: hidden; margin-bottom: 0; }
+  tr:not(.winner-row):hover td { background: #f5f9f0; }
+
+  /* ── Winner row — lifted look inside the table ── */
+  .winner-row { position: relative; }
+  .winner-row td { background: #f0f9e4; padding-top: 18px; padding-bottom: 18px;
+                   font-size: 17px; border-bottom: 2px solid #cfff8e; }
+  .winner-row td:first-child { border-left: 4px solid #2e4214; }
+  .winner-row td:last-child  { border-right: 4px solid #2e4214; }
+  /* top/bottom outline achieved via box-shadow on the row's tds */
+  .winner-row td { box-shadow: 0 -2px 0 0 #2e4214 inset; }
+  .winner-row td:last-child { box-shadow: 0 -2px 0 0 #2e4214 inset, 0 2px 0 0 #2e4214 inset; }
+  .rec-badge { display: inline-block; background: #2e4214; color: #cfff8e;
+               font-size: 10px; font-weight: 700; padding: 2px 8px;
+               border-radius: 100px; letter-spacing: 0.05em; vertical-align: middle; margin-left: 8px; }
+  .winner-recipe-name { font-weight: 700; font-size: 17px; }
+  .winner-trim-name { font-size: 13px; color: #6b7a5c; margin-top: 2px; }
 
   /* ── Delta badges ── */
   .delta { display: inline-block; font-size: 12px; border-radius: 100px;
@@ -102,13 +102,6 @@
   .delta-worse  { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
   .delta-better { background: #e8f5d8; color: #166534; border: 1px solid #86efac; }
   .delta-neutral{ background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
-
-  /* ── Rank badge (cost section) ── */
-  .rank-num { display: inline-flex; align-items: center; justify-content: center;
-              width: 28px; height: 28px; border-radius: 50%; font-size: 13px;
-              font-weight: 700; background: #e8ede3; color: #4a5a3a; }
-  .rank-num.rank-1 { background: #2e4214; color: #cfff8e; }
-  .rank-num.rank-2 { background: #dde8d4; color: #2e4214; }
 </style>
 </head>
 <body>
@@ -447,138 +440,152 @@ function deltaBadgeInt(diff, unit, lowerBetter) {
   return `<span class="delta ${cls}">${sign}${Math.abs(Math.round(diff))} ${unit}</span>`;
 }
 
-/* ── Render a winner hero card ── */
-function winnerCardHtml(winner, label) {
-  const priceUnit = CC.priceUnit.split(' ')[1];
-  const fallback  = winner.usedFallback
-    ? `<span class="fallback-badge">constraint not met</span>` : '';
-  return `
-  <div class="winner-card">
-    <div class="winner-label-wrap">
-      <span class="winner-badge">${label}</span>
-      <div class="winner-name">${winner.recipeName}${fallback}</div>
-      <div class="winner-trim">${winner.trimName.replace(' Beef Trim', '')}</div>
-    </div>
-    <div class="winner-stats">
-      <div class="wstat">
-        <div class="wstat-val">${CC.currency}${winner.cost.toFixed(2)}</div>
-        <div class="wstat-label">${CC.priceUnit}</div>
-      </div>
-      <div class="wstat">
-        <div class="wstat-val">${winner.fiber.toFixed(1)}g</div>
-        <div class="wstat-label">${CC.fiberSpelling} / 100g</div>
-      </div>
-      <div class="wstat">
-        <div class="wstat-val">${winner.protein.toFixed(1)}g</div>
-        <div class="wstat-label">Protein / 100g</div>
-      </div>
-      <div class="wstat">
-        <div class="wstat-val">${winner.cals.toFixed(0)}</div>
-        <div class="wstat-label">Calories</div>
-      </div>
-      <div class="wstat">
-        <div class="wstat-val">${winner.satFat.toFixed(1)}g</div>
-        <div class="wstat-label">Sat Fat</div>
-      </div>
-    </div>
-  </div>`;
+/* ── Generic ranked table — winner is first row, max 4 rows total ── */
+function renderRankedTable(ranked, recBadgeLabel, colDefs) {
+  // Always cap at 4 total rows (winner + 3 alternatives)
+  const rows = ranked.slice(0, 4);
+  if (rows.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
+  const winner = rows[0];
+
+  let html = `<div class="tbl-wrap"><table><thead><tr>`;
+  colDefs.forEach(col => { html += `<th>${col.header}</th>`; });
+  html += `</tr></thead><tbody>`;
+
+  rows.forEach((c, idx) => {
+    const isWinner = idx === 0;
+    html += `<tr${isWinner ? ' class="winner-row"' : ''}>`;
+    colDefs.forEach(col => {
+      html += `<td>${col.cell(c, winner, isWinner)}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+/* ── Recipe name cell for winner vs alternative ── */
+function recipeCell(c, winner, isWinner, badgeLabel) {
+  const fb = c.usedFallback ? `<span class="fallback-badge">constraint not met</span>` : '';
+  if (isWinner) {
+    return `<div class="winner-recipe-name">${c.recipeName}${fb}
+              <span class="rec-badge">${badgeLabel}</span></div>
+            <div class="winner-trim-name">${c.trimName.replace(' Beef Trim', '')}</div>`;
+  }
+  return `${c.recipeName}${fb}`;
 }
 
 /* ── Render balance section ── */
 function renderBalanceSection(format, userFat) {
   const ranked = scoringEngine(format, 'balance', userFat);
   if (ranked.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
-
   const winner = ranked[0];
-  const rest   = ranked.slice(1);
   const priceUnit = CC.priceUnit.split(' ')[1];
 
-  let html = winnerCardHtml(winner, 'Recommended — Balanced');
+  const cols = [
+    { header: 'Recipe',
+      cell: (c, w, iw) => recipeCell(c, w, iw, '★ Recommended') },
+    { header: 'Beef Trim',
+      cell: (c, w, iw) => iw ? '' : c.trimName.replace(' Beef Trim', '') },
+    { header: `${CC.currency}/${priceUnit}`,
+      cell: (c, w, iw) => iw
+        ? `${CC.currency}${c.cost.toFixed(2)}`
+        : `${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - w.cost, CC.currency, true)}` },
+    { header: `${CC.fiberSpelling} (g/100g)`,
+      cell: (c, w, iw) => iw
+        ? c.fiber.toFixed(1)
+        : `${c.fiber.toFixed(1)} ${deltaBadge(c.fiber - w.fiber, '', false)}` },
+    { header: 'Protein (g/100g)',
+      cell: (c, w, iw) => iw
+        ? c.protein.toFixed(1)
+        : `${c.protein.toFixed(1)} ${deltaBadge(c.protein - w.protein, '', false)}` },
+    { header: 'Calories',
+      cell: (c, w, iw) => iw
+        ? c.cals.toFixed(0)
+        : `${c.cals.toFixed(0)} ${deltaBadgeInt(c.cals - w.cals, 'kcal', true)}` },
+    { header: 'Sat Fat (g)',
+      cell: (c, w, iw) => iw
+        ? c.satFat.toFixed(1)
+        : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
+  ];
 
-  if (rest.length === 0) return html;
-
-  html += `<div class="tbl-wrap">
-  <table>
-    <thead><tr>
-      <th>Alternative</th>
-      <th>Beef Trim</th>
-      <th>${CC.currency}/${priceUnit}</th>
-      <th>${CC.fiberSpelling} (g/100g)</th>
-      <th>Protein (g/100g)</th>
-      <th>Calories</th>
-      <th>Sat Fat (g)</th>
-    </tr></thead>
-    <tbody>`;
-
-  rest.forEach(c => {
-    html += `<tr>
-      <td>${c.recipeName}</td>
-      <td>${c.trimName.replace(' Beef Trim', '')}</td>
-      <td>${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - winner.cost, CC.currency, true)}</td>
-      <td>${c.fiber.toFixed(1)} ${deltaBadge(c.fiber - winner.fiber, '', false)}</td>
-      <td>${c.protein.toFixed(1)} ${deltaBadge(c.protein - winner.protein, '', false)}</td>
-      <td>${c.cals.toFixed(0)} ${deltaBadgeInt(c.cals - winner.cals, 'kcal', true)}</td>
-      <td>${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - winner.satFat, '', true)}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table></div>`;
-  return html;
+  return renderRankedTable(ranked, '★ Recommended', cols);
 }
 
 /* ── Render cost section ── */
 function renderCostSection(format, userFat) {
-  // Sort all candidates purely by cost ascending
-  const allCandidates = scoringEngine(format, 'cost', userFat);
-  if (allCandidates.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
-
-  // Re-sort by cost directly (scoringEngine with cost priority should already do this, but be explicit)
-  const ranked = [...allCandidates].sort((a, b) => a.cost - b.cost);
+  const all = scoringEngine(format, 'cost', userFat);
+  if (all.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
+  const ranked = [...all].sort((a, b) => a.cost - b.cost);
   const priceUnit = CC.priceUnit.split(' ')[1];
 
-  let html = winnerCardHtml(ranked[0], 'Lowest Cost');
+  const cols = [
+    { header: 'Recipe',
+      cell: (c, w, iw) => recipeCell(c, w, iw, '$ Lowest Cost') },
+    { header: 'Beef Trim',
+      cell: (c, w, iw) => iw ? '' : c.trimName.replace(' Beef Trim', '') },
+    { header: `${CC.currency}/${priceUnit}`,
+      cell: (c, w, iw) => {
+        if (iw) return `${CC.currency}${c.cost.toFixed(2)}`;
+        const diff = c.cost - w.cost;
+        return `${CC.currency}${c.cost.toFixed(2)} <span class="delta delta-worse">+${CC.currency}${diff.toFixed(2)}</span>`;
+      }},
+    { header: `${CC.fiberSpelling} (g/100g)`,
+      cell: (c) => c.fiber.toFixed(1) },
+    { header: 'Protein (g/100g)',
+      cell: (c) => c.protein.toFixed(1) },
+    { header: 'Calories',
+      cell: (c) => c.cals.toFixed(0) },
+    { header: 'Sat Fat (g)',
+      cell: (c) => c.satFat.toFixed(1) },
+  ];
 
-  if (ranked.length <= 1) return html;
+  return renderRankedTable(ranked, '$ Lowest Cost', cols);
+}
 
-  const rest = ranked.slice(1);
+/* ── Render nutrition section ── */
+function renderNutritionSection(format, userFat) {
+  const all = scoringEngine(format, 'nutrition', userFat);
+  if (all.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
+  // Already sorted by finalScore (nutrition-weighted) — just use that order
+  const ranked = all;
+  const winner = ranked[0];
+  const priceUnit = CC.priceUnit.split(' ')[1];
 
-  html += `<div class="tbl-wrap">
-  <table>
-    <thead><tr>
-      <th>#</th>
-      <th>Recipe</th>
-      <th>Beef Trim</th>
-      <th>${CC.currency}/${priceUnit}</th>
-      <th>${CC.fiberSpelling} (g/100g)</th>
-      <th>Protein (g/100g)</th>
-      <th>Calories</th>
-      <th>Sat Fat (g)</th>
-    </tr></thead>
-    <tbody>`;
+  const cols = [
+    { header: 'Recipe',
+      cell: (c, w, iw) => recipeCell(c, w, iw, '✦ Best Nutrition') },
+    { header: 'Beef Trim',
+      cell: (c, w, iw) => iw ? '' : c.trimName.replace(' Beef Trim', '') },
+    { header: `${CC.fiberSpelling} (g/100g)`,
+      cell: (c, w, iw) => iw
+        ? c.fiber.toFixed(1)
+        : `${c.fiber.toFixed(1)} ${deltaBadge(c.fiber - w.fiber, '', false)}` },
+    { header: 'Protein (g/100g)',
+      cell: (c, w, iw) => iw
+        ? c.protein.toFixed(1)
+        : `${c.protein.toFixed(1)} ${deltaBadge(c.protein - w.protein, '', false)}` },
+    { header: 'Calories',
+      cell: (c, w, iw) => iw
+        ? c.cals.toFixed(0)
+        : `${c.cals.toFixed(0)} ${deltaBadgeInt(c.cals - w.cals, 'kcal', true)}` },
+    { header: 'Sat Fat (g)',
+      cell: (c, w, iw) => iw
+        ? c.satFat.toFixed(1)
+        : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
+    { header: `${CC.currency}/${priceUnit}`,
+      cell: (c, w, iw) => iw
+        ? `${CC.currency}${c.cost.toFixed(2)}`
+        : `${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - w.cost, CC.currency, true)}` },
+  ];
 
-  rest.forEach((c, i) => {
-    const costDiff = c.cost - ranked[0].cost;
-    html += `<tr>
-      <td><span class="rank-num rank-${i + 2}">${i + 2}</span></td>
-      <td>${c.recipeName}</td>
-      <td>${c.trimName.replace(' Beef Trim', '')}</td>
-      <td>${CC.currency}${c.cost.toFixed(2)} <span class="delta delta-worse">+${CC.currency}${costDiff.toFixed(2)}</span></td>
-      <td>${c.fiber.toFixed(1)}</td>
-      <td>${c.protein.toFixed(1)}</td>
-      <td>${c.cals.toFixed(0)}</td>
-      <td>${c.satFat.toFixed(1)}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table></div>`;
-  return html;
+  return renderRankedTable(ranked, '✦ Best Nutrition', cols);
 }
 
 /* ── Main render ── */
 function renderOutput() {
   const userFat = parseFloat(document.getElementById('q1-select').value);
   const format  = activeFormat;
-  const priceUnit = CC.priceUnit.split(' ')[1];
 
   let html = '';
 
@@ -592,8 +599,15 @@ function renderOutput() {
   // Section 2: Cost
   html += `<div class="section-block">
     <div class="section-heading">Cost ranking</div>
-    <p class="section-subhead">All recipes ranked from lowest to highest cost, with nutrition stats for comparison.</p>
+    <p class="section-subhead">Recipes ranked from lowest to highest cost, with nutrition stats for comparison.</p>
     ${renderCostSection(format, userFat)}
+  </div>`;
+
+  // Section 3: Nutrition
+  html += `<div class="section-block">
+    <div class="section-heading">Nutrition ranking</div>
+    <p class="section-subhead">Recipes ranked by best nutritional profile — highest ${CC.fiberSpelling.toLowerCase()}, protein, lower calories and saturated fat.</p>
+    ${renderNutritionSection(format, userFat)}
   </div>`;
 
   document.getElementById('output').innerHTML = html;
