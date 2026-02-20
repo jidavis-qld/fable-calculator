@@ -20,21 +20,15 @@ ALTER TABLE beef_prices ADD COLUMN country TEXT NOT NULL DEFAULT 'US';
 ALTER TABLE beef_prices RENAME COLUMN price_per_lb TO price;
 ALTER TABLE beef_prices ADD COLUMN price_unit TEXT NOT NULL DEFAULT 'per_lb';
 
--- ── 4. Recreate recipe_ranks_view as generic ──────────────────
--- Drop the old US-specific view first
-DROP VIEW IF EXISTS us_recipe_ranks_view;
-
--- Generic view — filtered by country in the app via query param
+-- ── 4. Create generic recipe_ranks_view (keep us_recipe_ranks_view intact) ──
+-- The old us_recipe_ranks_view computes scores internally — we UNION it for
+-- both US and UK since recipes share the same ratios and rankings.
 CREATE OR REPLACE VIEW recipe_ranks_view AS
-SELECT
-  r.id,
-  r.format,
-  r.recipe,
-  r.country,
-  RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.nutrition_score DESC NULLS LAST) AS nutrition_rank,
-  RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.cost_score ASC  NULLS LAST) AS cost_rank,
-  RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.sustainability_score ASC NULLS LAST) AS sustainability_rank
-FROM recipes r;
+  SELECT id, format, recipe, 'US' AS country, nutrition_rank, cost_rank, sustainability_rank, high_fiber
+  FROM us_recipe_ranks_view
+  UNION ALL
+  SELECT id, format, recipe, 'UK' AS country, nutrition_rank, cost_rank, sustainability_rank, high_fiber
+  FROM us_recipe_ranks_view;
 
 -- ── 5. Insert UK beef prices (£/kg) ──────────────────────────
 INSERT INTO beef_prices (trim, fat_pct, price, price_unit, country) VALUES
