@@ -628,7 +628,7 @@
 
   .key-stat-label {
     font-size: 14px;
-    color: rgba(207,255,142,0.4);
+    color: rgba(250,250,250,0.65);
   }
 
   .key-stat-badge {
@@ -672,8 +672,8 @@
 
   .action-btn.ghost {
     background: rgba(207,255,142,0.06);
-    color: rgba(207,255,142,0.6);
-    border: 1px solid rgba(207,255,142,0.15);
+    color: rgba(250,250,250,0.8);
+    border: 1px solid rgba(207,255,142,0.25);
   }
 
   .action-btn.ghost:hover { background: rgba(207,255,142,0.12); color: var(--sage); }
@@ -691,7 +691,7 @@
   }
   .explore-cta-text {
     font-size: 16px;
-    color: #cfff8e;
+    color: var(--forest);
     font-family: 'Zapf Humanist', Georgia, serif;
   }
   .explore-cta-btn {
@@ -748,7 +748,7 @@
   .section-num {
     font-family: 'Zapf Humanist', Georgia, serif;
     font-size: 14px;
-    color: var(--sage);
+    color: #fafafa;
     opacity: 0.7;
   }
 
@@ -859,7 +859,7 @@
   .price-block.highlight { background: var(--forest); }
   .price-block.highlight .pb-label { color: var(--sage); }
   .price-block.highlight .pb-val { color: var(--white); }
-  .price-block.highlight .pb-unit { color: rgba(207,255,142,0.5); }
+  .price-block.highlight .pb-unit { color: rgba(250,250,250,0.65); }
 
   /* ── Nutrition table ─────────────────────── */
   .nutrition-table {
@@ -1243,7 +1243,7 @@
     font-weight: 700;
   }
 
-  .carbon-text .ct-desc { font-size: 16px; color: rgba(207,255,142,0.5); margin-top: 2px; }
+  .carbon-text .ct-desc { font-size: 16px; color: rgba(250,250,250,0.75); margin-top: 2px; }
 
   /* ── Footer ─────────────────────────── */
   .results-footer {
@@ -2483,7 +2483,7 @@ function fmtNutrient(key, val) {
 
 function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback = false) {
   // Nutrient list differs by country
-  const isUK = CC.code === 'UK';
+  const isUK = CC.code === 'UK' || CC.code === 'EU';
   const nutrients = isUK ? [
     { key: 'Energy (kJ)',       label: 'Energy (kJ)',       bold: true },
     { key: 'Energy (Calories)', label: 'Energy (Calories)', bold: true },
