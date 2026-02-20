@@ -1877,7 +1877,7 @@ function scoringEngine() {
     const penalised    = raw * (1 - trimPenalty * stepsLeaner);
     // Balance recipe bonus: gaussian centred on 40% fable (rewards 60/40 recipe)
     const bonus = (priority === 'balance')
-      ? brb * Math.exp(-Math.pow(c.fablePct - 0.40, 2) / (2 * 0.10 * 0.10))
+      ? brb * Math.exp(-Math.pow((c.fablePct + c.waterPct) - 0.40, 2) / (2 * 0.10 * 0.10))
       : 0;
     return penalised + bonus;
   });
