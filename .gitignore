@@ -6,3 +6,6 @@ index.backup.html
 
 # Claude Code session data
 .claude/
+
+# Supabase CLI temp files
+supabase/.temp/
