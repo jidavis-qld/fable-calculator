@@ -33,8 +33,7 @@ SELECT
   r.country,
   RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.nutrition_score DESC NULLS LAST) AS nutrition_rank,
   RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.cost_score ASC  NULLS LAST) AS cost_rank,
-  RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.sustainability_score ASC NULLS LAST) AS sustainability_rank,
-  r.high_fiber
+  RANK() OVER (PARTITION BY r.format, r.country ORDER BY r.sustainability_score ASC NULLS LAST) AS sustainability_rank
 FROM recipes r;
 
 -- ── 5. Insert UK beef prices (£/kg) ──────────────────────────
