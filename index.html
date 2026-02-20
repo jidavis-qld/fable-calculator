@@ -673,6 +673,45 @@
 
   .action-btn.ghost:hover { background: rgba(207,255,142,0.12); color: var(--sage); }
 
+  /* ── Explore CTA ────────────────────────────── */
+  .explore-cta {
+    max-width: 860px;
+    margin: 0 auto 0;
+    padding: 32px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-top: 1px solid rgba(207,255,142,0.12);
+  }
+  .explore-cta-text {
+    font-size: 16px;
+    color: rgba(207,255,142,0.75);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .explore-cta-btn {
+    display: inline-block;
+    padding: 10px 24px;
+    background: transparent;
+    border: 1px solid rgba(207,255,142,0.35);
+    border-radius: 100px;
+    color: rgba(207,255,142,0.85);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .explore-cta-btn:hover {
+    background: rgba(207,255,142,0.1);
+    border-color: rgba(207,255,142,0.6);
+    color: #cfff8e;
+  }
+  @media (max-width: 600px) {
+    .explore-cta { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .explore-cta-btn { width: 100%; text-align: center; }
+  }
+
   /* ── Sections ─────────────────────────────── */
   .results-sections {
     max-width: 860px;
@@ -1402,6 +1441,11 @@
       </div>
     </div>
 
+  </div>
+
+  <div class="explore-cta">
+    <p class="explore-cta-text">Want to explore every recipe option?</p>
+    <a href="validator.html" class="explore-cta-btn">Browse all recipes →</a>
   </div>
 
   <div class="results-footer">
