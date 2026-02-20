@@ -1,2 +1,8 @@
 .DS_Store
 *.log
+
+# Dev artifacts
+index.backup.html
+
+# Claude Code session data
+.claude/

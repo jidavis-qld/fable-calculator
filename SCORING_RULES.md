@@ -32,12 +32,12 @@ Every trim from floor to ceiling (inclusive) is a candidate for that recipe.
 
 If enabled, candidates that fail these are dropped before scoring:
 
-| Constraint | Threshold |
-|---|---|
-| Must have fiber | Blended dietary fiber ≥ 5g per 100g |
-| Must have protein | Blended protein ≥ 10g per 100g |
+| Constraint | US threshold | UK / EU threshold |
+|---|---|---|
+| Must be High in Fiber | ≥5g fiber per 100g | ≥6g fibre per 100g |
+| Must be High in Protein | ≥10g protein per 100g | ≥20% of energy from protein |
 
-If applying constraints produces an empty pool, the engine falls back to the unconstrained pool.
+Thresholds follow the regulatory definition for the active country (`COUNTRY_CONFIG` in `js/country.js`). If applying constraints produces an empty pool, the engine falls back to the unconstrained pool.
 
 ---
 
@@ -175,11 +175,13 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 
 ---
 
-## 7. Beef Prices ($/lb)
+## 7. Beef Prices
 
-Prices stored in the Supabase `beef_prices` table, editable there.
+Prices stored in the Supabase `beef_prices` table (editable there). Each row has a `country` column (`US`, `UK`, `EU`) and a `price_unit` column (`per_lb` or `per_kg`).
 
-| Grade | Fat % | Price ($/lb) |
+### United States ($/lb)
+
+| Grade | Fat % | Price |
 |---|---|---|
 | 60CL | 40% | $1.60 |
 | 65CL | 35% | $1.91 |
@@ -189,4 +191,32 @@ Prices stored in the Supabase `beef_prices` table, editable there.
 | 85CL | 15% | $3.57 |
 | 90CL | 10% | $3.95 |
 
-Fable Shiitake Infusion price: **$4.98/lb** (hardcoded in app).
+Fable Shiitake Infusion: **$4.98/lb**
+
+### United Kingdom (£/kg)
+
+| Grade | Fat % | Price |
+|---|---|---|
+| 60CL | 40% | £4.00 |
+| 65CL | 35% | £4.50 |
+| 70CL | 30% | £5.00 |
+| 75CL | 25% | £5.50 |
+| 80CL | 20% | £6.00 |
+| 85CL | 15% | £6.50 |
+| 90CL | 10% | £7.50 |
+
+Fable Shiitake Infusion: **£6.00/kg**
+
+### Europe (€/kg)
+
+| Grade | Fat % | Price |
+|---|---|---|
+| 60CL | 40% | €4.60 |
+| 65CL | 35% | €5.20 |
+| 70CL | 30% | €6.00 |
+| 75CL | 25% | €6.50 |
+| 80CL | 20% | €7.00 |
+| 85CL | 15% | €7.50 |
+| 90CL | 10% | €8.60 |
+
+Fable Shiitake Infusion: **€6.90/kg**
