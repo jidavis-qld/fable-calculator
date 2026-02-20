@@ -1722,28 +1722,32 @@ const CL_ORDER_LEAN = [
 /* ══════════════════════════════════════════════════════════════
    SCORING ENGINE
    Finds the best recipe × trim combination for the user's priorities.
+   Full rules documented in SCORING_RULES.md.
 
-   Nutrition composite weights (all normalised 0–1 before applying):
+   Nutrition composite weights (all normalised 0–1, then sqrt for diminishing returns):
      Dietary Fiber  : 0.35  (higher = better — key Fable differentiator)
-     Protein        : 0.30  (higher = better)
+     Protein        : 0.35  (higher = better — favours beef)
      Calories       : 0.20  (lower = better)
-     Saturated Fat  : 0.15  (lower = better)
+     Saturated Fat  : 0.10  (lower = better)
 
    Priority weight sets (wN=nutrition, wC=cost, wS=sustainability):
-     cost           : wN=0.15, wC=1.00, wS=0.10
+     cost           : wN=0.00, wC=1.00, wS=0.00  (pure cost, no other influence)
      nutrition      : wN=1.00, wC=0.15, wS=0.10
      balance        : wN=0.50, wC=0.50, wS=0.00  (sustainability excluded)
      sustainability : wN=0.15, wC=0.10, wS=1.00
+   All weights are live-editable in Supabase scoring_config table.
 
    Trim eligibility per recipe (two bounds):
-     Ceiling (leanest allowed) : user's Q1 trim — e.g. if they use 80CL,
-       the engine cannot recommend 85CL or 90CL beef.
-     Floor (fattiest allowed)  : the trim whose blended fat is closest to
-       the user's Q1 fat % for that specific recipe (trim selector result).
+     Ceiling (leanest allowed) : user's Q1 trim selection.
+     Floor (fattiest allowed)  : first trim (scanning fatty→lean) whose blended
+       fat is at or below the user's target fat for that recipe.
      Only trims between floor and ceiling (inclusive) are candidates.
 
-   Hard constraints (applied after scoring — a candidate is dropped
-   if it cannot satisfy them):
+   Balance-only mechanics (no effect on other priorities):
+     trim_penalty          : score × (1 − 0.05 × CL_steps_below_user_trim)
+     balance_recipe_bonus  : gaussian bonus centred on 40% fable (60/40 recipe)
+
+   Hard constraints (optional, user-toggleable):
      mustFiber   : blended dietary fiber >= 5g per 100g
      mustProtein : blended protein >= 10g per 100g
 ══════════════════════════════════════════════════════════════ */
