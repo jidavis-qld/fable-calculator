@@ -1573,12 +1573,11 @@ const COUNTRY_CONFIG = {
     code:        'US',
     currency:    '$',
     priceUnit:   'per lb',
-    costHeader:  'Cost/lb',
     fablePrice:  4.98,
     waterPrice:  0.001,
     // Claim thresholds
     highFiber:        5,    // g per 100g
-    sourceFiber:      2.5,  // g per 100g (not used in US claims but defined for consistency)
+    sourceFiber:      2.5,
     highProtein:      { mode: 'grams', g: 10 },
     sourceProtein:    { mode: 'grams', g: 5  },
     fiberSpelling:        'Fiber',
@@ -1589,7 +1588,6 @@ const COUNTRY_CONFIG = {
     code:        'UK',
     currency:    '£',
     priceUnit:   'per kg',
-    costHeader:  'Cost/kg',
     fablePrice:  6.00,
     waterPrice:  0.001,
     // Claim thresholds — UK Food Standards Agency definitions
@@ -1609,7 +1607,6 @@ let CC = COUNTRY_CONFIG['United States'];
 /* ── DATA TABLES (loaded from Supabase) ───────────── */
 let BEEF_PRICES  = {};   // { '80CL Beef Trim': { fat, price }, ... }
 let RECIPES      = {};   // { 'Burger / Meatball': { '50/50, no water': [beef, fable, water] } }
-let RECIPE_RANKS = {};   // { 'Burger / Meatball': { '50/50, no water': { 'Better nutrition': 1, ... } } }
 let HEALTH_REF   = { shiitake: {}, beef: {} };
 let FABLE_PRICE  = CC.fablePrice;
 let WATER_PRICE  = CC.waterPrice;
@@ -1621,17 +1618,16 @@ async function loadData() {
   const countryCode = CC.code;
   const countryFilter = `country=eq.${countryCode}`;
 
-  const [nutrition, beefPrices, recipes, ranks, co2, scoringCfg] = await Promise.all([
-    sbFetch('nutrition',          countryFilter),
-    sbFetch('beef_prices',        countryFilter),
-    sbFetch('recipes',            countryFilter),
-    sbFetch('recipe_ranks_view',  countryFilter),
+  const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
+    sbFetch('nutrition',   countryFilter),
+    sbFetch('beef_prices', countryFilter),
+    sbFetch('recipes',     countryFilter),
     sbFetch('co2_kg_e'),
     sbFetch('scoring_config'),
   ]);
 
   // Reset data stores for fresh load
-  BEEF_PRICES = {}; RECIPES = {}; RECIPE_RANKS = {}; HEALTH_REF = { shiitake: {}, beef: {} };
+  BEEF_PRICES = {}; RECIPES = {}; HEALTH_REF = { shiitake: {}, beef: {} };
   FABLE_PRICE = CC.fablePrice; WATER_PRICE = CC.waterPrice;
 
   // Build BEEF_PRICES
@@ -1647,16 +1643,6 @@ async function loadData() {
       parseFloat(r.fable_pct),
       parseFloat(r.water_pct)
     ];
-  });
-
-  // Build RECIPE_RANKS
-  ranks.forEach(r => {
-    if (!RECIPE_RANKS[r.format]) RECIPE_RANKS[r.format] = {};
-    RECIPE_RANKS[r.format][r.recipe] = {
-      'Better nutrition':            r.nutrition_rank,
-      'Lower cost':                  r.cost_rank,
-      'Sustainability / low carbon': r.sustainability_rank,
-    };
   });
 
   // Build HEALTH_REF from nutrition table
@@ -2023,7 +2009,7 @@ async function calculate() {
   // Cost section
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
   document.getElementById('stat-price-label').textContent = CC.priceUnit;
-  document.getElementById('cost-table-unit-header').textContent = CC.costHeader;
+  document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
   document.getElementById('price-beef-unit').textContent = CC.priceUnit;
   renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice);

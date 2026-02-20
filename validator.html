@@ -153,14 +153,14 @@ const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
 const COUNTRY_CONFIG = {
   US: {
-    currency: '$', priceUnit: 'per lb', costHeader: '$/lb',
+    currency: '$', priceUnit: 'per lb',
     fablePrice: 4.98, waterPrice: 0.001,
     highFiber: 5, sourceFiber: 2.5,
     highProtein: { mode: 'grams', g: 10 }, sourceProtein: { mode: 'grams', g: 5 },
     fiberSpelling: 'Fiber',
   },
   UK: {
-    currency: '£', priceUnit: 'per kg', costHeader: '£/kg',
+    currency: '£', priceUnit: 'per kg',
     fablePrice: 6.00, waterPrice: 0.001,
     highFiber: 6, sourceFiber: 3,
     highProtein: { mode: 'energyPct', pct: 20 }, sourceProtein: { mode: 'energyPct', pct: 10 },
@@ -465,7 +465,7 @@ async function runValidator() {
         <th>Protein</th>
         <th>Calories</th>
         <th>Sat Fat</th>
-        <th>${CC.costHeader}</th>
+        <th>${CC.currency}/${CC.priceUnit.split(' ')[1]}</th>
         <th>Runner-up</th>
       </tr></thead><tbody>`;
 
