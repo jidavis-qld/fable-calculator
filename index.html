@@ -1579,7 +1579,7 @@ const COUNTRY_CONFIG = {
     currency:    '£',
     priceUnit:   'per kg',
     costHeader:  'Cost/kg',
-    fablePrice:  10.98,  // £/kg — update to actual price
+    fablePrice:  6.00,
     waterPrice:  0.001,
   },
 };
@@ -2124,6 +2124,13 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   });
 }
 
+function fmtNutrient(key, val) {
+  if (val === 0) return '0';
+  if (key === 'Energy (Calories)' || key === 'Energy (kJ)') return Math.round(val).toString();
+  if (val < 1) return val.toFixed(2);
+  return val.toFixed(1);
+}
+
 function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) {
   // Nutrient list differs by country
   const isUK = CC.code === 'UK';
@@ -2234,8 +2241,8 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
     tr.className = bold ? 'bold-row' : (sub ? 'sub-row' : '');
     tr.innerHTML = `
       <td>${label}</td>
-      <td>${blendVal.toFixed(blendVal < 1 ? 2 : 1)}</td>
-      <td>${beefVal}</td>
+      <td>${fmtNutrient(key, blendVal)}</td>
+      <td>${fmtNutrient(key, beefVal)}</td>
       <td>${diffHtml}</td>
     `;
     tbody.appendChild(tr);
