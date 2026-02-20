@@ -51,7 +51,7 @@
   .summary-card .label { font-size: 11px; color: rgba(207,255,142,0.5); margin-bottom: 4px; }
   .summary-card .value { font-size: 20px; font-weight: 700; color: #cfff8e; }
 
-  .q1-selector { margin-bottom: 28px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .q1-selector { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .q1-selector label { font-size: 13px; color: rgba(207,255,142,0.7); }
   .q1-selector select { background: rgba(207,255,142,0.1); color: #cfff8e;
                          border: 1px solid rgba(207,255,142,0.25); border-radius: 6px;
@@ -60,6 +60,24 @@
   .run-btn { background: #cfff8e; color: #1a2e1a; border: none; border-radius: 6px;
              padding: 7px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .run-btn:hover { background: #b8e87a; }
+
+  .constraints { margin-bottom: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer;
+                background: rgba(207,255,142,0.06); border: 1px solid rgba(207,255,142,0.15);
+                border-radius: 8px; padding: 8px 14px; user-select: none;
+                transition: background 0.15s; }
+  .check-item:hover { background: rgba(207,255,142,0.1); }
+  .check-item.checked { background: rgba(207,255,142,0.18); border-color: rgba(207,255,142,0.4); }
+  .check-box { width: 14px; height: 14px; border: 2px solid rgba(207,255,142,0.4);
+               border-radius: 3px; flex-shrink: 0; position: relative; }
+  .check-item.checked .check-box { background: #cfff8e; border-color: #cfff8e; }
+  .check-item.checked .check-box::after { content: '✓'; position: absolute;
+    top: -2px; left: 1px; font-size: 11px; color: #1a2e1a; font-weight: 900; }
+  .check-text { font-size: 12px; color: #cfff8e; font-weight: 600; }
+  .check-sub  { font-size: 10px; color: rgba(207,255,142,0.45); margin-top: 1px; }
+  .fallback-badge { display: inline-block; background: rgba(255,180,50,0.2); color: #ffb432;
+                    font-size: 10px; font-weight: 700; padding: 1px 7px;
+                    border-radius: 100px; margin-left: 6px; }
 
   .loading { color: rgba(207,255,142,0.4); font-size: 14px; padding: 40px 0; text-align: center; }
   .detail-col { font-size: 11px; color: rgba(207,255,142,0.55); line-height: 1.6; }
@@ -76,12 +94,10 @@
   .price-input-group input:focus { outline:none; border-color:rgba(207,255,142,0.5); }
   .priority-chip { display:inline-block; padding:3px 10px; border-radius:100px;
     font-size:11px; font-weight:700; margin-right:4px; }
-  .pc-cost    { background:rgba(255,200,50,0.2);  color:#ffc832; }
+  .pc-cost       { background:rgba(255,200,50,0.2);  color:#ffc832; }
   .pc-nutrition  { background:rgba(100,220,100,0.2); color:#64dc64; }
-  .pc-balance { background:rgba(150,150,255,0.2); color:#9696ff; }
-  .pc-sustain { background:rgba(100,200,150,0.2); color:#64c896; }
-  .pc-fiber   { background:rgba(255,160,80,0.2);  color:#ffa050; }
-  .pc-protein { background:rgba(100,180,255,0.2); color:#64b4ff; }
+  .pc-balance    { background:rgba(150,150,255,0.2); color:#9696ff; }
+  .pc-sustain    { background:rgba(100,200,150,0.2); color:#64c896; }
 </style>
 </head>
 <body>
@@ -98,6 +114,23 @@
     <option value="0.25">75CL — 25% fat</option>
   </select>
   <button class="run-btn" onclick="runValidator()">Run Validator</button>
+</div>
+
+<div class="constraints">
+  <div class="check-item" id="check-fiber" onclick="toggleConstraint('fiber')">
+    <div class="check-box"></div>
+    <div>
+      <div class="check-text">Must be High in Fiber</div>
+      <div class="check-sub">≥5g fiber per 100g</div>
+    </div>
+  </div>
+  <div class="check-item" id="check-protein" onclick="toggleConstraint('protein')">
+    <div class="check-box"></div>
+    <div>
+      <div class="check-text">Must be High in Protein</div>
+      <div class="check-sub">≥10g protein per 100g</div>
+    </div>
+  </div>
 </div>
 
 <div id="price-controls" style="margin-bottom:28px; display:none;">
@@ -128,6 +161,20 @@ let BEEF_PRICES = {}, RECIPES = {}, HEALTH_REF = { shiitake: {}, beef: {} };
 let SHIITAKE_CO2 = 0, BEEF_CO2 = 0;
 let SCORING_CONFIG = {};
 let dataLoaded = false;
+
+/* ── Constraint state ── */
+let mustFiber   = false;
+let mustProtein = false;
+
+function toggleConstraint(which) {
+  if (which === 'fiber') {
+    mustFiber = !mustFiber;
+    document.getElementById('check-fiber').classList.toggle('checked', mustFiber);
+  } else {
+    mustProtein = !mustProtein;
+    document.getElementById('check-protein').classList.toggle('checked', mustProtein);
+  }
+}
 
 const CL_ORDER_LEAN = [
   '60CL Beef Trim','65CL Beef Trim','70CL Beef Trim',
@@ -185,12 +232,10 @@ function getWeightSets() {
 }
 
 const PRIORITY_LABELS = {
-  cost:           { label: 'Lower Cost',        cls: 'pc-cost'      },
-  nutrition:      { label: 'Better Nutrition',  cls: 'pc-nutrition' },
-  balance:        { label: 'Balance',           cls: 'pc-balance'   },
-  sustainability: { label: 'Sustainability',    cls: 'pc-sustain'   },
-  highFiber:      { label: 'High Fiber',        cls: 'pc-fiber'     },
-  highProtein:    { label: 'High Protein',      cls: 'pc-protein'   },
+  cost:           { label: 'Lower Cost',       cls: 'pc-cost'      },
+  nutrition:      { label: 'Better Nutrition', cls: 'pc-nutrition' },
+  balance:        { label: 'Balance',          cls: 'pc-balance'   },
+  sustainability: { label: 'Sustainability',   cls: 'pc-sustain'   },
 };
 
 /* ── Scoring engine (mirrors index.html exactly) ── */
@@ -222,29 +267,41 @@ function scoringEngine(format, priority, userFat) {
     return CL_ORDER_LEAN.length - 1;
   }
 
-  const out = [];
-  for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
-    if (format === 'Burger / Meatball' && waterPct > 0) continue;
-    const floorIdx = naturalTrimIdx(beefPct, fablePct);
-    const lo = Math.min(floorIdx, ceilIdx);
-    const hi = Math.max(floorIdx, ceilIdx);
-    for (let i = lo; i <= hi; i++) {
-      const trimName = CL_ORDER_LEAN[i];
-      const trimData = BEEF_PRICES[trimName];
-      if (!trimData) continue;
-      const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-      const fiber   = shiitakeFiber * fablePct;
-      const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
-      const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
-      const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
-      const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-      const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
-      out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                 fiber, protein, cals, satFat, cost, co2, blendedFat });
+  function buildCandidates(applyConstraints) {
+    const out = [];
+    for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+      if (format === 'Burger / Meatball' && waterPct > 0) continue;
+      const floorIdx = naturalTrimIdx(beefPct, fablePct);
+      const lo = Math.min(floorIdx, ceilIdx);
+      const hi = Math.max(floorIdx, ceilIdx);
+      for (let i = lo; i <= hi; i++) {
+        const trimName = CL_ORDER_LEAN[i];
+        const trimData = BEEF_PRICES[trimName];
+        if (!trimData) continue;
+        const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
+        const fiber   = shiitakeFiber * fablePct;
+        const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
+        const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
+        const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
+        const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+        const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+        if (applyConstraints) {
+          if (mustFiber   && fiber   < 5)  continue;
+          if (mustProtein && protein < 10) continue;
+        }
+        out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
+                   fiber, protein, cals, satFat, cost, co2, blendedFat });
+      }
     }
+    return out;
   }
 
-  if (out.length === 0) return [];
+  // Try constrained pool first; fall back to unconstrained if nothing passes
+  const constrained = buildCandidates(true);
+  const usedFallback = constrained.length === 0 && (mustFiber || mustProtein);
+  const pool = constrained.length > 0 ? constrained : buildCandidates(false);
+
+  if (pool.length === 0) return [];
 
   function normalise(values, lowerBetter) {
     const min = Math.min(...values), max = Math.max(...values);
@@ -263,7 +320,6 @@ function scoringEngine(format, priority, userFat) {
   const costPad = cfg.cost_pad ?? 1.5;
   const co2Pad  = cfg.co2_pad  ?? 1.0;
 
-  const pool = out;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
@@ -306,6 +362,7 @@ function scoringEngine(format, priority, userFat) {
       costScore: nCost[i],
       sustainScore: nCO2[i],
       finalScore: finalScores[i],
+      usedFallback,
     }))
     .sort((a, b) => b.finalScore - a.finalScore);
 }
@@ -386,11 +443,14 @@ async function runValidator() {
       const { label, cls } = PRIORITY_LABELS[priority];
       const maxScore = winner.finalScore;
       const barWidth = Math.round(maxScore / 1.15 * 80);
+      const fallbackHtml = winner.usedFallback
+        ? `<span class="fallback-badge">constraint fallback</span>`
+        : '';
 
       html += `<tr class="winner-row">
         <td><span class="priority-chip ${cls}">${label}</span></td>
         <td class="detail-col">${w.n}/${w.c}/${w.s}</td>
-        <td><strong>${winner.recipeName}</strong></td>
+        <td><strong>${winner.recipeName}</strong>${fallbackHtml}</td>
         <td>${winner.trimName.replace(' Beef Trim','')}</td>
         <td>
           <div class="score-bar-wrap">
@@ -401,8 +461,8 @@ async function runValidator() {
         <td class="detail-col">${(winner.nutritionScore*100).toFixed(0)}%</td>
         <td class="detail-col">${(winner.costScore*100).toFixed(0)}%</td>
         <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
-        <td class="detail-col">${winner.fiber.toFixed(1)}g</td>
-        <td class="detail-col">${winner.protein.toFixed(1)}g</td>
+        <td class="detail-col" style="${winner.fiber < 5 && mustFiber ? 'color:#ff9999' : ''}">${winner.fiber.toFixed(1)}g</td>
+        <td class="detail-col" style="${winner.protein < 10 && mustProtein ? 'color:#ff9999' : ''}">${winner.protein.toFixed(1)}g</td>
         <td class="detail-col">${winner.cals.toFixed(0)}</td>
         <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
         <td class="detail-col">$${winner.cost.toFixed(2)}</td>
@@ -412,42 +472,6 @@ async function runValidator() {
       </tr>`;
     });
 
-    // High Fiber and High Protein picks — sort pool directly by raw nutrient value
-    // Use nutrition priority run to get the full candidate pool, then re-sort
-    const fullPool = scoringEngine(format, 'nutrition', userFat);
-    if (fullPool.length > 0) {
-      [
-        { key: 'highFiber',   sortFn: (a, b) => b.fiber   - a.fiber,   valFn: c => `${c.fiber.toFixed(1)}g fiber`   },
-        { key: 'highProtein', sortFn: (a, b) => b.protein - a.protein, valFn: c => `${c.protein.toFixed(1)}g protein` },
-      ].forEach(({ key, sortFn, valFn }) => {
-        const sorted   = fullPool.slice().sort(sortFn);
-        const winner   = sorted[0];
-        const runnerUp = sorted[1];
-        winnerCounts[winner.recipeName] = (winnerCounts[winner.recipeName] || 0) + 1;
-        allWinners.add(format + '::' + winner.recipeName);
-
-        const { label, cls } = PRIORITY_LABELS[key];
-        html += `<tr class="winner-row">
-          <td><span class="priority-chip ${cls}">${label}</span></td>
-          <td class="detail-col">—</td>
-          <td><strong>${winner.recipeName}</strong></td>
-          <td>${winner.trimName.replace(' Beef Trim','')}</td>
-          <td><span class="score-val">${valFn(winner)}</span></td>
-          <td class="detail-col">${(winner.nutritionScore*100).toFixed(0)}%</td>
-          <td class="detail-col">${(winner.costScore*100).toFixed(0)}%</td>
-          <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
-          <td class="detail-col">${winner.fiber.toFixed(1)}g</td>
-          <td class="detail-col">${winner.protein.toFixed(1)}g</td>
-          <td class="detail-col">${winner.cals.toFixed(0)}</td>
-          <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
-          <td class="detail-col">$${winner.cost.toFixed(2)}</td>
-          <td class="detail-col" style="color:rgba(207,255,142,0.35)">
-            ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} (${valFn(runnerUp)})` : '—'}
-          </td>
-        </tr>`;
-      });
-    }
-
     html += `</tbody></table>`;
 
     // Win counts per eligible recipe
@@ -455,12 +479,11 @@ async function runValidator() {
       <thead><tr><th>Recipe</th><th>Times Selected</th><th>Usage</th></tr></thead><tbody>`;
     recipeKeys.forEach(r => {
       const count = winnerCounts[r] || 0;
-      const totalPicks = priorities.length + 2; // +2 for highFiber / highProtein
-      const pct = Math.round(count / totalPicks * 100);
+      const pct = Math.round(count / priorities.length * 100);
       const unused = count === 0;
       html += `<tr>
         <td ${unused ? 'style="color:#ff9999"' : ''}>${r}${unused ? ' ⚠️' : ''}</td>
-        <td>${count} / ${totalPicks}</td>
+        <td>${count} / ${priorities.length}</td>
         <td><div class="score-bar-wrap">
           <div class="score-bar" style="width:${pct}px;background:${unused?'#ff6666':'#cfff8e'}"></div>
           <span class="score-val">${pct}%</span>
@@ -479,11 +502,14 @@ async function runValidator() {
     if (!allWinners.has(key)) unusedRecipes.push(key);
   });
 
+  const constraintLabel = [mustFiber && '≥5g fiber', mustProtein && '≥10g protein']
+    .filter(Boolean).join(' + ') || 'none';
+
   html = `
     <div class="summary-grid">
       <div class="summary-card"><div class="label">Q1 Trim</div><div class="value">${userTrimName.replace(' Beef Trim','')}</div></div>
-      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length + 2} × ${formats.length} formats</div></div>
-      <div class="summary-card"><div class="label">Eligible recipes</div><div class="value">${allRecipes.size}</div></div>
+      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length} × ${formats.length} formats</div></div>
+      <div class="summary-card"><div class="label">Constraints</div><div class="value" style="font-size:14px;padding-top:3px">${constraintLabel}</div></div>
       <div class="summary-card"><div class="label">Never selected</div><div class="value" style="color:${unusedRecipes.length>0?'#ff9999':'#cfff8e'}">${unusedRecipes.length}</div></div>
     </div>
     ${unusedRecipes.length > 0 ? `
