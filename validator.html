@@ -9,44 +9,35 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
          background: #fafafa; color: #1a1a1a; padding: 32px; min-height: 100vh; }
   h1 { font-size: 22px; color: #2e4214; margin-bottom: 6px; }
-  .subtitle { font-size: 13px; color: #6b7a5c; margin-bottom: 32px; }
+  .subtitle { font-size: 13px; color: #6b7a5c; margin-bottom: 0; }
 
-  .format-block { margin-bottom: 48px; }
-  .format-title { font-size: 16px; font-weight: 700; color: #2e4214;
-                  border-bottom: 2px solid #cfff8e;
-                  padding-bottom: 8px; margin-bottom: 16px; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 24px; }
-  th { background: #2e4214; color: #ffffff; font-weight: 600;
-       font-size: 17px; padding: 11px 14px; text-align: left; white-space: nowrap; }
-  td { padding: 11px 14px; border-bottom: 1px solid #e8ede3; vertical-align: middle; color: #2a2a2a; font-weight: 400; }
-  tr:hover td { background: #f5f9f0; }
-
-  .winner-row td { background: #f0f7e8; }
-  .fallback-badge { display: inline-block; background: #fff3cd; color: #856404;
-                    font-size: 10px; font-weight: 700; padding: 2px 7px;
-                    border-radius: 100px; margin-left: 6px; border: 1px solid #ffc107; }
-
-.controls-bar { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  /* ── Controls ── */
+  .controls-bar { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
                   background: #fff; border: 1px solid #dde8d4; border-radius: 10px; padding: 14px 16px; }
   .controls-bar label { font-size: 13px; color: #4a5a3a; font-weight: 500; }
-  .controls-bar select { background: #fff; color: #1a1a1a;
-                         border: 1px solid #b8ccaa; border-radius: 6px;
-                         padding: 6px 10px; font-size: 13px; cursor: pointer; }
+  .controls-bar select { background: #fff; color: #1a1a1a; border: 1px solid #b8ccaa;
+                         border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
   .run-btn { background: #2e4214; color: #cfff8e; border: none; border-radius: 6px;
              padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
   .run-btn:hover { background: #3d5a1c; }
   .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #4a5a3a;
               font-size: 13px; font-weight: 500; text-decoration: none;
-              border: 1px solid #b8ccaa; border-radius: 6px; padding: 7px 14px;
-              background: #fff; }
+              border: 1px solid #b8ccaa; border-radius: 6px; padding: 7px 14px; background: #fff; }
   .back-btn:hover { background: #f0f7e8; }
 
+  /* ── Format selector tabs ── */
+  .format-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+  .fmt-tab { padding: 10px 24px; border-radius: 8px; border: 2px solid #b8ccaa;
+             background: #fff; color: #4a5a3a; font-size: 14px; font-weight: 600;
+             cursor: pointer; transition: all 0.15s; }
+  .fmt-tab:hover { background: #f0f7e8; border-color: #5e8a3c; }
+  .fmt-tab.active { background: #2e4214; color: #cfff8e; border-color: #2e4214; }
+
+  /* ── Constraints ── */
   .constraints { display: flex; gap: 10px; flex-wrap: wrap; }
   .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer;
-                background: #fff; border: 1px solid #b8ccaa;
-                border-radius: 8px; padding: 8px 14px; user-select: none;
-                transition: background 0.15s; }
+                background: #fff; border: 1px solid #b8ccaa; border-radius: 8px;
+                padding: 8px 14px; user-select: none; transition: background 0.15s; }
   .check-item:hover { background: #f0f7e8; }
   .check-item.checked { background: #e8f5d8; border-color: #5e8a3c; }
   .check-box { width: 14px; height: 14px; border: 2px solid #b8ccaa;
@@ -57,35 +48,67 @@
   .check-text { font-size: 12px; color: #2a2a2a; font-weight: 600; }
   .check-sub  { font-size: 10px; color: #6b7a5c; margin-top: 1px; }
 
+  /* ── Price inputs ── */
   .price-controls-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 10px;
                          padding: 14px 16px; margin-bottom: 28px; display: none; }
   .price-controls-wrap p { font-size: 12px; color: #6b7a5c; margin-bottom: 10px; }
   .price-inputs-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-  .price-input-group { display:flex; flex-direction:column; gap:4px; }
-  .price-input-group label { font-size:11px; color:#6b7a5c; font-weight: 500; }
-  .price-input-group input { background: #fff; color: #1a1a1a;
-    border: 1px solid #b8ccaa; border-radius: 5px;
-    padding: 5px 8px; font-size: 12px; width: 90px; }
+  .price-input-group { display: flex; flex-direction: column; gap: 4px; }
+  .price-input-group label { font-size: 11px; color: #6b7a5c; font-weight: 500; }
+  .price-input-group input { background: #fff; color: #1a1a1a; border: 1px solid #b8ccaa;
+    border-radius: 5px; padding: 5px 8px; font-size: 12px; width: 90px; }
   .price-input-group input:focus { outline: none; border-color: #2e4214; }
 
   .loading { color: #6b7a5c; font-size: 14px; padding: 40px 0; text-align: center; }
+  .fallback-badge { display: inline-block; background: #fff3cd; color: #856404;
+                    font-size: 11px; font-weight: 600; padding: 2px 8px;
+                    border-radius: 100px; margin-left: 8px; border: 1px solid #ffc107; }
 
-  .priority-chip { display:inline-block; padding:8px 18px; border-radius:100px;
-    font-size:14px; font-weight:700; white-space: nowrap; }
-  .pc-cost       { background: #fef9e7; color: #856404; border: 1px solid #fde68a; }
-  .pc-nutrition  { background: #e8f5d8; color: #2e4214; border: 1px solid #cfff8e; }
-  .pc-balance    { background: #ede9f6; color: #5b21b6; border: 1px solid #c4b5fd; }
-  .pc-sustain    { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+  /* ── Section headings ── */
+  .section-block { margin-bottom: 48px; }
+  .section-heading { font-size: 20px; font-weight: 700; color: #2e4214;
+                     border-bottom: 2px solid #cfff8e; padding-bottom: 10px; margin-bottom: 20px; }
+  .section-subhead { font-size: 13px; color: #6b7a5c; margin-top: -14px; margin-bottom: 20px; }
 
-  .runner-up-cell { font-size: 12px; color: #4a5a3a; line-height: 1.7; }
-  .runner-up-name { font-weight: 400; color: #1a1a1a; }
-  .ru-delta { display: inline-block; font-size: 11px; border-radius: 100px;
-              padding: 1px 7px; font-weight: 600; }
-  .ru-worse { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
-  .ru-better { background: #e8f5d8; color: #166534; border: 1px solid #86efac; }
+  /* ── Winner hero card ── */
+  .winner-card { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
+                 padding: 20px 24px; margin-bottom: 20px; display: flex;
+                 align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  .winner-label-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .winner-badge { display: inline-block; background: #2e4214; color: #cfff8e;
+                  font-size: 11px; font-weight: 700; padding: 3px 10px;
+                  border-radius: 100px; letter-spacing: 0.04em; }
+  .winner-name { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+  .winner-trim { font-size: 14px; color: #6b7a5c; margin-top: 2px; }
+  .winner-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
+  .wstat { display: flex; flex-direction: column; }
+  .wstat-val { font-size: 20px; font-weight: 700; color: #2e4214; }
+  .wstat-label { font-size: 11px; color: #6b7a5c; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 
-  .nutrient-val { font-weight: 400; }
-  .flag-red { color: #b91c1c; }
+  /* ── Comparison table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 0; }
+  th { background: #2e4214; color: #ffffff; font-weight: 600;
+       font-size: 17px; padding: 11px 14px; text-align: left; white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid #e8ede3; vertical-align: middle;
+       color: #2a2a2a; font-weight: 400; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f9f0; }
+  .tbl-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
+              overflow: hidden; margin-bottom: 0; }
+
+  /* ── Delta badges ── */
+  .delta { display: inline-block; font-size: 12px; border-radius: 100px;
+           padding: 2px 9px; font-weight: 600; white-space: nowrap; }
+  .delta-worse  { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+  .delta-better { background: #e8f5d8; color: #166534; border: 1px solid #86efac; }
+  .delta-neutral{ background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+
+  /* ── Rank badge (cost section) ── */
+  .rank-num { display: inline-flex; align-items: center; justify-content: center;
+              width: 28px; height: 28px; border-radius: 50%; font-size: 13px;
+              font-weight: 700; background: #e8ede3; color: #4a5a3a; }
+  .rank-num.rank-1 { background: #2e4214; color: #cfff8e; }
+  .rank-num.rank-2 { background: #dde8d4; color: #2e4214; }
 </style>
 </head>
 <body>
@@ -94,7 +117,7 @@
   <a href="index.html" class="back-btn">← Back to Calculator</a>
   <div>
     <h1>Recipe Validator</h1>
-    <p class="subtitle">Tests all priorities and formats through the scoring engine. Adjust prices to see how results shift.</p>
+    <p class="subtitle">Select a format, trim and country to see recommendations and how alternatives compare.</p>
   </div>
 </div>
 
@@ -130,6 +153,8 @@
   <button class="run-btn" onclick="runValidator()">Run</button>
 </div>
 
+<div class="format-tabs" id="format-tabs"></div>
+
 <div class="price-controls-wrap" id="price-controls">
   <p>Adjust beef prices to test sensitivity. Changes apply on next run.</p>
   <div class="price-inputs-grid" id="price-inputs"></div>
@@ -141,6 +166,7 @@
 /* ── Supabase config ── */
 const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
+
 const COUNTRY_CONFIG = {
   US: {
     currency: '$', priceUnit: 'per lb',
@@ -168,12 +194,11 @@ async function sbFetch(table, params = '') {
 
 /* ── Data stores ── */
 let BEEF_PRICES = {}, RECIPES = {}, HEALTH_REF = { shiitake: {}, beef: {} };
-let SHIITAKE_CO2 = 0, BEEF_CO2 = 0;
-let SCORING_CONFIG = {};
+let SHIITAKE_CO2 = 0, BEEF_CO2 = 0, SCORING_CONFIG = {};
+let activeFormat = null;
 
 /* ── Constraint state ── */
-let mustFiber   = false;
-let mustProtein = false;
+let mustFiber = false, mustProtein = false;
 
 function toggleConstraint(which) {
   if (which === 'fiber') {
@@ -195,10 +220,8 @@ async function loadData() {
   SHIITAKE_CO2 = 0; BEEF_CO2 = 0; SCORING_CONFIG = {};
   const selectedCountry = document.getElementById('country-select').value;
   CC = COUNTRY_CONFIG[selectedCountry];
-  // Update constraint sub-labels to match country
-  const fiberSub = CC.highProtein.mode === 'energyPct'
-    ? `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`
-    : `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`;
+
+  const fiberSub = `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`;
   const proteinSub = CC.highProtein.mode === 'energyPct'
     ? `≥${CC.highProtein.pct}% energy from protein`
     : `≥${CC.highProtein.g}g protein per 100g`;
@@ -243,23 +266,15 @@ function getBlendNutrient(nutrient, recipeName, trimName, format) {
   return s * fablePct + b * beefPct;
 }
 
-/* ── Weight sets ── */
 function getWeightSets() {
   const cfg = SCORING_CONFIG;
   return {
+    balance:        { n: cfg.balance_n        ?? 0.50, c: cfg.balance_c        ?? 0.50, s: cfg.balance_s        ?? 0.00 },
     cost:           { n: cfg.cost_n           ?? 0.00, c: cfg.cost_c           ?? 1.00, s: cfg.cost_s           ?? 0.00 },
     nutrition:      { n: cfg.nutrition_n      ?? 1.00, c: cfg.nutrition_c      ?? 0.15, s: cfg.nutrition_s      ?? 0.10 },
-    balance:        { n: cfg.balance_n        ?? 0.50, c: cfg.balance_c        ?? 0.50, s: cfg.balance_s        ?? 0.00 },
     sustainability: { n: cfg.sustainability_n ?? 0.15, c: cfg.sustainability_c ?? 0.10, s: cfg.sustainability_s ?? 1.00 },
   };
 }
-
-const PRIORITY_LABELS = {
-  cost:           { label: 'Lower Cost',       cls: 'pc-cost'      },
-  nutrition:      { label: 'Better Nutrition', cls: 'pc-nutrition' },
-  balance:        { label: 'Balance',          cls: 'pc-balance'   },
-  sustainability: { label: 'Sustainability',   cls: 'pc-sustain'   },
-};
 
 function meetsHighProtein(protein_g, energyKJ) {
   const cfg = CC.highProtein;
@@ -270,21 +285,19 @@ function meetsHighProtein(protein_g, energyKJ) {
   return protein_g >= cfg.g;
 }
 
-/* ── Scoring engine (mirrors index.html exactly) ── */
+/* ── Scoring engine ── */
 function scoringEngine(format, priority, userFat) {
-  const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
+  const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val ?? 0) / 100;
   const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
-
-  const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
-  const ceilIdx = CL_ORDER_LEAN.indexOf(userTrimName);
+  const userTrimName  = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
+  const ceilIdx       = CL_ORDER_LEAN.indexOf(userTrimName);
 
   function naturalTrimIdx(beefPct, fablePct) {
     let floorIdx = null;
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
       const data = BEEF_PRICES[CL_ORDER_LEAN[i]];
       if (!data) continue;
-      const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
-      if (blendedFat > userFat) floorIdx = i;
+      if ((data.fat * beefPct) + (shiitakeFat * fablePct) > userFat) floorIdx = i;
     }
     if (floorIdx !== null) return floorIdx;
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
@@ -301,13 +314,11 @@ function scoringEngine(format, priority, userFat) {
       if (format === 'Burger / Meatball' && waterPct > 0) continue;
       if (format === 'Burger / Meatball' && beefPct === 0.5) continue;
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
-      const lo = Math.min(floorIdx, ceilIdx);
-      const hi = Math.max(floorIdx, ceilIdx);
+      const lo = Math.min(floorIdx, ceilIdx), hi = Math.max(floorIdx, ceilIdx);
       for (let i = lo; i <= hi; i++) {
         const trimName = CL_ORDER_LEAN[i];
         const trimData = BEEF_PRICES[trimName];
         if (!trimData) continue;
-        const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
         const fiber    = shiitakeFiber * fablePct;
         const protein  = getBlendNutrient('Protein',           recipeName, trimName, format);
         const cals     = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
@@ -315,6 +326,7 @@ function scoringEngine(format, priority, userFat) {
         const cost     = beefPct * trimData.price + fablePct * CC.fablePrice + waterPct * CC.waterPrice;
         const co2      = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
         const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName, format);
+        const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
         if (applyConstraints) {
           if (mustFiber   && fiber < CC.highFiber)                continue;
           if (mustProtein && !meetsHighProtein(protein, energyKJ)) continue;
@@ -326,10 +338,9 @@ function scoringEngine(format, priority, userFat) {
     return out;
   }
 
-  const constrained = buildCandidates(true);
+  const constrained  = buildCandidates(true);
   const usedFallback = constrained.length === 0 && (mustFiber || mustProtein);
-  const pool = constrained.length > 0 ? constrained : buildCandidates(false);
-
+  const pool         = constrained.length > 0 ? constrained : buildCandidates(false);
   if (pool.length === 0) return [];
 
   function normalise(values, lowerBetter) {
@@ -345,65 +356,54 @@ function scoringEngine(format, priority, userFat) {
     return values.map(v => lowerBetter ? (hi - v) / (hi - lo) : (v - lo) / (hi - lo));
   }
 
-  const cfg = SCORING_CONFIG;
-  const costPad = cfg.cost_pad ?? 1.5;
-  const co2Pad  = cfg.co2_pad  ?? 1.0;
-
+  const cfg     = SCORING_CONFIG;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);
-  const nCost    = normalisePadded(pool.map(c => c.cost), true, costPad);
-  const nCO2     = normalisePadded(pool.map(c => c.co2),  true, co2Pad);
+  const nCost    = normalisePadded(pool.map(c => c.cost), true, cfg.cost_pad ?? 1.5);
+  const nCO2     = normalisePadded(pool.map(c => c.co2),  true, cfg.co2_pad  ?? 1.0);
 
-  const nutritionRaw = pool.map((_, i) =>
+  const nutritionScore = pool.map((_, i) => Math.sqrt(
     (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
     (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
     (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
     (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
-  );
-  const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
+  ));
 
-  const WEIGHT_SETS = getWeightSets();
-  const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
-
-  const trimPenalty = cfg.trim_penalty ?? 0.05;
-  const brb         = cfg.balance_recipe_bonus ?? 0.12;
+  const WEIGHT_SETS  = getWeightSets();
+  const w            = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
+  const trimPenalty  = cfg.trim_penalty ?? 0.05;
+  const brb          = cfg.balance_recipe_bonus ?? 0.12;
+  const userCeilIdx  = ceilIdx;
 
   const finalScores = pool.map((c, i) => {
     const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
     const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
-    const stepsLeaner  = Math.max(0, ceilIdx - candidateIdx);
-    const penalised = (priority === 'balance')
-      ? raw * (1 - trimPenalty * stepsLeaner)
-      : raw;
-    const bonus = (priority === 'balance')
+    const stepsLeaner  = Math.max(0, userCeilIdx - candidateIdx);
+    const penalised = (priority === 'balance') ? raw * (1 - trimPenalty * stepsLeaner) : raw;
+    const bonus     = (priority === 'balance')
       ? brb * Math.exp(-Math.pow((c.fablePct + c.waterPct) - 0.40, 2) / (2 * 0.10 * 0.10))
       : 0;
     return penalised + bonus;
   });
 
   return pool
-    .map((c, i) => ({
-      ...c,
-      nutritionScore: nutritionScore[i],
-      finalScore: finalScores[i],
-      usedFallback,
-    }))
+    .map((c, i) => ({ ...c, nutritionScore: nutritionScore[i], finalScore: finalScores[i], usedFallback }))
     .sort((a, b) => b.finalScore - a.finalScore);
 }
 
-/* ── Build editable price inputs ── */
+/* ── Price inputs ── */
 function buildPriceInputs() {
   const wrap = document.getElementById('price-inputs');
   wrap.innerHTML = '';
   CL_ORDER_LEAN.slice().reverse().forEach(trimName => {
     const data = BEEF_PRICES[trimName];
     if (!data) return;
-    const cl = trimName.replace(' Beef Trim','');
+    const cl  = trimName.replace(' Beef Trim', '');
     const div = document.createElement('div');
     div.className = 'price-input-group';
-    div.innerHTML = `<label>${cl} (${CC.currency}/${CC.priceUnit.replace('per ','')})</label>
+    div.innerHTML = `<label>${cl} (${CC.currency}/${CC.priceUnit.replace('per ', '')})</label>
       <input type="number" step="0.01" min="0" value="${data.price.toFixed(2)}"
         onchange="BEEF_PRICES['${trimName}'].price = parseFloat(this.value) || ${data.price.toFixed(2)}">`;
     wrap.appendChild(div);
@@ -411,107 +411,207 @@ function buildPriceInputs() {
   document.getElementById('price-controls').style.display = 'block';
 }
 
-/* ── Runner-up comparison HTML ── */
-function runnerUpHtml(winner, runnerUp, priority) {
-  if (!runnerUp) return '<span style="color:#aaa">—</span>';
-  const name = `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')}`;
+/* ── Format tabs ── */
+function buildFormatTabs(formats) {
+  const wrap = document.getElementById('format-tabs');
+  wrap.innerHTML = '';
+  formats.forEach((fmt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'fmt-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = fmt;
+    btn.onclick = () => {
+      document.querySelectorAll('.fmt-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      activeFormat = fmt;
+      renderOutput();
+    };
+    wrap.appendChild(btn);
+  });
+}
 
-  let deltas = [];
+/* ── Delta badge helper ── */
+function deltaBadge(diff, unit, lowerBetter, zeroLabel = null) {
+  if (Math.abs(diff) < 0.005) return zeroLabel
+    ? `<span class="delta delta-neutral">${zeroLabel}</span>`
+    : `<span class="delta delta-neutral">same</span>`;
+  const better = lowerBetter ? diff < 0 : diff > 0;
+  const cls    = better ? 'delta-better' : 'delta-worse';
+  const sign   = diff > 0 ? '+' : '−';
+  return `<span class="delta ${cls}">${sign}${unit}${Math.abs(diff).toFixed(2)}</span>`;
+}
+function deltaBadgeInt(diff, unit, lowerBetter) {
+  if (Math.abs(diff) < 0.5) return `<span class="delta delta-neutral">same</span>`;
+  const better = lowerBetter ? diff < 0 : diff > 0;
+  const cls    = better ? 'delta-better' : 'delta-worse';
+  const sign   = diff > 0 ? '+' : '−';
+  return `<span class="delta ${cls}">${sign}${Math.abs(Math.round(diff))} ${unit}</span>`;
+}
 
-  if (priority === 'cost') {
-    // Cost priority: show how much more expensive the runner-up is
-    const diff = runnerUp.cost - winner.cost;
-    const sign = diff > 0 ? '+' : '';
-    const cls = diff > 0 ? 'ru-worse' : 'ru-better';
-    deltas.push(`<span class="ru-delta ${cls}">${sign}${CC.currency}${Math.abs(diff).toFixed(2)} cost</span>`);
-  } else {
-    // Score-based priorities: express runner-up score as % behind winner
-    const scoreDiff = winner.finalScore - runnerUp.finalScore;
-    const pctBehind = winner.finalScore > 0 ? Math.round(scoreDiff / winner.finalScore * 100) : 0;
-    if (pctBehind > 0) {
-      deltas.push(`<span class="ru-delta ru-worse">${pctBehind}% lower score</span>`);
-    } else {
-      deltas.push(`<span class="ru-delta ru-better">tied</span>`);
-    }
-    // Also show cost difference as context
-    const costDiff = runnerUp.cost - winner.cost;
-    const sign = costDiff > 0 ? '+' : '';
-    const cls = costDiff > 0 ? 'ru-worse' : 'ru-better';
-    deltas.push(`<span class="ru-delta ${cls}">${sign}${CC.currency}${Math.abs(costDiff).toFixed(2)} cost</span>`);
-  }
-
-  return `<div class="runner-up-cell">
-    <span class="runner-up-name">${name}</span><br>
-    ${deltas.join(' ')}
+/* ── Render a winner hero card ── */
+function winnerCardHtml(winner, label) {
+  const priceUnit = CC.priceUnit.split(' ')[1];
+  const fallback  = winner.usedFallback
+    ? `<span class="fallback-badge">constraint not met</span>` : '';
+  return `
+  <div class="winner-card">
+    <div class="winner-label-wrap">
+      <span class="winner-badge">${label}</span>
+      <div class="winner-name">${winner.recipeName}${fallback}</div>
+      <div class="winner-trim">${winner.trimName.replace(' Beef Trim', '')}</div>
+    </div>
+    <div class="winner-stats">
+      <div class="wstat">
+        <div class="wstat-val">${CC.currency}${winner.cost.toFixed(2)}</div>
+        <div class="wstat-label">${CC.priceUnit}</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val">${winner.fiber.toFixed(1)}g</div>
+        <div class="wstat-label">${CC.fiberSpelling} / 100g</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val">${winner.protein.toFixed(1)}g</div>
+        <div class="wstat-label">Protein / 100g</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val">${winner.cals.toFixed(0)}</div>
+        <div class="wstat-label">Calories</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val">${winner.satFat.toFixed(1)}g</div>
+        <div class="wstat-label">Sat Fat</div>
+      </div>
+    </div>
   </div>`;
 }
 
-/* ── Render ── */
-async function runValidator() {
-  document.getElementById('output').innerHTML = '<p class="loading">Running…</p>';
-  await loadData();
-  buildPriceInputs();
+/* ── Render balance section ── */
+function renderBalanceSection(format, userFat) {
+  const ranked = scoringEngine(format, 'balance', userFat);
+  if (ranked.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
 
+  const winner = ranked[0];
+  const rest   = ranked.slice(1);
+  const priceUnit = CC.priceUnit.split(' ')[1];
+
+  let html = winnerCardHtml(winner, 'Recommended — Balanced');
+
+  if (rest.length === 0) return html;
+
+  html += `<div class="tbl-wrap">
+  <table>
+    <thead><tr>
+      <th>Alternative</th>
+      <th>Beef Trim</th>
+      <th>${CC.currency}/${priceUnit}</th>
+      <th>${CC.fiberSpelling} (g/100g)</th>
+      <th>Protein (g/100g)</th>
+      <th>Calories</th>
+      <th>Sat Fat (g)</th>
+    </tr></thead>
+    <tbody>`;
+
+  rest.forEach(c => {
+    html += `<tr>
+      <td>${c.recipeName}</td>
+      <td>${c.trimName.replace(' Beef Trim', '')}</td>
+      <td>${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - winner.cost, CC.currency, true)}</td>
+      <td>${c.fiber.toFixed(1)} ${deltaBadge(c.fiber - winner.fiber, '', false)}</td>
+      <td>${c.protein.toFixed(1)} ${deltaBadge(c.protein - winner.protein, '', false)}</td>
+      <td>${c.cals.toFixed(0)} ${deltaBadgeInt(c.cals - winner.cals, 'kcal', true)}</td>
+      <td>${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - winner.satFat, '', true)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+/* ── Render cost section ── */
+function renderCostSection(format, userFat) {
+  // Sort all candidates purely by cost ascending
+  const allCandidates = scoringEngine(format, 'cost', userFat);
+  if (allCandidates.length === 0) return '<p style="color:#6b7a5c">No candidates available.</p>';
+
+  // Re-sort by cost directly (scoringEngine with cost priority should already do this, but be explicit)
+  const ranked = [...allCandidates].sort((a, b) => a.cost - b.cost);
+  const priceUnit = CC.priceUnit.split(' ')[1];
+
+  let html = winnerCardHtml(ranked[0], 'Lowest Cost');
+
+  if (ranked.length <= 1) return html;
+
+  const rest = ranked.slice(1);
+
+  html += `<div class="tbl-wrap">
+  <table>
+    <thead><tr>
+      <th>#</th>
+      <th>Recipe</th>
+      <th>Beef Trim</th>
+      <th>${CC.currency}/${priceUnit}</th>
+      <th>${CC.fiberSpelling} (g/100g)</th>
+      <th>Protein (g/100g)</th>
+      <th>Calories</th>
+      <th>Sat Fat (g)</th>
+    </tr></thead>
+    <tbody>`;
+
+  rest.forEach((c, i) => {
+    const costDiff = c.cost - ranked[0].cost;
+    html += `<tr>
+      <td><span class="rank-num rank-${i + 2}">${i + 2}</span></td>
+      <td>${c.recipeName}</td>
+      <td>${c.trimName.replace(' Beef Trim', '')}</td>
+      <td>${CC.currency}${c.cost.toFixed(2)} <span class="delta delta-worse">+${CC.currency}${costDiff.toFixed(2)}</span></td>
+      <td>${c.fiber.toFixed(1)}</td>
+      <td>${c.protein.toFixed(1)}</td>
+      <td>${c.cals.toFixed(0)}</td>
+      <td>${c.satFat.toFixed(1)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+/* ── Main render ── */
+function renderOutput() {
   const userFat = parseFloat(document.getElementById('q1-select').value);
-  const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0] || '80CL Beef Trim';
-  const formats = Object.keys(RECIPES);
-  const WEIGHT_SETS = getWeightSets();
-  const priorities = Object.keys(WEIGHT_SETS);
+  const format  = activeFormat;
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   let html = '';
 
-  for (const format of formats) {
-    html += `<div class="format-block">`;
-    html += `<div class="format-title">${format} — Q1 trim: ${userTrimName.replace(' Beef Trim','')}</div>`;
-    html += `<table>
-      <thead><tr>
-        <th>Priority</th>
-        <th>Recommended Recipe</th>
-        <th>Beef Trim</th>
-        <th>${CC.fiberSpelling} (g/100g)</th>
-        <th>Protein (g/100g)</th>
-        <th>Calories</th>
-        <th>Sat Fat (g)</th>
-        <th>${CC.currency}/${priceUnit}</th>
-        <th>Runner-up</th>
-      </tr></thead><tbody>`;
+  // Section 1: Balanced
+  html += `<div class="section-block">
+    <div class="section-heading">Balanced recommendation</div>
+    <p class="section-subhead">The best overall recipe weighing both cost and nutrition. Alternatives shown with differences against each metric.</p>
+    ${renderBalanceSection(format, userFat)}
+  </div>`;
 
-    priorities.forEach(priority => {
-      const ranked = scoringEngine(format, priority, userFat);
-      if (ranked.length === 0) return;
-
-      const winner   = ranked[0];
-      const runnerUp = ranked[1];
-
-      const { label, cls } = PRIORITY_LABELS[priority];
-      const fallbackHtml = winner.usedFallback
-        ? `<span class="fallback-badge">constraint not met</span>`
-        : '';
-
-      const fiberFlag = mustFiber && winner.fiber < CC.highFiber ? ' flag-red' : '';
-      const proteinFlag = mustProtein && !meetsHighProtein(winner.protein, winner.energyKJ) ? ' flag-red' : '';
-
-      html += `<tr class="winner-row">
-        <td><span class="priority-chip ${cls}">${label}</span></td>
-        <td>${winner.recipeName}${fallbackHtml}</td>
-        <td>${winner.trimName.replace(' Beef Trim','')}</td>
-        <td><span class="nutrient-val${fiberFlag}">${winner.fiber.toFixed(1)}</span></td>
-        <td><span class="nutrient-val${proteinFlag}">${winner.protein.toFixed(1)}</span></td>
-        <td>${winner.cals.toFixed(0)}</td>
-        <td>${winner.satFat.toFixed(1)}</td>
-        <td>${CC.currency}${winner.cost.toFixed(2)}</td>
-        <td>${runnerUpHtml(winner, runnerUp, priority)}</td>
-      </tr>`;
-    });
-
-    html += `</tbody></table></div>`;
-  }
+  // Section 2: Cost
+  html += `<div class="section-block">
+    <div class="section-heading">Cost ranking</div>
+    <p class="section-subhead">All recipes ranked from lowest to highest cost, with nutrition stats for comparison.</p>
+    ${renderCostSection(format, userFat)}
+  </div>`;
 
   document.getElementById('output').innerHTML = html;
 }
 
-// Auto-run on load
+/* ── Entry point ── */
+async function runValidator() {
+  document.getElementById('output').innerHTML = '<p class="loading">Running…</p>';
+  document.getElementById('format-tabs').innerHTML = '';
+  await loadData();
+  buildPriceInputs();
+
+  const formats = Object.keys(RECIPES);
+  activeFormat  = activeFormat && formats.includes(activeFormat) ? activeFormat : formats[0];
+  buildFormatTabs(formats);
+  renderOutput();
+}
+
 window.addEventListener('DOMContentLoaded', () => { runValidator(); });
 </script>
 </body>
