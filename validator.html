@@ -80,6 +80,8 @@
   .pc-nutrition  { background:rgba(100,220,100,0.2); color:#64dc64; }
   .pc-balance { background:rgba(150,150,255,0.2); color:#9696ff; }
   .pc-sustain { background:rgba(100,200,150,0.2); color:#64c896; }
+  .pc-fiber   { background:rgba(255,160,80,0.2);  color:#ffa050; }
+  .pc-protein { background:rgba(100,180,255,0.2); color:#64b4ff; }
 </style>
 </head>
 <body>
@@ -183,10 +185,12 @@ function getWeightSets() {
 }
 
 const PRIORITY_LABELS = {
-  cost:           { label: 'Lower Cost',        cls: 'pc-cost'    },
-  nutrition:      { label: 'Better Nutrition',   cls: 'pc-nutrition'  },
-  balance:        { label: 'Balance',            cls: 'pc-balance' },
-  sustainability: { label: 'Sustainability',     cls: 'pc-sustain' },
+  cost:           { label: 'Lower Cost',        cls: 'pc-cost'      },
+  nutrition:      { label: 'Better Nutrition',  cls: 'pc-nutrition' },
+  balance:        { label: 'Balance',           cls: 'pc-balance'   },
+  sustainability: { label: 'Sustainability',    cls: 'pc-sustain'   },
+  highFiber:      { label: 'High Fiber',        cls: 'pc-fiber'     },
+  highProtein:    { label: 'High Protein',      cls: 'pc-protein'   },
 };
 
 /* ── Scoring engine (mirrors index.html exactly) ── */
@@ -408,6 +412,42 @@ async function runValidator() {
       </tr>`;
     });
 
+    // High Fiber and High Protein picks — sort pool directly by raw nutrient value
+    // Use nutrition priority run to get the full candidate pool, then re-sort
+    const fullPool = scoringEngine(format, 'nutrition', userFat);
+    if (fullPool.length > 0) {
+      [
+        { key: 'highFiber',   sortFn: (a, b) => b.fiber   - a.fiber,   valFn: c => `${c.fiber.toFixed(1)}g fiber`   },
+        { key: 'highProtein', sortFn: (a, b) => b.protein - a.protein, valFn: c => `${c.protein.toFixed(1)}g protein` },
+      ].forEach(({ key, sortFn, valFn }) => {
+        const sorted   = fullPool.slice().sort(sortFn);
+        const winner   = sorted[0];
+        const runnerUp = sorted[1];
+        winnerCounts[winner.recipeName] = (winnerCounts[winner.recipeName] || 0) + 1;
+        allWinners.add(format + '::' + winner.recipeName);
+
+        const { label, cls } = PRIORITY_LABELS[key];
+        html += `<tr class="winner-row">
+          <td><span class="priority-chip ${cls}">${label}</span></td>
+          <td class="detail-col">—</td>
+          <td><strong>${winner.recipeName}</strong></td>
+          <td>${winner.trimName.replace(' Beef Trim','')}</td>
+          <td><span class="score-val">${valFn(winner)}</span></td>
+          <td class="detail-col">${(winner.nutritionScore*100).toFixed(0)}%</td>
+          <td class="detail-col">${(winner.costScore*100).toFixed(0)}%</td>
+          <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
+          <td class="detail-col">${winner.fiber.toFixed(1)}g</td>
+          <td class="detail-col">${winner.protein.toFixed(1)}g</td>
+          <td class="detail-col">${winner.cals.toFixed(0)}</td>
+          <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
+          <td class="detail-col">$${winner.cost.toFixed(2)}</td>
+          <td class="detail-col" style="color:rgba(207,255,142,0.35)">
+            ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} (${valFn(runnerUp)})` : '—'}
+          </td>
+        </tr>`;
+      });
+    }
+
     html += `</tbody></table>`;
 
     // Win counts per eligible recipe
@@ -415,11 +455,12 @@ async function runValidator() {
       <thead><tr><th>Recipe</th><th>Times Selected</th><th>Usage</th></tr></thead><tbody>`;
     recipeKeys.forEach(r => {
       const count = winnerCounts[r] || 0;
-      const pct = Math.round(count / priorities.length * 100);
+      const totalPicks = priorities.length + 2; // +2 for highFiber / highProtein
+      const pct = Math.round(count / totalPicks * 100);
       const unused = count === 0;
       html += `<tr>
         <td ${unused ? 'style="color:#ff9999"' : ''}>${r}${unused ? ' ⚠️' : ''}</td>
-        <td>${count} / ${priorities.length}</td>
+        <td>${count} / ${totalPicks}</td>
         <td><div class="score-bar-wrap">
           <div class="score-bar" style="width:${pct}px;background:${unused?'#ff6666':'#cfff8e'}"></div>
           <span class="score-val">${pct}%</span>
@@ -441,7 +482,7 @@ async function runValidator() {
   html = `
     <div class="summary-grid">
       <div class="summary-card"><div class="label">Q1 Trim</div><div class="value">${userTrimName.replace(' Beef Trim','')}</div></div>
-      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length} × ${formats.length} formats</div></div>
+      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length + 2} × ${formats.length} formats</div></div>
       <div class="summary-card"><div class="label">Eligible recipes</div><div class="value">${allRecipes.size}</div></div>
       <div class="summary-card"><div class="label">Never selected</div><div class="value" style="color:${unusedRecipes.length>0?'#ff9999':'#cfff8e'}">${unusedRecipes.length}</div></div>
     </div>
