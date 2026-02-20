@@ -260,17 +260,30 @@ function scoringEngine(format, priority, userFat) {
 
   const nutritionRaw = pool.map((_, i) =>
     (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
-    (cfg.nutr_w_protein  ?? 0.30) * nProtein[i] +
+    (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
     (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
-    (cfg.nutr_w_satfat   ?? 0.15) * nSatFat[i]
+    (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
   );
   const nutritionScore = nutritionRaw.map(v => Math.sqrt(v));
 
   const WEIGHT_SETS = getWeightSets();
   const w = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
-  const finalScores = pool.map((_, i) =>
-    w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i]
-  );
+
+  const trimPenalty = cfg.trim_penalty ?? 0.05;
+  const brb         = cfg.balance_recipe_bonus ?? 0.12;
+
+  const finalScores = pool.map((c, i) => {
+    const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
+    // Trim penalty: penalise each CL step fattier than the user's selected trim
+    const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
+    const stepsLeaner  = Math.max(0, ceilIdx - candidateIdx);
+    const penalised    = raw * (1 - trimPenalty * stepsLeaner);
+    // Balance recipe bonus: gaussian centred on 40% fable (rewards 60/40 recipe)
+    const bonus = (priority === 'balance')
+      ? brb * Math.exp(-Math.pow(c.fablePct - 0.40, 2) / (2 * 0.10 * 0.10))
+      : 0;
+    return penalised + bonus;
+  });
 
   return pool
     .map((c, i) => ({
