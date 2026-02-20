@@ -1249,14 +1249,14 @@
             <div class="check-box"></div>
             <div>
               <div class="check-text">Must be High in Fiber</div>
-              <div class="check-sub">≥5g fiber per 100g — achievable in all blends</div>
+              <div class="check-sub" id="fiber-constraint-sub">≥5g fiber per 100g — achievable in all blends</div>
             </div>
           </div>
           <div class="check-item" onclick="toggleCheck(this,'protein')">
             <div class="check-box"></div>
             <div>
               <div class="check-text">Must be High in Protein</div>
-              <div class="check-sub">≥10g protein per 100g — may affect trim selection</div>
+              <div class="check-sub" id="protein-constraint-sub">≥10g protein per 100g — may affect trim selection</div>
             </div>
           </div>
         </div>
@@ -1573,6 +1573,13 @@ const COUNTRY_CONFIG = {
     costHeader:  'Cost/lb',
     fablePrice:  4.98,
     waterPrice:  0.001,
+    // Claim thresholds
+    highFiber:        5,    // g per 100g
+    sourceFiber:      2.5,  // g per 100g (not used in US claims but defined for consistency)
+    highProtein:      { mode: 'grams', g: 10 },
+    sourceProtein:    { mode: 'grams', g: 5  },
+    fiberConstraintSub:   '≥5g fiber per 100g — achievable in all blends',
+    proteinConstraintSub: '≥10g protein per 100g — may affect trim selection',
   },
   'United Kingdom': {
     code:        'UK',
@@ -1581,6 +1588,13 @@ const COUNTRY_CONFIG = {
     costHeader:  'Cost/kg',
     fablePrice:  6.00,
     waterPrice:  0.001,
+    // Claim thresholds — UK Food Standards Agency definitions
+    highFiber:        6,    // g per 100g
+    sourceFiber:      3,    // g per 100g
+    highProtein:      { mode: 'energyPct', pct: 20 }, // protein energy ≥20% of total kJ
+    sourceProtein:    { mode: 'energyPct', pct: 10 },
+    fiberConstraintSub:   '≥6g fiber per 100g (UK high in fiber)',
+    proteinConstraintSub: '≥20% energy from protein (UK high in protein)',
   },
 };
 
@@ -1706,6 +1720,9 @@ function selectCountry(el) {
     CC = COUNTRY_CONFIG[country];
     comingSoon.style.display = 'none';
     btn.disabled = false;
+    // Update constraint subtitle labels for this country
+    document.getElementById('fiber-constraint-sub').textContent   = CC.fiberConstraintSub;
+    document.getElementById('protein-constraint-sub').textContent = CC.proteinConstraintSub;
   } else {
     comingSoon.style.display = 'block';
     btn.disabled = true;
@@ -1829,20 +1846,21 @@ function scoringEngine() {
         if (!trimData) continue;
 
         const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-        const fiber   = shiitakeFiber * fablePct; // beef has no fiber
-        const protein = getBlendNutrient('Protein',             recipeName, trimName);
-        const cals    = getBlendNutrient('Energy (Calories)',   recipeName, trimName);
-        const satFat  = getBlendNutrient('Saturated Fat',       recipeName, trimName);
-        const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-        const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+        const fiber     = shiitakeFiber * fablePct; // beef has no fiber
+        const protein   = getBlendNutrient('Protein',           recipeName, trimName);
+        const energyKJ  = getBlendNutrient('Energy (kJ)',        recipeName, trimName);
+        const cals      = getBlendNutrient('Energy (Calories)',  recipeName, trimName);
+        const satFat    = getBlendNutrient('Saturated Fat',      recipeName, trimName);
+        const cost      = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+        const co2       = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
 
         if (applyConstraints) {
-          if (state.mustFiber   && fiber   < 5)  continue;
-          if (state.mustProtein && protein < 10) continue;
+          if (state.mustFiber   && fiber < CC.highFiber)                     continue;
+          if (state.mustProtein && !meetsHighProtein(protein, energyKJ))     continue;
         }
 
         out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                   fiber, protein, cals, satFat, cost, co2, blendedFat });
+                   fiber, protein, energyKJ, cals, satFat, cost, co2, blendedFat });
       }
     }
     return out;
@@ -1985,7 +2003,7 @@ async function calculate() {
   // Key stats
   document.getElementById('stat-price').textContent = CC.currency+blendPrice.toFixed(2);
   document.getElementById('stat-fiber').textContent = fiber.toFixed(1)+'g';
-  document.getElementById('stat-fiber-badge').style.display = fiber >= 5 ? '' : 'none';
+  document.getElementById('stat-fiber-badge').style.display = fiber >= CC.highFiber ? '' : 'none';
   document.getElementById('stat-carbon').textContent = carbonPct+'%';
 
   // Hero title
@@ -2124,6 +2142,26 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   });
 }
 
+// Returns true if blend meets the "high in protein" claim for the active country.
+// US: simple g/100g threshold. UK: protein energy % = (protein_g * 17kJ) / energyKJ * 100
+function meetsHighProtein(protein_g, energyKJ) {
+  const cfg = CC.highProtein;
+  if (cfg.mode === 'energyPct') {
+    if (!energyKJ || energyKJ === 0) return false;
+    return (protein_g * 17 / energyKJ * 100) >= cfg.pct;
+  }
+  return protein_g >= cfg.g;
+}
+
+function meetsSourceProtein(protein_g, energyKJ) {
+  const cfg = CC.sourceProtein;
+  if (cfg.mode === 'energyPct') {
+    if (!energyKJ || energyKJ === 0) return false;
+    return (protein_g * 17 / energyKJ * 100) >= cfg.pct;
+  }
+  return protein_g >= cfg.g;
+}
+
 function fmtNutrient(key, val) {
   if (val === 0) return '0';
   if (key === 'Energy (Calories)' || key === 'Energy (kJ)') return Math.round(val).toString();
@@ -2247,9 +2285,17 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
     `;
     tbody.appendChild(tr);
 
-    // Health claims
-    if (key === 'Dietary Fiber' && blendVal >= 5) claims.push('High in Fiber');
-    if (key === 'Protein' && blendVal >= 10) claims.push('High in Protein');
+    // Health claims — thresholds differ by country
+    if (key === 'Dietary Fiber') {
+      const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
+      if (blendVal >= CC.highFiber) claims.push('High in Fiber');
+      else if (blendVal >= CC.sourceFiber) claims.push('Source of Fiber');
+    }
+    if (key === 'Protein') {
+      const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
+      if (meetsHighProtein(blendVal, energyKJ)) claims.push('High in Protein');
+      else if (meetsSourceProtein(blendVal, energyKJ)) claims.push('Source of Protein');
+    }
     if (key === 'Vitamin D' && blendVal >= 10) claims.push('High in Vitamin D');
   });
 
