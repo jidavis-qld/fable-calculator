@@ -941,6 +941,127 @@
 
   .hc-chip::before { content: '\2713'; font-weight: 700; color: var(--fable-bright); }
 
+  /* ── UK Traffic Light Label ─────────────── */
+  .tfl-wrap {
+    margin-top: 24px;
+    display: none; /* shown only for UK via JS */
+  }
+  .tfl-wrap.visible { display: block; }
+
+  .tfl-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+    margin-bottom: 10px;
+  }
+
+  .tfl-label {
+    display: inline-flex;
+    border: 2px solid #1a1a1a;
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif; /* FSA label uses a neutral sans */
+  }
+
+  /* Left panel — "per 100g" strip */
+  .tfl-per100 {
+    background: #1a1a1a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    min-width: 46px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Nutrient columns */
+  .tfl-nutrients {
+    display: flex;
+  }
+
+  .tfl-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 10px 8px;
+    min-width: 72px;
+    border-left: 1px solid #1a1a1a;
+    position: relative;
+  }
+
+  .tfl-cell-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Coloured pill at top of each cell */
+  .tfl-pill {
+    width: 100%;
+    border-radius: 3px;
+    padding: 6px 4px 5px;
+    text-align: center;
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+  }
+
+  .tfl-pill.green  { background: #008000; color: #fff; }
+  .tfl-pill.amber  { background: #ffc000; color: #1a1a1a; }
+  .tfl-pill.red    { background: #cc0000; color: #fff; }
+
+  .tfl-traffic-word {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .tfl-value {
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-top: 3px;
+  }
+
+  .tfl-unit {
+    font-size: 9px;
+    font-weight: 400;
+    margin-top: 1px;
+    opacity: 0.85;
+  }
+
+  .tfl-nutrient-name {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+
+  .tfl-ri {
+    font-size: 9px;
+    color: #555;
+    text-align: center;
+    line-height: 1.2;
+  }
+
   /* ── Sustainability ─────────────────────── */
   .sustainability-grid {
     display: grid;
@@ -1425,6 +1546,13 @@
             ⚠ Achieving a high in fibre recipe for formed burgers / meatballs is not recommended, as this will have a weak bind.
           </div>
         </div>
+
+        <!-- UK FSA Front-of-Pack Traffic Light Label -->
+        <div class="tfl-wrap" id="tfl-wrap">
+          <div class="tfl-heading">UK Front-of-Pack Nutrition Label — per 100g</div>
+          <div class="tfl-label" id="tfl-label"></div>
+        </div>
+
       </div>
     </div>
 
@@ -2078,6 +2206,7 @@ async function calculate() {
 
   // Nutrition
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
+  renderTrafficLight(recipeName, trimName);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
@@ -2359,6 +2488,92 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
   // Show burger/meatball fibre warning if constraint couldn't be met
   const fiberWarning = document.getElementById('fiber-burger-warning');
   fiberWarning.style.display = (fiberFallback && state.q2 === 'Burger / Meatball') ? '' : 'none';
+}
+
+// ── UK FSA Traffic Light Label ───────────────────────────────────────────────
+// Thresholds per 100g (FSA 2013 front-of-pack guidelines)
+const TFL_THRESHOLDS = {
+  fat:       { green: 3,    amber: 17.5, unit: 'g',  name: 'Fat',       ri: 70  },
+  saturates: { green: 1.5,  amber: 5,    unit: 'g',  name: 'Saturates', ri: 20  },
+  sugars:    { green: 5,    amber: 22.5, unit: 'g',  name: 'Sugars',    ri: 90  },
+  salt:      { green: 0.3,  amber: 1.5,  unit: 'g',  name: 'Salt',      ri: 6   },
+};
+
+// Energy RI values (adult)
+const ENERGY_RI_KJ   = 8400;
+const ENERGY_RI_KCAL = 2000;
+
+function tflColour(val, green, amber) {
+  if (val <= green)  return 'green';
+  if (val <= amber)  return 'amber';
+  return 'red';
+}
+
+function tflWord(colour) {
+  return colour.charAt(0).toUpperCase() + colour.slice(1); // "Green" → nope, keep as label
+}
+
+function renderTrafficLight(recipeName, trimName) {
+  const wrap  = document.getElementById('tfl-wrap');
+  const label = document.getElementById('tfl-label');
+
+  // Only show for UK
+  if (CC.code !== 'UK') { wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+
+  const energyKJ   = getBlendNutrient('Energy (kJ)',       recipeName, trimName);
+  const energyKcal = getBlendNutrient('Energy (Calories)', recipeName, trimName);
+  const fat        = getBlendNutrient('Total Fat',         recipeName, trimName);
+  const saturates  = getBlendNutrient('Saturated Fat',     recipeName, trimName);
+  const sugars     = getBlendNutrient('Total Sugars',      recipeName, trimName);
+  const salt       = getBlendNutrient('Salt',              recipeName, trimName);
+
+  // Energy % RI
+  const energyRiPct = Math.round((energyKJ / ENERGY_RI_KJ) * 100);
+
+  // Build nutrient cells
+  const nutrients = [
+    { key: 'fat',       val: fat,       fmt: fat.toFixed(1)       },
+    { key: 'saturates', val: saturates, fmt: saturates.toFixed(1) },
+    { key: 'sugars',    val: sugars,    fmt: sugars.toFixed(1)     },
+    { key: 'salt',      val: salt,      fmt: salt.toFixed(2)       },
+  ];
+
+  const cellsHtml = nutrients.map(({ key, val, fmt }) => {
+    const t      = TFL_THRESHOLDS[key];
+    const colour = tflColour(val, t.green, t.amber);
+    const riPct  = Math.round((val / t.ri) * 100);
+    return `
+      <div class="tfl-cell">
+        <div class="tfl-cell-inner">
+          <div class="tfl-pill ${colour}">
+            <span class="tfl-traffic-word">${colour.charAt(0).toUpperCase() + colour.slice(1)}</span>
+            <span class="tfl-value">${fmt}</span>
+            <span class="tfl-unit">${t.unit}</span>
+          </div>
+          <div class="tfl-nutrient-name">${t.name}</div>
+          <div class="tfl-ri">${riPct}% RI*</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  label.innerHTML = `
+    <div class="tfl-per100">per<br>100g</div>
+    <div class="tfl-nutrients">
+      <div class="tfl-cell" style="min-width:80px; border-left:1px solid #1a1a1a;">
+        <div class="tfl-cell-inner">
+          <div class="tfl-pill" style="background:#1a1a1a; color:#fff; min-height:42px;">
+            <span class="tfl-value" style="font-size:13px;">${Math.round(energyKJ)}</span>
+            <span class="tfl-unit">kJ</span>
+            <span class="tfl-value" style="font-size:11px; margin-top:2px;">${Math.round(energyKcal)}</span>
+            <span class="tfl-unit">kcal</span>
+          </div>
+          <div class="tfl-nutrient-name">Energy</div>
+          <div class="tfl-ri">${energyRiPct}% RI*</div>
+        </div>
+      </div>
+      ${cellsHtml}
+    </div>`;
 }
 
 function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
