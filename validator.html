@@ -7,105 +7,105 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: #1a2e1a; color: #e8f0e8; padding: 32px; min-height: 100vh; }
-  h1 { font-size: 22px; color: #cfff8e; margin-bottom: 6px; }
-  .subtitle { font-size: 13px; color: rgba(207,255,142,0.5); margin-bottom: 32px; }
+         background: #fafafa; color: #1a1a1a; padding: 32px; min-height: 100vh; }
+  h1 { font-size: 22px; color: #2e4214; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #6b7a5c; margin-bottom: 32px; }
 
   .format-block { margin-bottom: 48px; }
-  .format-title { font-size: 16px; font-weight: 700; color: #cfff8e;
-                  border-bottom: 1px solid rgba(207,255,142,0.2);
+  .format-title { font-size: 16px; font-weight: 700; color: #2e4214;
+                  border-bottom: 2px solid #cfff8e;
                   padding-bottom: 8px; margin-bottom: 16px; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 24px; }
-  th { background: rgba(207,255,142,0.1); color: #cfff8e; font-weight: 600;
-       padding: 8px 10px; text-align: left; white-space: nowrap; }
-  td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
-       vertical-align: top; }
-  tr:hover td { background: rgba(255,255,255,0.03); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  th { background: #2e4214; color: #cfff8e; font-weight: 600;
+       padding: 9px 12px; text-align: left; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid #e8ede3; vertical-align: middle; color: #2a2a2a; }
+  tr:hover td { background: #f5f9f0; }
 
-  .winner-row td { background: rgba(207,255,142,0.07); }
-  .winner-label { display: inline-block; background: #cfff8e; color: #1a2e1a;
-                  font-size: 10px; font-weight: 700; padding: 1px 6px;
-                  border-radius: 100px; margin-left: 6px; }
+  .winner-row td { background: #f0f7e8; }
+  .fallback-badge { display: inline-block; background: #fff3cd; color: #856404;
+                    font-size: 10px; font-weight: 700; padding: 2px 7px;
+                    border-radius: 100px; margin-left: 6px; border: 1px solid #ffc107; }
 
-  .score-bar-wrap { display: flex; align-items: center; gap: 6px; }
-  .score-bar { height: 6px; border-radius: 3px; background: #cfff8e; min-width: 2px; }
-  .score-val { font-size: 11px; color: rgba(207,255,142,0.6); white-space: nowrap; }
-
-  .priority-label { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-  .p-chip { background: rgba(207,255,142,0.12); color: #cfff8e; font-size: 10px;
-             padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
-  .p-chip.rank-1 { background: rgba(207,255,142,0.3); font-weight: 700; }
-
-  .unused-section { margin-top: 8px; }
-  .unused-title { font-size: 13px; color: #ff9999; font-weight: 600; margin-bottom: 8px; }
-  .unused-chip { display: inline-block; background: rgba(255,100,100,0.15);
-                 color: #ff9999; font-size: 11px; padding: 3px 10px;
-                 border-radius: 100px; margin: 3px; }
-  .all-used { color: rgba(207,255,142,0.5); font-size: 12px; }
-
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
                   gap: 12px; margin-bottom: 32px; }
-  .summary-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(207,255,142,0.1);
+  .summary-card { background: #fff; border: 1px solid #dde8d4;
                   border-radius: 10px; padding: 14px 16px; }
-  .summary-card .label { font-size: 11px; color: rgba(207,255,142,0.5); margin-bottom: 4px; }
-  .summary-card .value { font-size: 20px; font-weight: 700; color: #cfff8e; }
+  .summary-card .label { font-size: 11px; color: #6b7a5c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .summary-card .value { font-size: 20px; font-weight: 700; color: #2e4214; }
 
-  .q1-selector { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .q1-selector label { font-size: 13px; color: rgba(207,255,142,0.7); }
-  .q1-selector select { background: rgba(207,255,142,0.1); color: #cfff8e;
-                         border: 1px solid rgba(207,255,142,0.25); border-radius: 6px;
+  .controls-bar { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+                  background: #fff; border: 1px solid #dde8d4; border-radius: 10px; padding: 14px 16px; }
+  .controls-bar label { font-size: 13px; color: #4a5a3a; font-weight: 500; }
+  .controls-bar select { background: #fff; color: #1a1a1a;
+                         border: 1px solid #b8ccaa; border-radius: 6px;
                          padding: 6px 10px; font-size: 13px; cursor: pointer; }
-  .q1-selector select option { background: #1a2e1a; }
-  .run-btn { background: #cfff8e; color: #1a2e1a; border: none; border-radius: 6px;
-             padding: 7px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .run-btn:hover { background: #b8e87a; }
+  .run-btn { background: #2e4214; color: #cfff8e; border: none; border-radius: 6px;
+             padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
+  .run-btn:hover { background: #3d5a1c; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #4a5a3a;
+              font-size: 13px; font-weight: 500; text-decoration: none;
+              border: 1px solid #b8ccaa; border-radius: 6px; padding: 7px 14px;
+              background: #fff; }
+  .back-btn:hover { background: #f0f7e8; }
 
-  .constraints { margin-bottom: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .constraints { display: flex; gap: 10px; flex-wrap: wrap; }
   .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer;
-                background: rgba(207,255,142,0.06); border: 1px solid rgba(207,255,142,0.15);
+                background: #fff; border: 1px solid #b8ccaa;
                 border-radius: 8px; padding: 8px 14px; user-select: none;
                 transition: background 0.15s; }
-  .check-item:hover { background: rgba(207,255,142,0.1); }
-  .check-item.checked { background: rgba(207,255,142,0.18); border-color: rgba(207,255,142,0.4); }
-  .check-box { width: 14px; height: 14px; border: 2px solid rgba(207,255,142,0.4);
+  .check-item:hover { background: #f0f7e8; }
+  .check-item.checked { background: #e8f5d8; border-color: #5e8a3c; }
+  .check-box { width: 14px; height: 14px; border: 2px solid #b8ccaa;
                border-radius: 3px; flex-shrink: 0; position: relative; }
-  .check-item.checked .check-box { background: #cfff8e; border-color: #cfff8e; }
+  .check-item.checked .check-box { background: #2e4214; border-color: #2e4214; }
   .check-item.checked .check-box::after { content: '✓'; position: absolute;
-    top: -2px; left: 1px; font-size: 11px; color: #1a2e1a; font-weight: 900; }
-  .check-text { font-size: 12px; color: #cfff8e; font-weight: 600; }
-  .check-sub  { font-size: 10px; color: rgba(207,255,142,0.45); margin-top: 1px; }
-  .fallback-badge { display: inline-block; background: rgba(255,180,50,0.2); color: #ffb432;
-                    font-size: 10px; font-weight: 700; padding: 1px 7px;
-                    border-radius: 100px; margin-left: 6px; }
+    top: -2px; left: 1px; font-size: 11px; color: #cfff8e; font-weight: 900; }
+  .check-text { font-size: 12px; color: #2a2a2a; font-weight: 600; }
+  .check-sub  { font-size: 10px; color: #6b7a5c; margin-top: 1px; }
 
-  .loading { color: rgba(207,255,142,0.4); font-size: 14px; padding: 40px 0; text-align: center; }
-  .detail-col { font-size: 11px; color: rgba(207,255,142,0.55); line-height: 1.6; }
-  .dim-scores { display: flex; flex-direction: column; gap: 2px; }
-  .dim-row { display: flex; justify-content: space-between; gap: 8px; }
-  .dim-name { color: rgba(207,255,142,0.45); }
-  .dim-val  { color: rgba(207,255,142,0.8); font-weight: 600; }
-
+  .price-controls-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 10px;
+                         padding: 14px 16px; margin-bottom: 28px; display: none; }
+  .price-controls-wrap p { font-size: 12px; color: #6b7a5c; margin-bottom: 10px; }
+  .price-inputs-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .price-input-group { display:flex; flex-direction:column; gap:4px; }
-  .price-input-group label { font-size:11px; color:rgba(207,255,142,0.55); }
-  .price-input-group input { background:rgba(207,255,142,0.08); color:#cfff8e;
-    border:1px solid rgba(207,255,142,0.2); border-radius:5px;
-    padding:5px 8px; font-size:12px; width:90px; }
-  .price-input-group input:focus { outline:none; border-color:rgba(207,255,142,0.5); }
+  .price-input-group label { font-size:11px; color:#6b7a5c; font-weight: 500; }
+  .price-input-group input { background: #fff; color: #1a1a1a;
+    border: 1px solid #b8ccaa; border-radius: 5px;
+    padding: 5px 8px; font-size: 12px; width: 90px; }
+  .price-input-group input:focus { outline: none; border-color: #2e4214; }
+
+  .loading { color: #6b7a5c; font-size: 14px; padding: 40px 0; text-align: center; }
+
   .priority-chip { display:inline-block; padding:3px 10px; border-radius:100px;
-    font-size:11px; font-weight:700; margin-right:4px; }
-  .pc-cost       { background:rgba(255,200,50,0.2);  color:#ffc832; }
-  .pc-nutrition  { background:rgba(100,220,100,0.2); color:#64dc64; }
-  .pc-balance    { background:rgba(150,150,255,0.2); color:#9696ff; }
-  .pc-sustain    { background:rgba(100,200,150,0.2); color:#64c896; }
+    font-size:11px; font-weight:700; }
+  .pc-cost       { background: #fef9e7; color: #856404; border: 1px solid #fde68a; }
+  .pc-nutrition  { background: #e8f5d8; color: #2e4214; border: 1px solid #cfff8e; }
+  .pc-balance    { background: #ede9f6; color: #5b21b6; border: 1px solid #c4b5fd; }
+  .pc-sustain    { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+
+  .runner-up-cell { font-size: 12px; color: #4a5a3a; line-height: 1.7; }
+  .runner-up-name { font-weight: 600; color: #1a1a1a; }
+  .ru-delta { display: inline-block; font-size: 11px; border-radius: 100px;
+              padding: 1px 7px; font-weight: 600; }
+  .ru-worse { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+  .ru-better { background: #e8f5d8; color: #166534; border: 1px solid #86efac; }
+
+  .nutrient-val { font-weight: 600; }
+  .flag-red { color: #b91c1c; }
 </style>
 </head>
 <body>
 
-<h1>🔍 Fable Recipe Validator</h1>
-<p class="subtitle">Tests all 4 priorities × 2 formats through the scoring engine. Adjust prices to see how results shift.</p>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+  <a href="index.html" class="back-btn">← Back to Calculator</a>
+  <div>
+    <h1>Recipe Validator</h1>
+    <p class="subtitle">Tests all priorities and formats through the scoring engine. Adjust prices to see how results shift.</p>
+  </div>
+</div>
 
-<div class="q1-selector">
+<div class="controls-bar">
   <label>Country:</label>
   <select id="country-select">
     <option value="US">🇺🇸 United States</option>
@@ -118,34 +118,31 @@
     <option value="0.2" selected>80CL — 20% fat</option>
     <option value="0.25">75CL — 25% fat</option>
   </select>
-  <button class="run-btn" onclick="runValidator()">Run Validator</button>
-</div>
-
-<div class="constraints">
-  <div class="check-item" id="check-fiber" onclick="toggleConstraint('fiber')">
-    <div class="check-box"></div>
-    <div>
-      <div class="check-text">Must be High in Fiber</div>
-      <div class="check-sub">≥5g fiber per 100g</div>
+  <div class="constraints">
+    <div class="check-item" id="check-fiber" onclick="toggleConstraint('fiber')">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-text">Must be High in Fiber</div>
+        <div class="check-sub" id="fiber-sub">≥5g fiber per 100g</div>
+      </div>
+    </div>
+    <div class="check-item" id="check-protein" onclick="toggleConstraint('protein')">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-text">Must be High in Protein</div>
+        <div class="check-sub" id="protein-sub">≥10g protein per 100g</div>
+      </div>
     </div>
   </div>
-  <div class="check-item" id="check-protein" onclick="toggleConstraint('protein')">
-    <div class="check-box"></div>
-    <div>
-      <div class="check-text">Must be High in Protein</div>
-      <div class="check-sub">≥10g protein per 100g</div>
-    </div>
-  </div>
+  <button class="run-btn" onclick="runValidator()">Run</button>
 </div>
 
-<div id="price-controls" style="margin-bottom:28px; display:none;">
-  <p style="font-size:12px; color:rgba(207,255,142,0.5); margin-bottom:10px;">
-    Adjust beef prices to test sensitivity. Changes apply immediately on next run.
-  </p>
-  <div id="price-inputs" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+<div class="price-controls-wrap" id="price-controls">
+  <p>Adjust beef prices to test sensitivity. Changes apply on next run.</p>
+  <div class="price-inputs-grid" id="price-inputs"></div>
 </div>
 
-<div id="output"><p class="loading">Loading data from Supabase…</p></div>
+<div id="output"><p class="loading">Loading data…</p></div>
 
 <script>
 /* ── Supabase config ── */
@@ -180,7 +177,6 @@ async function sbFetch(table, params = '') {
 let BEEF_PRICES = {}, RECIPES = {}, HEALTH_REF = { shiitake: {}, beef: {} };
 let SHIITAKE_CO2 = 0, BEEF_CO2 = 0;
 let SCORING_CONFIG = {};
-let dataLoaded = false;
 
 /* ── Constraint state ── */
 let mustFiber   = false;
@@ -201,14 +197,22 @@ const CL_ORDER_LEAN = [
   '75CL Beef Trim','80CL Beef Trim','85CL Beef Trim','90CL Beef Trim'
 ];
 
-const PRIORITIES = ['Better nutrition', 'Lower cost', 'Sustainability / low carbon'];
-
 async function loadData() {
-  dataLoaded = false;
   BEEF_PRICES = {}; RECIPES = {}; HEALTH_REF = { shiitake: {}, beef: {} };
   SHIITAKE_CO2 = 0; BEEF_CO2 = 0; SCORING_CONFIG = {};
   const selectedCountry = document.getElementById('country-select').value;
   CC = COUNTRY_CONFIG[selectedCountry];
+  // Update constraint sub-labels to match country
+  const fiberSub = CC.highProtein.mode === 'energyPct'
+    ? `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`
+    : `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`;
+  const proteinSub = CC.highProtein.mode === 'energyPct'
+    ? `≥${CC.highProtein.pct}% energy from protein`
+    : `≥${CC.highProtein.g}g protein per 100g`;
+  document.getElementById('fiber-sub').textContent = fiberSub;
+  document.getElementById('protein-sub').textContent = proteinSub;
+  document.querySelector('#check-fiber .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
+
   const countryFilter = `country=eq.${selectedCountry}`;
   const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
     sbFetch('nutrition',   countryFilter),
@@ -237,7 +241,6 @@ async function loadData() {
     if (r.ingredient === 'beef')     BEEF_CO2     = parseFloat(r.co2_per_kg);
   });
   scoringCfg.forEach(r => { SCORING_CONFIG[r.key] = parseFloat(r.value); });
-  dataLoaded = true;
 }
 
 function getBlendNutrient(nutrient, recipeName, trimName, format) {
@@ -247,7 +250,7 @@ function getBlendNutrient(nutrient, recipeName, trimName, format) {
   return s * fablePct + b * beefPct;
 }
 
-/* ── Weight sets — built dynamically from SCORING_CONFIG ── */
+/* ── Weight sets ── */
 function getWeightSets() {
   const cfg = SCORING_CONFIG;
   return {
@@ -282,19 +285,15 @@ function scoringEngine(format, priority, userFat) {
   const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
   const ceilIdx = CL_ORDER_LEAN.indexOf(userTrimName);
 
-  // For a given recipe, find the trim floor — the leanest trim (scanning fatty→lean)
-  // whose blended fat is still above the user's target fat, i.e. the closest-above
-  // option. Falls back to the first trim at-or-below if no trim exceeds the target.
   function naturalTrimIdx(beefPct, fablePct) {
     let floorIdx = null;
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
       const data = BEEF_PRICES[CL_ORDER_LEAN[i]];
       if (!data) continue;
       const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
-      if (blendedFat > userFat) floorIdx = i; // keep updating: last above = closest above
+      if (blendedFat > userFat) floorIdx = i;
     }
     if (floorIdx !== null) return floorIdx;
-    // Fallback: no trim exceeds target — use first trim at or below
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
       const data = BEEF_PRICES[CL_ORDER_LEAN[i]];
       if (!data) continue;
@@ -306,7 +305,6 @@ function scoringEngine(format, priority, userFat) {
   function buildCandidates(applyConstraints) {
     const out = [];
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
-      // Burger / Meatball: no rehydrated (water-containing) or 50/50 recipes
       if (format === 'Burger / Meatball' && waterPct > 0) continue;
       if (format === 'Burger / Meatball' && beefPct === 0.5) continue;
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
@@ -317,15 +315,15 @@ function scoringEngine(format, priority, userFat) {
         const trimData = BEEF_PRICES[trimName];
         if (!trimData) continue;
         const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
-        const fiber   = shiitakeFiber * fablePct;
-        const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
-        const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
-        const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
-        const cost    = beefPct * trimData.price + fablePct * CC.fablePrice + waterPct * CC.waterPrice;
-        const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+        const fiber    = shiitakeFiber * fablePct;
+        const protein  = getBlendNutrient('Protein',           recipeName, trimName, format);
+        const cals     = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
+        const satFat   = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
+        const cost     = beefPct * trimData.price + fablePct * CC.fablePrice + waterPct * CC.waterPrice;
+        const co2      = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
         const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName, format);
         if (applyConstraints) {
-          if (mustFiber   && fiber < CC.highFiber)               continue;
+          if (mustFiber   && fiber < CC.highFiber)                continue;
           if (mustProtein && !meetsHighProtein(protein, energyKJ)) continue;
         }
         out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
@@ -335,7 +333,6 @@ function scoringEngine(format, priority, userFat) {
     return out;
   }
 
-  // Try constrained pool first; fall back to unconstrained if nothing passes
   const constrained = buildCandidates(true);
   const usedFallback = constrained.length === 0 && (mustFiber || mustProtein);
   const pool = constrained.length > 0 ? constrained : buildCandidates(false);
@@ -382,7 +379,6 @@ function scoringEngine(format, priority, userFat) {
 
   const finalScores = pool.map((c, i) => {
     const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
-    // Trim penalty + BRB: both only apply in balance priority
     const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
     const stepsLeaner  = Math.max(0, ceilIdx - candidateIdx);
     const penalised = (priority === 'balance')
@@ -398,15 +394,13 @@ function scoringEngine(format, priority, userFat) {
     .map((c, i) => ({
       ...c,
       nutritionScore: nutritionScore[i],
-      costScore: nCost[i],
-      sustainScore: nCO2[i],
       finalScore: finalScores[i],
       usedFallback,
     }))
     .sort((a, b) => b.finalScore - a.finalScore);
 }
 
-/* ── Build editable price inputs after data loads ── */
+/* ── Build editable price inputs ── */
 function buildPriceInputs() {
   const wrap = document.getElementById('price-inputs');
   wrap.innerHTML = '';
@@ -424,6 +418,41 @@ function buildPriceInputs() {
   document.getElementById('price-controls').style.display = 'block';
 }
 
+/* ── Runner-up comparison HTML ── */
+function runnerUpHtml(winner, runnerUp, priority) {
+  if (!runnerUp) return '<span style="color:#aaa">—</span>';
+  const name = `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')}`;
+
+  let deltas = [];
+
+  if (priority === 'cost') {
+    // Cost priority: show how much more expensive the runner-up is
+    const diff = runnerUp.cost - winner.cost;
+    const sign = diff > 0 ? '+' : '';
+    const cls = diff > 0 ? 'ru-worse' : 'ru-better';
+    deltas.push(`<span class="ru-delta ${cls}">${sign}${CC.currency}${Math.abs(diff).toFixed(2)} cost</span>`);
+  } else {
+    // Score-based priorities: express runner-up score as % behind winner
+    const scoreDiff = winner.finalScore - runnerUp.finalScore;
+    const pctBehind = winner.finalScore > 0 ? Math.round(scoreDiff / winner.finalScore * 100) : 0;
+    if (pctBehind > 0) {
+      deltas.push(`<span class="ru-delta ru-worse">${pctBehind}% lower score</span>`);
+    } else {
+      deltas.push(`<span class="ru-delta ru-better">tied</span>`);
+    }
+    // Also show cost difference as context
+    const costDiff = runnerUp.cost - winner.cost;
+    const sign = costDiff > 0 ? '+' : '';
+    const cls = costDiff > 0 ? 'ru-worse' : 'ru-better';
+    deltas.push(`<span class="ru-delta ${cls}">${sign}${CC.currency}${Math.abs(costDiff).toFixed(2)} cost</span>`);
+  }
+
+  return `<div class="runner-up-cell">
+    <span class="runner-up-name">${name}</span><br>
+    ${deltas.join(' ')}
+  </div>`;
+}
+
 /* ── Render ── */
 async function runValidator() {
   document.getElementById('output').innerHTML = '<p class="loading">Running…</p>';
@@ -435,37 +464,23 @@ async function runValidator() {
   const formats = Object.keys(RECIPES);
   const WEIGHT_SETS = getWeightSets();
   const priorities = Object.keys(WEIGHT_SETS);
+  const priceUnit = CC.priceUnit.split(' ')[1];
 
   let html = '';
-  const allWinners = new Set();
-  const allRecipes = new Set();
-  formats.forEach(fmt => Object.keys(RECIPES[fmt]).forEach(r => allRecipes.add(fmt + '::' + r)));
 
   for (const format of formats) {
-    const recipeKeys = Object.keys(RECIPES[format]).filter(r => {
-      const [bp,,wp] = RECIPES[format][r];
-      return !(format === 'Burger / Meatball' && (wp > 0 || bp === 0.5));
-    });
-    const winnerCounts = {};
-    recipeKeys.forEach(r => winnerCounts[r] = 0);
-
     html += `<div class="format-block">`;
-    html += `<div class="format-title">📋 ${format} — Q1 trim: ${userTrimName}</div>`;
+    html += `<div class="format-title">${format} — Q1 trim: ${userTrimName.replace(' Beef Trim','')}</div>`;
     html += `<table>
       <thead><tr>
         <th>Priority</th>
-        <th>Weights (N/C/S)</th>
-        <th>Winner Recipe</th>
+        <th>Recommended Recipe</th>
         <th>Beef Trim</th>
-        <th>Final Score</th>
-        <th>Nutr.</th>
-        <th>Cost</th>
-        <th>Sustain.</th>
-        <th>${CC.fiberSpelling}</th>
-        <th>Protein</th>
+        <th>${CC.fiberSpelling} (g/100g)</th>
+        <th>Protein (g/100g)</th>
         <th>Calories</th>
-        <th>Sat Fat</th>
-        <th>${CC.currency}/${CC.priceUnit.split(' ')[1]}</th>
+        <th>Sat Fat (g)</th>
+        <th>${CC.currency}/${priceUnit}</th>
         <th>Runner-up</th>
       </tr></thead><tbody>`;
 
@@ -475,96 +490,48 @@ async function runValidator() {
 
       const winner   = ranked[0];
       const runnerUp = ranked[1];
-      winnerCounts[winner.recipeName] = (winnerCounts[winner.recipeName] || 0) + 1;
-      allWinners.add(format + '::' + winner.recipeName);
 
-      const w = WEIGHT_SETS[priority];
       const { label, cls } = PRIORITY_LABELS[priority];
-      const maxScore = winner.finalScore;
-      const barWidth = Math.round(maxScore / 1.15 * 80);
       const fallbackHtml = winner.usedFallback
-        ? `<span class="fallback-badge">constraint fallback</span>`
+        ? `<span class="fallback-badge">constraint not met</span>`
         : '';
+
+      const fiberFlag = mustFiber && winner.fiber < CC.highFiber ? ' flag-red' : '';
+      const proteinFlag = mustProtein && !meetsHighProtein(winner.protein, winner.energyKJ) ? ' flag-red' : '';
 
       html += `<tr class="winner-row">
         <td><span class="priority-chip ${cls}">${label}</span></td>
-        <td class="detail-col">${w.n}/${w.c}/${w.s}</td>
         <td><strong>${winner.recipeName}</strong>${fallbackHtml}</td>
         <td>${winner.trimName.replace(' Beef Trim','')}</td>
-        <td>
-          <div class="score-bar-wrap">
-            <div class="score-bar" style="width:${barWidth}px"></div>
-            <span class="score-val">${winner.finalScore.toFixed(3)}</span>
-          </div>
-        </td>
-        <td class="detail-col">${(winner.nutritionScore*100).toFixed(0)}%</td>
-        <td class="detail-col">${(winner.costScore*100).toFixed(0)}%</td>
-        <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
-        <td class="detail-col" style="${winner.fiber < CC.highFiber && mustFiber ? 'color:#ff9999' : ''}">${winner.fiber.toFixed(1)}g</td>
-        <td class="detail-col" style="${!meetsHighProtein(winner.protein, winner.energyKJ) && mustProtein ? 'color:#ff9999' : ''}">${winner.protein.toFixed(1)}g</td>
-        <td class="detail-col">${winner.cals.toFixed(0)}</td>
-        <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
-        <td class="detail-col">${CC.currency}${winner.cost.toFixed(2)}</td>
-        <td class="detail-col" style="color:rgba(207,255,142,0.35)">
-          ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} (${CC.currency}${runnerUp.cost.toFixed(2)})` : '—'}
-        </td>
+        <td><span class="nutrient-val${fiberFlag}">${winner.fiber.toFixed(1)}</span></td>
+        <td><span class="nutrient-val${proteinFlag}">${winner.protein.toFixed(1)}</span></td>
+        <td>${winner.cals.toFixed(0)}</td>
+        <td>${winner.satFat.toFixed(1)}</td>
+        <td>${CC.currency}${winner.cost.toFixed(2)}</td>
+        <td>${runnerUpHtml(winner, runnerUp, priority)}</td>
       </tr>`;
     });
 
-    html += `</tbody></table>`;
-
-    // Win counts per eligible recipe
-    html += `<table style="max-width:500px; margin-bottom:12px;">
-      <thead><tr><th>Recipe</th><th>Times Selected</th><th>Usage</th></tr></thead><tbody>`;
-    recipeKeys.forEach(r => {
-      const count = winnerCounts[r] || 0;
-      const pct = Math.round(count / priorities.length * 100);
-      const unused = count === 0;
-      html += `<tr>
-        <td ${unused ? 'style="color:#ff9999"' : ''}>${r}${unused ? ' ⚠️' : ''}</td>
-        <td>${count} / ${priorities.length}</td>
-        <td><div class="score-bar-wrap">
-          <div class="score-bar" style="width:${pct}px;background:${unused?'#ff6666':'#cfff8e'}"></div>
-          <span class="score-val">${pct}%</span>
-        </div></td>
-      </tr>`;
-    });
     html += `</tbody></table></div>`;
   }
 
-  // Global unused
-  const unusedRecipes = [];
-  allRecipes.forEach(key => {
-    const [fmt, r] = key.split('::');
-    const [bp,,wp] = RECIPES[fmt][r];
-    if (fmt === 'Burger / Meatball' && (wp > 0 || bp === 0.5)) return; // legitimately excluded
-    if (!allWinners.has(key)) unusedRecipes.push(key);
-  });
-
-  const fiberThresholdLabel = CC.highProtein.mode === 'energyPct'
-    ? `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()}`
-    : `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()}`;
-  const proteinThresholdLabel = CC.highProtein.mode === 'energyPct'
-    ? `≥${CC.highProtein.pct}% energy from protein`
+  // Summary bar
+  const fiberLabel = `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()}`;
+  const proteinLabel = CC.highProtein.mode === 'energyPct'
+    ? `≥${CC.highProtein.pct}% energy protein`
     : `≥${CC.highProtein.g}g protein`;
-  const constraintLabel = [mustFiber && fiberThresholdLabel, mustProtein && proteinThresholdLabel]
+  const constraintLabel = [mustFiber && fiberLabel, mustProtein && proteinLabel]
     .filter(Boolean).join(' + ') || 'none';
 
-  html = `
-    <div class="summary-grid">
+  const summaryHtml = `
+    <div class="summary-grid" style="margin-bottom:28px;">
+      <div class="summary-card"><div class="label">Country</div><div class="value">${document.getElementById('country-select').value}</div></div>
       <div class="summary-card"><div class="label">Q1 Trim</div><div class="value">${userTrimName.replace(' Beef Trim','')}</div></div>
-      <div class="summary-card"><div class="label">Priorities tested</div><div class="value">${priorities.length} × ${formats.length} formats</div></div>
-      <div class="summary-card"><div class="label">Constraints</div><div class="value" style="font-size:14px;padding-top:3px">${constraintLabel}</div></div>
-      <div class="summary-card"><div class="label">Never selected</div><div class="value" style="color:${unusedRecipes.length>0?'#ff9999':'#cfff8e'}">${unusedRecipes.length}</div></div>
-    </div>
-    ${unusedRecipes.length > 0 ? `
-    <div class="unused-section" style="margin-bottom:28px;">
-      <div class="unused-title">⚠️ Eligible recipes never selected:</div>
-      ${unusedRecipes.map(k => `<span class="unused-chip">${k.replace('::','  →  ')}</span>`).join('')}
-    </div>` : `<p class="all-used" style="margin-bottom:28px;">✅ All eligible recipes are selected at least once.</p>`}
-  ` + html;
+      <div class="summary-card"><div class="label">Priorities × Formats</div><div class="value">${priorities.length} × ${formats.length}</div></div>
+      <div class="summary-card"><div class="label">Constraints</div><div class="value" style="font-size:13px;padding-top:4px">${constraintLabel}</div></div>
+    </div>`;
 
-  document.getElementById('output').innerHTML = html;
+  document.getElementById('output').innerHTML = summaryHtml + html;
 }
 
 // Auto-run on load
