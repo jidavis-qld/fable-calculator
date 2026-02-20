@@ -177,7 +177,7 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 
 ## 7. Beef Prices
 
-Prices stored in the Supabase `beef_prices` table (editable there). Each row has a `country` column (`US`, `UK`, `EU`) and a `price_unit` column (`per_lb` or `per_kg`).
+Prices stored in the Supabase `beef_prices` table (editable there). Each row has a `country` column (`US`, `UK`, `AU`, `EU`) and a `price_unit` column (`per_lb` or `per_kg`).
 
 ### United States ($/lb)
 
@@ -206,6 +206,20 @@ Fable Shiitake Infusion: **$4.98/lb**
 | 90CL | 10% | £7.50 |
 
 Fable Shiitake Infusion: **£6.00/kg**
+
+### Australia (AUD/kg)
+
+| Grade | Fat % | Price |
+|---|---|---|
+| 60CL | 40% | $7.00 |
+| 65CL | 35% | $7.50 |
+| 70CL | 30% | $8.00 |
+| 75CL | 25% | $8.50 |
+| 80CL | 20% | $9.00 |
+| 85CL | 15% | $9.75 |
+| 90CL | 10% | $10.50 |
+
+Fable Shiitake Infusion: **$10.50/kg**
 
 ### Europe (€/kg)
 

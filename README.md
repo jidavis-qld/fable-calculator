@@ -76,6 +76,7 @@ All mutable data lives in Supabase. The app reads it at runtime — no rebuild n
 |---|---|---|
 | United States | $ / lb | None |
 | United Kingdom | £ / kg | FSA Traffic Light (per 100g) |
+| Australia | $ / kg | Health Star Rating (0.5–5.0 ★) |
 | Europe | € / kg | Nutri-Score (A–E) |
 
 ---

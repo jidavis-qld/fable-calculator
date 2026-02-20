@@ -15,7 +15,8 @@ async function calculate() {
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];
   const trimPrice     = BEEF_PRICES[trimName].price;
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
-  const fiber         = getBlendNutrient('Dietary Fiber', recipeName, trimName);
+  const fiberKey      = CC.code === 'AU' ? 'Dietary Fibre' : 'Dietary Fiber';
+  const fiber         = getBlendNutrient(fiberKey, recipeName, trimName);
   // beefOnlyPrice = the price of the user's originally selected fat % trim (Q1)
   const userTrimName  = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === state.q1)?.[0] || trimName;
   const beefOnlyPrice = BEEF_PRICES[userTrimName].price;
@@ -55,6 +56,7 @@ async function calculate() {
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
   renderTrafficLight(recipeName, trimName);
   renderNutriScore(recipeName, trimName, userTrimName);
+  renderHSR(recipeName, trimName, userTrimName);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
@@ -181,7 +183,17 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
 function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback = false) {
   // Nutrient list differs by country
   const isUK = CC.code === 'UK' || CC.code === 'EU';
-  const nutrients = isUK ? [
+  const isAU = CC.code === 'AU';
+  const nutrients = isAU ? [
+    { key: 'Energy (kJ)',    label: 'Energy (kJ)',    bold: true },
+    { key: 'Protein',        label: 'Protein',        bold: true },
+    { key: 'Total Fat',      label: 'Total Fat',      bold: true },
+    { key: 'Saturated Fat',  label: '   Saturated Fat', sub: true },
+    { key: 'Carbohydrate',   label: 'Carbohydrate',   bold: true },
+    { key: 'Total Sugars',   label: '   Total Sugars',  sub: true },
+    { key: 'Dietary Fibre',  label: '   Dietary Fibre', sub: true },
+    { key: 'Sodium',         label: 'Sodium',         bold: true },
+  ] : isUK ? [
     { key: 'Energy (kJ)',       label: 'Energy (kJ)',       bold: true },
     { key: 'Energy (Calories)', label: 'Energy (Calories)', bold: true },
     { key: 'Total Fat',         label: 'Total Fat',         bold: true },
@@ -212,7 +224,7 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
   // Nutrients where LOWER blend value = better outcome
   const lowerBetter = new Set(['Energy (kJ)','Energy (Calories)','Total Fat','Saturated Fat','Trans Fat','Cholesterol','Sodium','Carbohydrate','Total Carbohydrate','Total Sugars','Added Sugars','Salt']);
   // Nutrients where HIGHER blend value = better outcome
-  const higherBetter = new Set(['Dietary Fiber','Protein','Vitamin D','Calcium','Iron','Potassium']);
+  const higherBetter = new Set(['Dietary Fiber','Dietary Fibre','Protein','Vitamin D','Calcium','Iron','Potassium']);
 
   // Interpolate between two hex colours by a 0–1 factor
   function lerpColor(hexA, hexB, t) {
@@ -295,7 +307,7 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
     tbody.appendChild(tr);
 
     // Health claims — thresholds differ by country
-    if (key === 'Dietary Fiber') {
+    if (key === 'Dietary Fiber' || key === 'Dietary Fibre') {
       const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
       if (blendVal >= CC.highFiber) claims.push(`High in ${CC.fiberSpelling}`);
       else if (blendVal >= CC.sourceFiber) claims.push(`Source of ${CC.fiberSpelling}`);

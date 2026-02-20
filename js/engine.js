@@ -62,7 +62,7 @@ function scoringEngine() {
   const userFat = state.q1;        // user's Q1 fat % selection
 
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
-  const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
+  const shiitakeFiber = (HEALTH_REF.shiitake['Dietary Fiber'] ?? HEALTH_REF.shiitake['Dietary Fibre'])?.val ?? 0;
 
   // User's Q1 trim = the ceiling (leanest allowed beef CL)
   // e.g. if user picked 80CL, engine cannot go to 85CL or 90CL
@@ -263,7 +263,7 @@ function meetsSourceProtein(protein_g, energyKJ) {
 
 function fmtNutrient(key, val) {
   if (val === 0) return '0';
-  if (key === 'Energy (Calories)' || key === 'Energy (kJ)') return Math.round(val).toString();
+  if (key === 'Energy (Calories)' || key === 'Energy (kJ)' || key === 'Sodium') return Math.round(val).toString();
   if (val < 1) return val.toFixed(2);
   return val.toFixed(1);
 }
