@@ -1292,7 +1292,7 @@
       </div>
       <div class="key-stat">
         <div class="key-stat-val" id="stat-fiber">—</div>
-        <div class="key-stat-label">fiber per 100g</div>
+        <div class="key-stat-label" id="stat-fiber-label">fiber per 100g</div>
         <div class="key-stat-badge" id="stat-fiber-badge">High in Fiber</div>
       </div>
       <div class="key-stat">
@@ -1367,6 +1367,9 @@
         <div class="health-claims" id="health-claims">
           <div class="hc-label">✓ Acceptable health claims for your blend</div>
           <div class="hc-chips" id="hc-chips"></div>
+          <div id="fiber-burger-warning" style="display:none; margin-top:12px; padding:10px 14px; background:#fff8e1; border-left:3px solid #f59e0b; border-radius:6px; font-size:14px; color:#7c5a00;">
+            ⚠ Achieving a high in fibre recipe for formed burgers / meatballs is not recommended, as this will result in a weak bind.
+          </div>
         </div>
       </div>
     </div>
@@ -1578,6 +1581,7 @@ const COUNTRY_CONFIG = {
     sourceFiber:      2.5,  // g per 100g (not used in US claims but defined for consistency)
     highProtein:      { mode: 'grams', g: 10 },
     sourceProtein:    { mode: 'grams', g: 5  },
+    fiberSpelling:        'Fiber',
     fiberConstraintSub:   '≥5g fiber per 100g — achievable in all blends',
     proteinConstraintSub: '≥10g protein per 100g — may affect trim selection',
   },
@@ -1593,7 +1597,8 @@ const COUNTRY_CONFIG = {
     sourceFiber:      3,    // g per 100g
     highProtein:      { mode: 'energyPct', pct: 20 }, // protein energy ≥20% of total kJ
     sourceProtein:    { mode: 'energyPct', pct: 10 },
-    fiberConstraintSub:   '≥6g fiber per 100g (UK high in fiber)',
+    fiberSpelling:        'Fibre',
+    fiberConstraintSub:   '≥6g fibre per 100g (UK high in fibre)',
     proteinConstraintSub: '≥20% energy from protein (UK high in protein)',
   },
 };
@@ -1720,9 +1725,12 @@ function selectCountry(el) {
     CC = COUNTRY_CONFIG[country];
     comingSoon.style.display = 'none';
     btn.disabled = false;
-    // Update constraint subtitle labels for this country
+    // Update constraint subtitle labels and spelling for this country
     document.getElementById('fiber-constraint-sub').textContent   = CC.fiberConstraintSub;
     document.getElementById('protein-constraint-sub').textContent = CC.proteinConstraintSub;
+    document.querySelector('#check-list .check-item:first-child .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
+    document.getElementById('stat-fiber-badge').textContent = `High in ${CC.fiberSpelling}`;
+    document.getElementById('stat-fiber-label').textContent = `${CC.fiberSpelling.toLowerCase()} per 100g`;
   } else {
     comingSoon.style.display = 'block';
     btn.disabled = true;
@@ -1868,9 +1876,10 @@ function scoringEngine() {
 
   // Try with constraints first; fall back to unconstrained if nothing passes
   const candidates = buildCandidates(true);
+  const fiberFallback = candidates.length === 0 && state.mustFiber;
   const pool = candidates.length > 0 ? candidates : buildCandidates(false);
 
-  if (pool.length === 0) return { recipeName: Object.keys(RECIPES[format])[0], trimName: CL_ORDER_LEAN[4] };
+  if (pool.length === 0) return { recipeName: Object.keys(RECIPES[format])[0], trimName: CL_ORDER_LEAN[4], fiberFallback: false };
 
   // ── Step 2: normalise each raw dimension across the pool ───────
   // Standard normalise: maps [min, max] → [0, 1]
@@ -1941,7 +1950,7 @@ function scoringEngine() {
     if (finalScores[i] > finalScores[bestIdx]) bestIdx = i;
   }
 
-  return { recipeName: pool[bestIdx].recipeName, trimName: pool[bestIdx].trimName };
+  return { recipeName: pool[bestIdx].recipeName, trimName: pool[bestIdx].trimName, fiberFallback };
 }
 
 // Kept for backwards compatibility — used in mustProtein constraint check
@@ -1982,7 +1991,7 @@ async function calculate() {
   await loadData();
 
   // Scoring engine returns both recipe and trim in one pass
-  const { recipeName, trimName } = scoringEngine();
+  const { recipeName, trimName, fiberFallback } = scoringEngine();
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];
   const trimPrice     = BEEF_PRICES[trimName].price;
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
@@ -2023,7 +2032,7 @@ async function calculate() {
   renderBeefPriceBlock(beefOnlyPrice);
 
   // Nutrition
-  renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName);
+  renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
@@ -2169,7 +2178,7 @@ function fmtNutrient(key, val) {
   return val.toFixed(1);
 }
 
-function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) {
+function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback = false) {
   // Nutrient list differs by country
   const isUK = CC.code === 'UK';
   const nutrients = isUK ? [
@@ -2288,8 +2297,8 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
     // Health claims — thresholds differ by country
     if (key === 'Dietary Fiber') {
       const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
-      if (blendVal >= CC.highFiber) claims.push('High in Fiber');
-      else if (blendVal >= CC.sourceFiber) claims.push('Source of Fiber');
+      if (blendVal >= CC.highFiber) claims.push(`High in ${CC.fiberSpelling}`);
+      else if (blendVal >= CC.sourceFiber) claims.push(`Source of ${CC.fiberSpelling}`);
     }
     if (key === 'Protein') {
       const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
@@ -2301,6 +2310,10 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
 
   const chips = document.getElementById('hc-chips');
   chips.innerHTML = claims.map(c => `<div class="hc-chip">${c}</div>`).join('');
+
+  // Show burger/meatball fibre warning if constraint couldn't be met
+  const fiberWarning = document.getElementById('fiber-burger-warning');
+  fiberWarning.style.display = (fiberFallback && state.q2 === 'Burger / Meatball') ? '' : 'none';
 }
 
 function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
