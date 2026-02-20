@@ -1078,6 +1078,27 @@
     margin-bottom: 10px;
   }
 
+  .ns-comparison {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .ns-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ns-col-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+  }
+
   .ns-label {
     display: inline-flex;
     align-items: stretch;
@@ -1524,7 +1545,7 @@
       </div>
 
       <div style="margin-top: 24px; width: 100%;">
-        <p style="font-size: 13px; color: rgba(207,255,142,0.65); margin-bottom: 12px; text-align: left; letter-spacing: 0.02em;">Any non-negotiable requirements?</p>
+        <p style="font-size: 13px; color: #5a6b47; margin-bottom: 12px; text-align: left; letter-spacing: 0.02em;">Any non-negotiable requirements?</p>
         <div class="check-list" id="check-list">
           <div class="check-item" onclick="toggleCheck(this,'fiber')">
             <div class="check-box"></div>
@@ -1663,7 +1684,16 @@
         <!-- EU Nutri-Score Label -->
         <div class="ns-wrap" id="ns-wrap">
           <div class="ns-heading">Nutri-Score — per 100g</div>
-          <div class="ns-label" id="ns-label"></div>
+          <div class="ns-comparison">
+            <div class="ns-col">
+              <div class="ns-col-label">Shiitake Blend</div>
+              <div class="ns-label" id="ns-label-blend"></div>
+            </div>
+            <div class="ns-col">
+              <div class="ns-col-label" id="ns-col-beef-label">100% Beef</div>
+              <div class="ns-label" id="ns-label-beef"></div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -2335,7 +2365,7 @@ async function calculate() {
   // Nutrition
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
   renderTrafficLight(recipeName, trimName);
-  renderNutriScore(recipeName, trimName);
+  renderNutriScore(recipeName, trimName, userTrimName);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
@@ -2720,67 +2750,82 @@ function nutriScorePoints(val, thresholds) {
   return thresholds.length;
 }
 
-function renderNutriScore(recipeName, trimName) {
-  const wrap  = document.getElementById('ns-wrap');
-  const label = document.getElementById('ns-label');
+function calcNutriScore(energyKJ, sugars, satFat, salt, fibre, protein) {
+  const sodium = salt * 400;
+  const fvlPct = 0; // beef blend — no fruit/veg/legumes
 
-  if (CC.code !== 'EU') { wrap.classList.remove('visible'); return; }
-  wrap.classList.add('visible');
-
-  const energyKJ  = getBlendNutrient('Energy (kJ)',       recipeName, trimName);
-  const sugars    = getBlendNutrient('Total Sugars',       recipeName, trimName);
-  const satFat    = getBlendNutrient('Saturated Fat',      recipeName, trimName);
-  const salt      = getBlendNutrient('Salt',               recipeName, trimName);
-  const sodium    = salt * 400; // g salt → mg sodium (salt = sodium × 2.5, so sodium = salt/2.5 = salt×400mg)
-  const fibre     = getBlendNutrient('Dietary Fiber',      recipeName, trimName);
-  const protein   = getBlendNutrient('Protein',            recipeName, trimName);
-  const fvlPct    = 0; // beef blend — no fruit/veg/legumes content
-
-  // Points A (negative nutrients)
-  const ptEnergy = nutriScorePoints(energyKJ,  [335,670,1005,1340,1675,2010,2345,2680,3015,3350]);
-  const ptSugars = nutriScorePoints(sugars,    [4.5,9,13.5,18,22.5,27,31,36,40,45]);
-  const ptSatFat = nutriScorePoints(satFat,    [1,2,3,4,5,6,7,8,9,10]);
-  const ptSodium = nutriScorePoints(sodium,    [90,180,270,360,450,540,630,720,810,900]);
+  const ptEnergy = nutriScorePoints(energyKJ, [335,670,1005,1340,1675,2010,2345,2680,3015,3350]);
+  const ptSugars = nutriScorePoints(sugars,   [4.5,9,13.5,18,22.5,27,31,36,40,45]);
+  const ptSatFat = nutriScorePoints(satFat,   [1,2,3,4,5,6,7,8,9,10]);
+  const ptSodium = nutriScorePoints(sodium,   [90,180,270,360,450,540,630,720,810,900]);
   const pointsA  = ptEnergy + ptSugars + ptSatFat + ptSodium;
 
-  // Points C (positive nutrients)
-  const ptFVL    = nutriScorePoints(fvlPct,    [40,60,80]); // 0,1,2 → 5 if >80
-  const ptFVLadj = fvlPct > 80 ? 5 : ptFVL;
-  const ptFibre  = nutriScorePoints(fibre,     [0.9,1.9,2.8,3.7,4.7]);
-  const ptProtein= nutriScorePoints(protein,   [1.6,3.2,4.8,6.4,8.0]);
+  const ptFVLadj = 0; // fvlPct always 0 for beef
+  const ptFibre  = nutriScorePoints(fibre,   [0.9,1.9,2.8,3.7,4.7]);
+  const ptProtein= nutriScorePoints(protein, [1.6,3.2,4.8,6.4,8.0]);
 
-  // Final score rule
   let score;
   if (pointsA < 11 || ptFVLadj === 5) {
     score = pointsA - (ptFVLadj + ptFibre + ptProtein);
   } else {
-    // A≥11 and FVL<5: exclude protein from C
     score = pointsA - (ptFVLadj + ptFibre);
   }
 
-  // Grade
   let grade;
-  if      (score < 0)  grade = 'A';
-  else if (score <= 2) grade = 'B';
+  if      (score < 0)   grade = 'A';
+  else if (score <= 2)  grade = 'B';
   else if (score <= 10) grade = 'C';
   else if (score <= 18) grade = 'D';
   else                  grade = 'E';
 
-  const grades = ['A','B','C','D','E'];
-  const tilesHtml = grades.map(g => {
-    const isActive = g === grade;
-    return `<div class="ns-tile ns-tile-${g.toLowerCase()} ${isActive ? 'active' : 'inactive'}">
-      <span class="ns-tile-letter">${g}</span>
-    </div>`;
-  }).join('');
+  return { score, grade };
+}
 
-  label.innerHTML = `
+function buildNsLabelHtml(score, grade) {
+  const grades = ['A','B','C','D','E'];
+  const tilesHtml = grades.map(g => `
+    <div class="ns-tile ns-tile-${g.toLowerCase()} ${g === grade ? 'active' : 'inactive'}">
+      <span class="ns-tile-letter">${g}</span>
+    </div>`).join('');
+  return `
     <div class="ns-title-block">
       <div class="ns-title-word">Nutri</div>
       <div class="ns-title-score">${score}</div>
       <div class="ns-title-sub">score</div>
     </div>
     <div class="ns-tiles">${tilesHtml}</div>`;
+}
+
+function renderNutriScore(recipeName, trimName, userTrimName) {
+  const wrap = document.getElementById('ns-wrap');
+  if (CC.code !== 'EU') { wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+
+  // Blend score
+  const blendResult = calcNutriScore(
+    getBlendNutrient('Energy (kJ)',    recipeName, trimName),
+    getBlendNutrient('Total Sugars',   recipeName, trimName),
+    getBlendNutrient('Saturated Fat',  recipeName, trimName),
+    getBlendNutrient('Salt',           recipeName, trimName),
+    getBlendNutrient('Dietary Fiber',  recipeName, trimName),
+    getBlendNutrient('Protein',        recipeName, trimName)
+  );
+
+  // Beef reference score (100% userTrimName)
+  const beefRef = HEALTH_REF.beef[userTrimName] ?? {};
+  const beefSalt = beefRef['Salt'] ?? (beefRef['Sodium'] ? beefRef['Sodium'] / 400 : 0);
+  const beefResult = calcNutriScore(
+    beefRef['Energy (kJ)']    ?? 0,
+    beefRef['Total Sugars']   ?? 0,
+    beefRef['Saturated Fat']  ?? 0,
+    beefSalt,
+    beefRef['Dietary Fiber']  ?? 0,
+    beefRef['Protein']        ?? 0
+  );
+
+  document.getElementById('ns-label-blend').innerHTML = buildNsLabelHtml(blendResult.score, blendResult.grade);
+  document.getElementById('ns-label-beef').innerHTML  = buildNsLabelHtml(beefResult.score,  beefResult.grade);
+  document.getElementById('ns-col-beef-label').textContent = '100% ' + userTrimName;
 }
 
 function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
