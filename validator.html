@@ -235,6 +235,7 @@
   <select id="country-select">
     <option value="US">🇺🇸 United States</option>
     <option value="UK">🇬🇧 United Kingdom</option>
+    <option value="EU">🇪🇺 Europe</option>
   </select>
   <label>Q1 beef trim:</label>
   <select id="q1-select">
@@ -288,6 +289,13 @@ const COUNTRY_CONFIG = {
   UK: {
     currency: '£', priceUnit: 'per kg',
     fablePrice: 6.00, waterPrice: 0.001,
+    highFiber: 6, sourceFiber: 3,
+    highProtein: { mode: 'energyPct', pct: 20 }, sourceProtein: { mode: 'energyPct', pct: 10 },
+    fiberSpelling: 'Fibre',
+  },
+  EU: {
+    currency: '€', priceUnit: 'per kg',
+    fablePrice: 6.90, waterPrice: 0.001,
     highFiber: 6, sourceFiber: 3,
     highProtein: { mode: 'energyPct', pct: 20 }, sourceProtein: { mode: 'energyPct', pct: 10 },
     fiberSpelling: 'Fibre',

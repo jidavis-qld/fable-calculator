@@ -1062,6 +1062,113 @@
     line-height: 1.2;
   }
 
+  /* ── Nutri-Score Label ───────────────────── */
+  .ns-wrap {
+    margin-top: 24px;
+    display: none;
+  }
+  .ns-wrap.visible { display: block; }
+
+  .ns-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+    margin-bottom: 10px;
+  }
+
+  .ns-label {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 0;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* Left title block */
+  .ns-title-block {
+    background: #fff;
+    border: 2px solid #1a1a1a;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    text-align: center;
+  }
+  .ns-title-word {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
+  .ns-title-score {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1a1a1a;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .ns-title-sub {
+    font-size: 7px;
+    color: #555;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  /* Five letter tiles */
+  .ns-tiles {
+    display: flex;
+    border: 2px solid #1a1a1a;
+    border-radius: 0 6px 6px 0;
+    overflow: hidden;
+  }
+
+  .ns-tile {
+    width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 0;
+    border-right: 1px solid rgba(0,0,0,0.15);
+    transition: none;
+  }
+  .ns-tile:last-child { border-right: none; }
+
+  /* Inactive tiles are desaturated / smaller */
+  .ns-tile.inactive {
+    opacity: 0.35;
+    transform: scaleY(0.88);
+    transform-origin: bottom;
+  }
+  .ns-tile.active {
+    opacity: 1;
+    transform: scaleY(1.08);
+    transform-origin: bottom;
+    z-index: 1;
+    position: relative;
+  }
+
+  .ns-tile-a  { background: #1e7e34; }
+  .ns-tile-b  { background: #85bb2f; }
+  .ns-tile-c  { background: #fecb02; }
+  .ns-tile-d  { background: #ef7d00; }
+  .ns-tile-e  { background: #e63312; }
+
+  .ns-tile-letter {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+  }
+  .ns-tile-c .ns-tile-letter { color: #1a1a1a; } /* dark text on yellow */
+
   /* ── Sustainability ─────────────────────── */
   .sustainability-grid {
     display: grid;
@@ -1311,11 +1418,11 @@
           <div class="opt-check"></div>
           <span class="opt-icon">🇪🇺</span>
           <div class="opt-title">Europe</div>
-          <div class="opt-desc" style="color:#aaa;">Coming soon</div>
+          <div class="opt-desc">EU pricing &amp; Nutri-Score</div>
         </div>
       </div>
       <div id="country-coming-soon" style="display:none; text-align:center; padding:16px; color:#cfff8e; font-size:14px; opacity:0.7;">
-        This region is coming soon. Please select United States or United Kingdom to continue.
+        This region is coming soon. Please select United States, United Kingdom or Europe to continue.
       </div>
       <div class="quiz-nav">
         <button class="btn-back" onclick="goTo(2)">←</button>
@@ -1553,6 +1660,12 @@
           <div class="tfl-label" id="tfl-label"></div>
         </div>
 
+        <!-- EU Nutri-Score Label -->
+        <div class="ns-wrap" id="ns-wrap">
+          <div class="ns-heading">Nutri-Score — per 100g</div>
+          <div class="ns-label" id="ns-label"></div>
+        </div>
+
       </div>
     </div>
 
@@ -1785,6 +1898,21 @@ const COUNTRY_CONFIG = {
     fiberSpelling:        'Fibre',
     fiberConstraintSub:   '≥6g fibre per 100g (UK high in fibre)',
     proteinConstraintSub: '≥20% energy from protein (UK high in protein)',
+  },
+  'Europe': {
+    code:        'EU',
+    currency:    '€',
+    priceUnit:   'per kg',
+    fablePrice:  6.90,
+    waterPrice:  0.001,
+    // Claim thresholds — EU Regulation 1924/2006 (same as UK post-Brexit equivalents)
+    highFiber:        6,    // g per 100g
+    sourceFiber:      3,    // g per 100g
+    highProtein:      { mode: 'energyPct', pct: 20 },
+    sourceProtein:    { mode: 'energyPct', pct: 10 },
+    fiberSpelling:        'Fibre',
+    fiberConstraintSub:   '≥6g fibre per 100g (EU high in fibre)',
+    proteinConstraintSub: '≥20% energy from protein (EU high in protein)',
   },
 };
 
@@ -2207,6 +2335,7 @@ async function calculate() {
   // Nutrition
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
   renderTrafficLight(recipeName, trimName);
+  renderNutriScore(recipeName, trimName);
 
   // Sustainability
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
@@ -2574,6 +2703,84 @@ function renderTrafficLight(recipeName, trimName) {
       </div>
       ${cellsHtml}
     </div>`;
+}
+
+// ── EU Nutri-Score ────────────────────────────────────────────────────────────
+// Algorithm: FSA/Santé Publique France current (general foods, red meat category)
+// Points A (negative): Energy, Sugars, Saturated Fat, Sodium
+// Points C (positive): Fruit/Veg/Legumes%, Fibre, Protein
+// Final score = A - C (with protein excluded from C when A≥11 and FVL<5pts)
+// Grade: A(<0), B(0-2), C(3-10), D(11-18), E(≥19)
+
+function nutriScorePoints(val, thresholds) {
+  // thresholds = array of upper bounds; points = index where val <= threshold
+  for (let i = 0; i < thresholds.length; i++) {
+    if (val <= thresholds[i]) return i;
+  }
+  return thresholds.length;
+}
+
+function renderNutriScore(recipeName, trimName) {
+  const wrap  = document.getElementById('ns-wrap');
+  const label = document.getElementById('ns-label');
+
+  if (CC.code !== 'EU') { wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+
+  const energyKJ  = getBlendNutrient('Energy (kJ)',       recipeName, trimName);
+  const sugars    = getBlendNutrient('Total Sugars',       recipeName, trimName);
+  const satFat    = getBlendNutrient('Saturated Fat',      recipeName, trimName);
+  const salt      = getBlendNutrient('Salt',               recipeName, trimName);
+  const sodium    = salt * 400; // g salt → mg sodium (salt = sodium × 2.5, so sodium = salt/2.5 = salt×400mg)
+  const fibre     = getBlendNutrient('Dietary Fiber',      recipeName, trimName);
+  const protein   = getBlendNutrient('Protein',            recipeName, trimName);
+  const fvlPct    = 0; // beef blend — no fruit/veg/legumes content
+
+  // Points A (negative nutrients)
+  const ptEnergy = nutriScorePoints(energyKJ,  [335,670,1005,1340,1675,2010,2345,2680,3015,3350]);
+  const ptSugars = nutriScorePoints(sugars,    [4.5,9,13.5,18,22.5,27,31,36,40,45]);
+  const ptSatFat = nutriScorePoints(satFat,    [1,2,3,4,5,6,7,8,9,10]);
+  const ptSodium = nutriScorePoints(sodium,    [90,180,270,360,450,540,630,720,810,900]);
+  const pointsA  = ptEnergy + ptSugars + ptSatFat + ptSodium;
+
+  // Points C (positive nutrients)
+  const ptFVL    = nutriScorePoints(fvlPct,    [40,60,80]); // 0,1,2 → 5 if >80
+  const ptFVLadj = fvlPct > 80 ? 5 : ptFVL;
+  const ptFibre  = nutriScorePoints(fibre,     [0.9,1.9,2.8,3.7,4.7]);
+  const ptProtein= nutriScorePoints(protein,   [1.6,3.2,4.8,6.4,8.0]);
+
+  // Final score rule
+  let score;
+  if (pointsA < 11 || ptFVLadj === 5) {
+    score = pointsA - (ptFVLadj + ptFibre + ptProtein);
+  } else {
+    // A≥11 and FVL<5: exclude protein from C
+    score = pointsA - (ptFVLadj + ptFibre);
+  }
+
+  // Grade
+  let grade;
+  if      (score < 0)  grade = 'A';
+  else if (score <= 2) grade = 'B';
+  else if (score <= 10) grade = 'C';
+  else if (score <= 18) grade = 'D';
+  else                  grade = 'E';
+
+  const grades = ['A','B','C','D','E'];
+  const tilesHtml = grades.map(g => {
+    const isActive = g === grade;
+    return `<div class="ns-tile ns-tile-${g.toLowerCase()} ${isActive ? 'active' : 'inactive'}">
+      <span class="ns-tile-letter">${g}</span>
+    </div>`;
+  }).join('');
+
+  label.innerHTML = `
+    <div class="ns-title-block">
+      <div class="ns-title-word">Nutri</div>
+      <div class="ns-title-score">${score}</div>
+      <div class="ns-title-sub">score</div>
+    </div>
+    <div class="ns-tiles">${tilesHtml}</div>`;
 }
 
 function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
