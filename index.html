@@ -2231,18 +2231,18 @@ function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, ca
 function restart() {
   document.getElementById('results-page').style.display = 'none';
   document.getElementById('quiz-shell').style.display = 'flex';
-  state.businessType = null; state.country = null;
-  state.q1 = null; state.q2 = null; state.priority = null;
+  // Keep business type (step 1) and Q1 trim (step 2) — only reset from step 3 onward
+  state.q2 = null; state.priority = null;
   state.mustFiber = false; state.mustProtein = false;
-  document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.check-item').forEach(c => c.classList.remove('checked'));
-  document.getElementById('country-coming-soon').style.display = 'none';
-  document.getElementById('btn-2').disabled = true;
-  document.getElementById('btn-3').disabled = true;
+  // Deselect only the format, priority, and constraint opt-cards (slides 4, 5, 6)
+  ['slide-4','slide-5','slide-6'].forEach(id => {
+    document.getElementById(id).querySelectorAll('.opt-card,.check-item')
+      .forEach(c => c.classList.remove('selected','checked'));
+  });
   document.getElementById('btn-4').disabled = true;
   document.getElementById('btn-5').disabled = true;
   document.getElementById('btn-6').disabled = true;
-  goTo(1);
+  goTo(4);
 }
 
 function savePDF() {
