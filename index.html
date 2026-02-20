@@ -1871,11 +1871,12 @@ function scoringEngine() {
 
   const finalScores = pool.map((c, i) => {
     const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
-    // Trim penalty: penalise each CL step fattier than the user's selected trim
+    // Trim penalty + BRB: both only apply in balance priority
     const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
     const stepsLeaner  = Math.max(0, ceilIdx - candidateIdx);
-    const penalised    = raw * (1 - trimPenalty * stepsLeaner);
-    // Balance recipe bonus: gaussian centred on 40% fable (rewards 60/40 recipe)
+    const penalised = (priority === 'balance')
+      ? raw * (1 - trimPenalty * stepsLeaner)
+      : raw;
     const bonus = (priority === 'balance')
       ? brb * Math.exp(-Math.pow((c.fablePct + c.waterPct) - 0.40, 2) / (2 * 0.10 * 0.10))
       : 0;
