@@ -106,6 +106,11 @@
 <p class="subtitle">Tests all 4 priorities × 2 formats through the scoring engine. Adjust prices to see how results shift.</p>
 
 <div class="q1-selector">
+  <label>Country:</label>
+  <select id="country-select">
+    <option value="US">🇺🇸 United States</option>
+    <option value="UK">🇬🇧 United Kingdom</option>
+  </select>
   <label>Q1 beef trim:</label>
   <select id="q1-select">
     <option value="0.1">90CL — 10% fat</option>
@@ -135,7 +140,7 @@
 
 <div id="price-controls" style="margin-bottom:28px; display:none;">
   <p style="font-size:12px; color:rgba(207,255,142,0.5); margin-bottom:10px;">
-    Adjust beef prices ($/lb) to test sensitivity. Changes apply immediately on next run.
+    Adjust beef prices to test sensitivity. Changes apply immediately on next run.
   </p>
   <div id="price-inputs" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
 </div>
@@ -146,8 +151,23 @@
 /* ── Supabase config ── */
 const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
-const FABLE_PRICE = 4.98;
-const WATER_PRICE = 0.001;
+const COUNTRY_CONFIG = {
+  US: {
+    currency: '$', priceUnit: 'per lb', costHeader: '$/lb',
+    fablePrice: 4.98, waterPrice: 0.001,
+    highFiber: 5, sourceFiber: 2.5,
+    highProtein: { mode: 'grams', g: 10 }, sourceProtein: { mode: 'grams', g: 5 },
+    fiberSpelling: 'Fiber',
+  },
+  UK: {
+    currency: '£', priceUnit: 'per kg', costHeader: '£/kg',
+    fablePrice: 6.00, waterPrice: 0.001,
+    highFiber: 6, sourceFiber: 3,
+    highProtein: { mode: 'energyPct', pct: 20 }, sourceProtein: { mode: 'energyPct', pct: 10 },
+    fiberSpelling: 'Fibre',
+  },
+};
+let CC = COUNTRY_CONFIG.US;
 
 async function sbFetch(table, params = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*${params ? '&' + params : ''}`, {
@@ -184,8 +204,12 @@ const CL_ORDER_LEAN = [
 const PRIORITIES = ['Better nutrition', 'Lower cost', 'Sustainability / low carbon'];
 
 async function loadData() {
-  if (dataLoaded) return;
-  const countryFilter = 'country=eq.US';
+  dataLoaded = false;
+  BEEF_PRICES = {}; RECIPES = {}; HEALTH_REF = { shiitake: {}, beef: {} };
+  SHIITAKE_CO2 = 0; BEEF_CO2 = 0; SCORING_CONFIG = {};
+  const selectedCountry = document.getElementById('country-select').value;
+  CC = COUNTRY_CONFIG[selectedCountry];
+  const countryFilter = `country=eq.${selectedCountry}`;
   const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
     sbFetch('nutrition',   countryFilter),
     sbFetch('beef_prices', countryFilter),
@@ -241,6 +265,15 @@ const PRIORITY_LABELS = {
   sustainability: { label: 'Sustainability',   cls: 'pc-sustain'   },
 };
 
+function meetsHighProtein(protein_g, energyKJ) {
+  const cfg = CC.highProtein;
+  if (cfg.mode === 'energyPct') {
+    if (!energyKJ || energyKJ === 0) return false;
+    return (protein_g * 17 / energyKJ * 100) >= cfg.pct;
+  }
+  return protein_g >= cfg.g;
+}
+
 /* ── Scoring engine (mirrors index.html exactly) ── */
 function scoringEngine(format, priority, userFat) {
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val   ?? 0) / 100;
@@ -288,14 +321,15 @@ function scoringEngine(format, priority, userFat) {
         const protein = getBlendNutrient('Protein',           recipeName, trimName, format);
         const cals    = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
         const satFat  = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
-        const cost    = beefPct * trimData.price + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
+        const cost    = beefPct * trimData.price + fablePct * CC.fablePrice + waterPct * CC.waterPrice;
         const co2     = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
+        const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName, format);
         if (applyConstraints) {
-          if (mustFiber   && fiber   < 5)  continue;
-          if (mustProtein && protein < 10) continue;
+          if (mustFiber   && fiber < CC.highFiber)               continue;
+          if (mustProtein && !meetsHighProtein(protein, energyKJ)) continue;
         }
         out.push({ recipeName, trimName, beefPct, fablePct, waterPct,
-                   fiber, protein, cals, satFat, cost, co2, blendedFat });
+                   fiber, protein, energyKJ, cals, satFat, cost, co2, blendedFat });
       }
     }
     return out;
@@ -382,7 +416,7 @@ function buildPriceInputs() {
     const cl = trimName.replace(' Beef Trim','');
     const div = document.createElement('div');
     div.className = 'price-input-group';
-    div.innerHTML = `<label>${cl} ($/lb)</label>
+    div.innerHTML = `<label>${cl} (${CC.currency}/${CC.priceUnit.replace('per ','')})</label>
       <input type="number" step="0.01" min="0" value="${data.price.toFixed(2)}"
         onchange="BEEF_PRICES['${trimName}'].price = parseFloat(this.value) || ${data.price.toFixed(2)}">`;
     wrap.appendChild(div);
@@ -427,11 +461,11 @@ async function runValidator() {
         <th>Nutr.</th>
         <th>Cost</th>
         <th>Sustain.</th>
-        <th>Fiber</th>
+        <th>${CC.fiberSpelling}</th>
         <th>Protein</th>
         <th>Calories</th>
         <th>Sat Fat</th>
-        <th>$/lb</th>
+        <th>${CC.costHeader}</th>
         <th>Runner-up</th>
       </tr></thead><tbody>`;
 
@@ -466,13 +500,13 @@ async function runValidator() {
         <td class="detail-col">${(winner.nutritionScore*100).toFixed(0)}%</td>
         <td class="detail-col">${(winner.costScore*100).toFixed(0)}%</td>
         <td class="detail-col">${(winner.sustainScore*100).toFixed(0)}%</td>
-        <td class="detail-col" style="${winner.fiber < 5 && mustFiber ? 'color:#ff9999' : ''}">${winner.fiber.toFixed(1)}g</td>
-        <td class="detail-col" style="${winner.protein < 10 && mustProtein ? 'color:#ff9999' : ''}">${winner.protein.toFixed(1)}g</td>
+        <td class="detail-col" style="${winner.fiber < CC.highFiber && mustFiber ? 'color:#ff9999' : ''}">${winner.fiber.toFixed(1)}g</td>
+        <td class="detail-col" style="${!meetsHighProtein(winner.protein, winner.energyKJ) && mustProtein ? 'color:#ff9999' : ''}">${winner.protein.toFixed(1)}g</td>
         <td class="detail-col">${winner.cals.toFixed(0)}</td>
         <td class="detail-col">${winner.satFat.toFixed(1)}g</td>
-        <td class="detail-col">$${winner.cost.toFixed(2)}</td>
+        <td class="detail-col">${CC.currency}${winner.cost.toFixed(2)}</td>
         <td class="detail-col" style="color:rgba(207,255,142,0.35)">
-          ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} ($${runnerUp.finalScore.toFixed(3)})` : '—'}
+          ${runnerUp ? `${runnerUp.recipeName} / ${runnerUp.trimName.replace(' Beef Trim','')} (${CC.currency}${runnerUp.cost.toFixed(2)})` : '—'}
         </td>
       </tr>`;
     });
@@ -507,7 +541,13 @@ async function runValidator() {
     if (!allWinners.has(key)) unusedRecipes.push(key);
   });
 
-  const constraintLabel = [mustFiber && '≥5g fiber', mustProtein && '≥10g protein']
+  const fiberThresholdLabel = CC.highProtein.mode === 'energyPct'
+    ? `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()}`
+    : `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()}`;
+  const proteinThresholdLabel = CC.highProtein.mode === 'energyPct'
+    ? `≥${CC.highProtein.pct}% energy from protein`
+    : `≥${CC.highProtein.g}g protein`;
+  const constraintLabel = [mustFiber && fiberThresholdLabel, mustProtein && proteinThresholdLabel]
     .filter(Boolean).join(' + ') || 'none';
 
   html = `
@@ -528,9 +568,7 @@ async function runValidator() {
 }
 
 // Auto-run on load
-window.addEventListener('DOMContentLoaded', () => {
-  loadData().then(() => { buildPriceInputs(); runValidator(); });
-});
+window.addEventListener('DOMContentLoaded', () => { runValidator(); });
 </script>
 </body>
 </html>
