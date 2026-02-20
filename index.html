@@ -2182,11 +2182,11 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName) 
       diffHtml = `<span class="diff-badge diff-fiber">★ ADDED FIBER</span>`;
     } else if (beefVal > 0) {
       const ratio = blendVal / beefVal;
-      const diffPct = Math.round(ratio * 100);
+      const changePct = Math.round((ratio - 1) * 100);
       const { bg, fg } = badgeColors(ratio, isLower || !isHigher);
-      // Label: show change direction clearly
-      const sign = diffPct < 100 ? '▼ ' : diffPct > 100 ? '▲ ' : '';
-      const label2 = diffPct === 100 ? '=' : `${sign}${diffPct}%`;
+      // Label: directional change vs 100% beef baseline
+      const sign = changePct < 0 ? '▼ ' : changePct > 0 ? '▲ ' : '';
+      const label2 = changePct === 0 ? '=' : `${sign}${Math.abs(changePct)}%`;
       diffHtml = `<span class="diff-badge" style="background:${bg};color:${fg}">${label2}</span>`;
     } else if (beefVal === 0 && blendVal === 0) {
       diffHtml = ''; // both zero, nothing to show
