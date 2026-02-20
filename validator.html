@@ -270,7 +270,9 @@ function scoringEngine(format, priority, userFat) {
   function buildCandidates(applyConstraints) {
     const out = [];
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
+      // Burger / Meatball: no rehydrated (water-containing) or 50/50 recipes
       if (format === 'Burger / Meatball' && waterPct > 0) continue;
+      if (format === 'Burger / Meatball' && beefPct === 0.5) continue;
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
       const lo = Math.min(floorIdx, ceilIdx);
       const hi = Math.max(floorIdx, ceilIdx);
@@ -404,8 +406,8 @@ async function runValidator() {
 
   for (const format of formats) {
     const recipeKeys = Object.keys(RECIPES[format]).filter(r => {
-      const [,,w] = RECIPES[format][r];
-      return !(format === 'Burger / Meatball' && w > 0);
+      const [bp,,wp] = RECIPES[format][r];
+      return !(format === 'Burger / Meatball' && (wp > 0 || bp === 0.5));
     });
     const winnerCounts = {};
     recipeKeys.forEach(r => winnerCounts[r] = 0);
@@ -497,8 +499,8 @@ async function runValidator() {
   const unusedRecipes = [];
   allRecipes.forEach(key => {
     const [fmt, r] = key.split('::');
-    const [,,w] = RECIPES[fmt][r];
-    if (fmt === 'Burger / Meatball' && w > 0) return; // legitimately excluded
+    const [bp,,wp] = RECIPES[fmt][r];
+    if (fmt === 'Burger / Meatball' && (wp > 0 || bp === 0.5)) return; // legitimately excluded
     if (!allWinners.has(key)) unusedRecipes.push(key);
   });
 
