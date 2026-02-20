@@ -1839,13 +1839,14 @@ function scoringEngine() {
 
   const cfg = SCORING_CONFIG;
   const costPad = cfg.cost_pad ?? 1.5;
+  const co2Pad  = cfg.co2_pad  ?? 1.0;
 
   const nFiber   = normalise(pool.map(c => c.fiber),   false); // higher better
   const nProtein = normalise(pool.map(c => c.protein), false); // higher better
   const nCals    = normalise(pool.map(c => c.cals),    true);  // lower better
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);  // lower better
   const nCost    = normalisePadded(pool.map(c => c.cost), true, costPad);  // lower better, padded
-  const nCO2     = normalise(pool.map(c => c.co2),     true);  // lower better
+  const nCO2     = normalisePadded(pool.map(c => c.co2),  true, co2Pad);  // lower better, padded
 
   // Nutrition composite: weighted sum then sqrt for diminishing returns
   const nutritionRaw = pool.map((_, i) =>

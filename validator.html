@@ -248,6 +248,7 @@ function scoringEngine(format, priority, userFat) {
 
   const cfg = SCORING_CONFIG;
   const costPad = cfg.cost_pad ?? 1.5;
+  const co2Pad  = cfg.co2_pad  ?? 1.0;
 
   const pool = out;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
@@ -255,7 +256,7 @@ function scoringEngine(format, priority, userFat) {
   const nCals    = normalise(pool.map(c => c.cals),    true);
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);
   const nCost    = normalisePadded(pool.map(c => c.cost), true, costPad);
-  const nCO2     = normalise(pool.map(c => c.co2),     true);
+  const nCO2     = normalisePadded(pool.map(c => c.co2),  true, co2Pad);
 
   const nutritionRaw = pool.map((_, i) =>
     (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
