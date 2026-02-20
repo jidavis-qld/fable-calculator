@@ -1,0 +1,217 @@
+/* ── Validator page styles ──────────────────────────────────────────────────────
+   Layout, controls, format tabs, ranked comparison table, winner row, delta badges.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+<style>
+  /* ── Brand tokens ── */
+  :root {
+    --forest:  #2e4214;
+    --lime:    #cfff8e;
+    --ink:     #332f21;
+    --white:   #fafafa;
+    --border:  #d6e4c8;
+    --mist:    #edf4e4;
+    --text:    #332f21;
+    --sub:     #5a6b47;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    background: var(--white);
+    color: var(--text);
+    padding: 40px 24px;
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .page-wrap { max-width: 1200px; margin: 0 auto; }
+
+  /* ── Page header ── */
+  .page-header { margin-bottom: 32px; }
+  h1 {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle { font-size: 15px; color: var(--sub); line-height: 1.5; }
+
+  /* ── Controls bar ── */
+  .controls-bar {
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+  }
+  .controls-bar label { font-size: 14px; color: var(--text); font-weight: 600; }
+  .controls-bar select {
+    background: #fff; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; font-size: 14px;
+    font-family: 'Zapf Humanist', Georgia, serif;
+    cursor: pointer;
+  }
+  .controls-bar select:focus { outline: none; border-color: var(--forest); }
+
+  .run-btn {
+    background: var(--forest); color: var(--lime);
+    border: none; border-radius: 100px;
+    padding: 10px 28px; font-size: 14px; font-weight: 700;
+    font-family: 'Zapf Humanist', Georgia, serif;
+    cursor: pointer; margin-left: auto; letter-spacing: 0.02em;
+    transition: background 0.15s;
+  }
+  .run-btn:hover { background: #3d5a1c; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--forest); font-size: 14px; font-weight: 600;
+    text-decoration: none; border: 1.5px solid var(--border);
+    border-radius: 100px; padding: 8px 18px; background: #fff;
+    font-family: 'Zapf Humanist', Georgia, serif;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { background: var(--mist); border-color: var(--forest); }
+
+  /* ── Format tabs ── */
+  .format-tabs { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
+  .fmt-tab {
+    padding: 10px 28px; border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: #fff; color: var(--text);
+    font-size: 14px; font-weight: 600;
+    font-family: 'Zapf Humanist', Georgia, serif;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .fmt-tab:hover { background: var(--mist); border-color: var(--forest); }
+  .fmt-tab.active { background: var(--forest); color: var(--lime); border-color: var(--forest); }
+
+  /* ── Constraints ── */
+  .constraints { display: flex; gap: 10px; flex-wrap: wrap; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 9px 16px; user-select: none; transition: all 0.15s;
+  }
+  .check-item:hover { background: var(--mist); border-color: var(--forest); }
+  .check-item.checked { background: var(--mist); border-color: var(--forest); }
+  .check-box {
+    width: 16px; height: 16px; border: 2px solid var(--border);
+    border-radius: 4px; flex-shrink: 0; position: relative;
+  }
+  .check-item.checked .check-box { background: var(--forest); border-color: var(--forest); }
+  .check-item.checked .check-box::after {
+    content: '✓'; position: absolute;
+    top: -2px; left: 1px; font-size: 11px; color: var(--lime); font-weight: 900;
+  }
+  .check-text { font-size: 13px; color: var(--text); font-weight: 600; }
+  .check-sub  { font-size: 11px; color: var(--sub); margin-top: 1px; }
+
+  /* ── Price inputs ── */
+  .price-controls-wrap {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 32px; display: none;
+  }
+  .price-controls-wrap p { font-size: 14px; color: var(--sub); margin-bottom: 12px; }
+  .price-inputs-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .price-input-group { display: flex; flex-direction: column; gap: 4px; }
+  .price-input-group label { font-size: 12px; color: var(--sub); font-weight: 600; letter-spacing: 0.02em; }
+  .price-input-group input {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; font-size: 14px;
+    font-family: 'Zapf Humanist', Georgia, serif; width: 100px;
+  }
+  .price-input-group input:focus { outline: none; border-color: var(--forest); }
+
+  .loading { color: var(--sub); font-size: 16px; padding: 48px 0; text-align: center; }
+  .fallback-badge {
+    display: inline-block; background: #fff8e1; color: #7a5700;
+    font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; margin-left: 8px; border: 1px solid #f5c518;
+  }
+
+  /* ── Section headings ── */
+  .section-block { margin-bottom: 56px; }
+  .section-heading {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 22px; font-weight: 700; color: var(--forest);
+    border-bottom: 2px solid var(--lime);
+    padding-bottom: 12px; margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .section-subhead {
+    font-size: 14px; color: var(--sub);
+    margin-bottom: 20px; line-height: 1.6;
+  }
+
+  /* ── Unified table ── */
+  .tbl-wrap {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 0; }
+  th {
+    background: var(--forest); color: #fff; font-weight: 700;
+    font-size: 13px; padding: 12px 16px; text-align: left;
+    white-space: nowrap; letter-spacing: 0.04em; text-transform: uppercase;
+    font-family: 'Zapf Humanist', Georgia, serif;
+  }
+  td {
+    padding: 11px 16px; border-bottom: 1px solid #eef3e8;
+    vertical-align: middle; color: var(--text);
+    font-weight: 400; white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:not(.winner-row):hover td { background: #f8fbf4; }
+
+  /* ── Winner row ── */
+  .winner-row td {
+    background: var(--mist); padding-top: 22px; padding-bottom: 22px;
+    font-size: 16px; border-bottom: 1px solid var(--border);
+  }
+  .winner-row td:first-child { border-left: 4px solid var(--forest); }
+  .rec-badge {
+    display: inline-block; background: var(--forest); color: var(--lime);
+    font-size: 10px; font-weight: 700; padding: 3px 9px;
+    border-radius: 100px; letter-spacing: 0.06em; vertical-align: middle; margin-left: 8px;
+    text-transform: uppercase;
+  }
+  .winner-recipe-name { font-weight: 700; font-size: 17px; color: var(--forest); }
+  .winner-trim-name { font-size: 13px; color: var(--sub); margin-top: 3px; }
+  td.col-recipe { white-space: normal; min-width: 180px; }
+
+  /* ── Delta badges ── */
+  .delta {
+    display: inline-block; font-size: 12px; border-radius: 100px;
+    padding: 2px 10px; font-weight: 700; white-space: nowrap;
+    font-family: 'Zapf Humanist', Georgia, serif;
+  }
+  .delta-worse   { background: #fce8e8; color: #8b1a1a; border: 1px solid #e8a0a0; }
+  .delta-better  { background: #e4f5d4; color: #1e4d0f; border: 1px solid #8ecf6a; }
+  .delta-neutral { background: #f0f0ec; color: #4a5040; border: 1px solid #c8cfc0; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    body { padding: 20px 14px; }
+    h1 { font-size: 22px; }
+    .controls-bar { gap: 10px; padding: 14px; }
+    .controls-bar label { font-size: 13px; }
+    .controls-bar select { font-size: 13px; }
+    .run-btn { margin-left: 0; width: 100%; text-align: center; padding: 12px; }
+    .constraints { width: 100%; }
+    .fmt-tab { padding: 9px 18px; font-size: 13px; }
+    .section-heading { font-size: 19px; }
+    .section-subhead { font-size: 13px; }
+    table { font-size: 13px; }
+    th { font-size: 11px; padding: 10px 12px; }
+    td { padding: 9px 12px; }
+    .winner-row td { padding-top: 16px; padding-bottom: 16px; font-size: 14px; }
+    .winner-recipe-name { font-size: 15px; }
+    .delta { font-size: 11px; padding: 2px 7px; }
+  }
+</style>

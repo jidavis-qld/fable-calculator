@@ -1,0 +1,48 @@
+/* ── Brand palette & base styles ───────────────────────────────────────────────
+   CSS custom properties for the Fable brand palette.
+   Edit :root vars here to update colours site-wide.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+  /* ── FABLE BRAND PALETTE ─────────────────────────── 
+     Primary:
+       Dark brown/black  #332f21
+       Hero green         #2e4214
+       Light green        #cfff8e
+       Olive              #5e590f
+       Sage green         #5e7462
+     Secondary:
+       Bright green       #03d63d
+       Lavender           #ab9ed9
+  ──────────────────────────────────────────────────── */
+  :root {
+    --fable-dark: #332f21;
+    --fable-hero: #2e4214;
+    --fable-lime: #cfff8e;
+    --fable-olive: #5e590f;
+    --fable-sage: #5e7462;
+    --fable-bright: #03d63d;
+    --fable-lavender: #ab9ed9;
+    
+    /* Mapped to UI roles */
+    --forest: #2e4214;
+    --moss: #5e590f;
+    --fern: #5e7462;
+    --sage: #cfff8e;
+    --mist: #e8f3d4;
+    --cream: #f4f2eb;
+    --earth: #8b6914;
+    --rust: #5e590f;
+    --white: #ffffff;
+    --ink: #332f21;
+    --mid: #5e7462;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+

@@ -1,0 +1,250 @@
+/* Front-of-pack labels — UK Traffic Light and EU Nutri-Score */
+  /* ── UK Traffic Light Label ─────────────── */
+  .tfl-wrap {
+    margin-top: 24px;
+    display: none; /* shown only for UK via JS */
+  }
+  .tfl-wrap.visible { display: block; }
+
+  .tfl-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+    margin-bottom: 10px;
+  }
+
+  .tfl-label {
+    display: inline-flex;
+    border: 2px solid #1a1a1a;
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif; /* FSA label uses a neutral sans */
+  }
+
+  /* Left panel — "per 100g" strip */
+  .tfl-per100 {
+    background: #1a1a1a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    min-width: 46px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Nutrient columns */
+  .tfl-nutrients {
+    display: flex;
+  }
+
+  .tfl-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 10px 8px;
+    min-width: 72px;
+    border-left: 1px solid #1a1a1a;
+    position: relative;
+  }
+
+  .tfl-cell-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Coloured pill at top of each cell */
+  .tfl-pill {
+    width: 100%;
+    border-radius: 3px;
+    padding: 6px 4px 5px;
+    text-align: center;
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+  }
+
+  .tfl-pill.green  { background: #008000; color: #fff; }
+  .tfl-pill.amber  { background: #ffc000; color: #1a1a1a; }
+  .tfl-pill.red    { background: #cc0000; color: #fff; }
+
+  .tfl-traffic-word {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .tfl-value {
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-top: 3px;
+  }
+
+  .tfl-unit {
+    font-size: 9px;
+    font-weight: 400;
+    margin-top: 1px;
+    opacity: 0.85;
+  }
+
+  .tfl-nutrient-name {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+
+  .tfl-ri {
+    font-size: 9px;
+    color: #555;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* ── Nutri-Score Label ───────────────────── */
+  .ns-wrap {
+    margin-top: 24px;
+    display: none;
+  }
+  .ns-wrap.visible { display: block; }
+
+  .ns-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+    margin-bottom: 10px;
+  }
+
+  .ns-comparison {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .ns-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ns-col-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fable-sage);
+  }
+
+  .ns-label {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 0;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* Left title block */
+  .ns-title-block {
+    background: #fff;
+    border: 2px solid #1a1a1a;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    text-align: center;
+  }
+  .ns-title-word {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
+  .ns-title-score {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1a1a1a;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .ns-title-sub {
+    font-size: 7px;
+    color: #555;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  /* Five letter tiles */
+  .ns-tiles {
+    display: flex;
+    border: 2px solid #1a1a1a;
+    border-radius: 0 6px 6px 0;
+    overflow: hidden;
+  }
+
+  .ns-tile {
+    width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 0;
+    border-right: 1px solid rgba(0,0,0,0.15);
+    transition: none;
+  }
+  .ns-tile:last-child { border-right: none; }
+
+  /* Inactive tiles are desaturated / smaller */
+  .ns-tile.inactive {
+    opacity: 0.35;
+    transform: scaleY(0.88);
+    transform-origin: bottom;
+  }
+  .ns-tile.active {
+    opacity: 1;
+    transform: scaleY(1.08);
+    transform-origin: bottom;
+    z-index: 1;
+    position: relative;
+  }
+
+  .ns-tile-a  { background: #1e7e34; }
+  .ns-tile-b  { background: #85bb2f; }
+  .ns-tile-c  { background: #fecb02; }
+  .ns-tile-d  { background: #ef7d00; }
+  .ns-tile-e  { background: #e63312; }
+
+  .ns-tile-letter {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+  }
+  .ns-tile-c .ns-tile-letter { color: #1a1a1a; } /* dark text on yellow */
+

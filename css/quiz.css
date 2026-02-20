@@ -1,0 +1,391 @@
+/* Quiz shell — slides, option cards, rank/check items, nav buttons */
+  /* ── QUIZ SHELL ─────────────────────────────── */
+  #quiz-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #quiz-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(46,66,20,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 90% 80%, rgba(46,66,20,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Decorative mushroom silhouettes — passive graphics from brand book */
+  #quiz-shell::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: -20px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(ellipse at 50% 40%, rgba(46,66,20,0.02) 0%, transparent 70%);
+    border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
+    pointer-events: none;
+  }
+
+  .quiz-header {
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 1;
+  }
+
+  /* ── FABLE LOGO (SVG-style wordmark) ─────────── */
+  .quiz-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .quiz-logo .logo-text {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--forest);
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  /* Mushroom holding device — organic circle from brand book p.22 */
+  .logo-device {
+    width: 36px;
+    height: 36px;
+    border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
+    background: var(--forest);
+    border: 2px solid var(--forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-device svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--sage);
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: rgba(46,66,20,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--forest);
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .step-count {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 13px;
+    color: rgba(46,66,20,0.45);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .quiz-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 40px 60px;
+    z-index: 1;
+  }
+
+  .slide {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 760px;
+    width: 100%;
+    animation: slideUp 0.45s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  .slide.active { display: flex; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #5a6b47;
+    opacity: 0.85;
+    margin-bottom: 14px;
+  }
+
+  .slide-question {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: clamp(22px, 3.5vw, 34px);
+    color: var(--forest);
+    line-height: 1.3;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .slide-sub {
+    font-size: 15px;
+    color: #5a6b47;
+    margin-bottom: 36px;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  /* ── Option cards ─────────────────────────────── */
+  .options-grid {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .options-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .opt-card {
+    background: rgba(46,66,20,0.04);
+    border: 1.5px solid rgba(46,66,20,0.1);
+    border-radius: 16px 16px 12px 16px;
+    padding: 22px 24px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+    position: relative;
+  }
+
+  .opt-card:hover {
+    background: rgba(46,66,20,0.07);
+    border-color: rgba(46,66,20,0.22);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.07);
+  }
+
+  .opt-card.selected {
+    background: #edf4e4;
+    border-color: var(--forest);
+    box-shadow: 0 0 0 1px rgba(46,66,20,0.15), 0 6px 24px rgba(0,0,0,0.07);
+  }
+
+  .opt-card .opt-icon {
+    font-size: 30px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .opt-card .opt-title {
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+
+  .opt-card .opt-desc {
+    font-size: 13px;
+    color: #5a6b47;
+    line-height: 1.5;
+  }
+
+  .opt-check {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(46,66,20,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .opt-card.selected .opt-check {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+
+  .opt-card.selected .opt-check::after {
+    content: '\2713';
+    font-size: 12px;
+    color: var(--forest);
+    font-weight: 700;
+  }
+
+  /* ── Ranking ─────────────────────────────── */
+  .rank-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .rank-item {
+    background: rgba(46,66,20,0.04);
+    border: 1.5px solid rgba(46,66,20,0.1);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+  }
+
+  .rank-item:hover { background: rgba(46,66,20,0.07); }
+  .rank-item.dragging { opacity: 0.5; background: rgba(46,66,20,0.09); border-color: var(--forest); }
+  .rank-item.drag-over { border-color: var(--forest); background: rgba(46,66,20,0.06); }
+
+  .rank-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--forest);
+    color: #cfff8e;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .rank-drag-hint {
+    margin-left: auto;
+    color: rgba(46,66,20,0.25);
+    font-size: 18px;
+  }
+
+  .rank-text { flex: 1; text-align: left; }
+  .rank-text .rank-title { font-size: 15px; font-weight: 700; color: var(--forest); }
+  .rank-text .rank-sub { font-size: 12px; color: #5a6b47; margin-top: 3px; line-height: 1.4; }
+
+  /* ── Checkboxes ─────────────────────────────── */
+  .check-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .check-item {
+    background: rgba(46,66,20,0.04);
+    border: 1.5px solid rgba(46,66,20,0.1);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .check-item:hover { background: rgba(46,66,20,0.07); }
+
+  .check-item.checked {
+    background: #edf4e4;
+    border-color: var(--forest);
+  }
+
+  .check-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid rgba(46,66,20,0.18);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .check-item.checked .check-box {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+
+  .check-item.checked .check-box::after {
+    content: '\2713';
+    font-size: 12px;
+    color: var(--forest);
+    font-weight: 700;
+  }
+
+  .check-text { font-size: 15px; font-weight: 700; color: var(--forest); }
+  .check-sub { font-size: 12px; color: #5a6b47; margin-top: 3px; line-height: 1.4; }
+
+  /* ── Nav buttons ─────────────────────────────── */
+  .quiz-nav {
+    margin-top: 40px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn-back {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(46,66,20,0.2);
+    background: transparent;
+    color: rgba(46,66,20,0.45);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-back:hover {
+    border-color: var(--forest);
+    color: var(--forest);
+  }
+
+  .btn-next {
+    padding: 14px 40px;
+    border-radius: 100px;
+    background: var(--sage);
+    color: var(--forest);
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-next:hover {
+    background: var(--forest);
+    color: var(--sage);
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(46,66,20,0.15);
+  }
+
+  .btn-next:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
