@@ -197,21 +197,17 @@ function scoringEngine(format, priority, userFat) {
   const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
   const ceilIdx = CL_ORDER_LEAN.indexOf(userTrimName);
 
-  // For a given recipe, find the trim floor — the leanest trim whose blended
-  // fat still exceeds the user's target fat (i.e. one step fattier than target).
-  // CL_ORDER_LEAN runs fatty→lean, so we scan from fattiest and take the last
-  // index where blendedFat > userFat. Falls back to closest if none exceed it.
+  // For a given recipe, find the trim floor — the first trim (scanning fatty→lean)
+  // whose blended fat drops to or below the user's target fat. This is the fattiest
+  // grade that still meets the fat spec, so everything leaner up to ceilIdx is eligible.
   function naturalTrimIdx(beefPct, fablePct) {
-    let floorIdx = 0, bestDiff = Infinity;
-    CL_ORDER_LEAN.forEach((name, i) => {
-      const data = BEEF_PRICES[name];
-      if (!data) return;
+    for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
+      const data = BEEF_PRICES[CL_ORDER_LEAN[i]];
+      if (!data) continue;
       const blendedFat = (data.fat * beefPct) + (shiitakeFat * fablePct);
-      if (blendedFat > userFat) floorIdx = i; // last (leanest) trim still above target
-      const diff = Math.abs(blendedFat - userFat);
-      if (diff < bestDiff) { bestDiff = diff; } // track closest as fallback
-    });
-    return floorIdx;
+      if (blendedFat <= userFat) return i;
+    }
+    return CL_ORDER_LEAN.length - 1; // fallback: leanest available
   }
 
   const out = [];
