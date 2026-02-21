@@ -10,6 +10,12 @@
 async function calculate() {
   await loadData();
 
+  // Guard: if Supabase returned no data for this country the migration hasn't been run yet
+  if (Object.keys(BEEF_PRICES).length === 0 || Object.keys(RECIPES).length === 0) {
+    alert(`No data found for ${CC.code}. Please run the Supabase migration for this region and try again.`);
+    return;
+  }
+
   // Scoring engine returns both recipe and trim in one pass
   const { recipeName, trimName, fiberFallback } = scoringEngine();
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];

@@ -285,9 +285,8 @@ function renderHSR(recipeName, trimName, userTrimName) {
   if (CC.code !== 'AU') { wrap.classList.remove('visible'); return; }
   wrap.classList.add('visible');
 
-  // Find the format key for this recipe to look up blend ratios
-  const formatKey = Object.keys(RECIPES).find(f => recipeName in RECIPES[f]);
-  const [beefPct, fablePct] = RECIPES[formatKey][recipeName];
+  // Use state.q2 (the format the user chose) to look up blend ratios — same as getBlendNutrient
+  const [beefPct, fablePct] = RECIPES[state.q2][recipeName];
   // Shiitake mushroom counts as FVNL under FSANZ — FVNL% = mushroom fraction of blend
   const fvnlPct = fablePct * 100;
 
