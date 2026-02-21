@@ -259,25 +259,11 @@ function calcHSR(energyKJ, satFat, sugars, sodiumMg, fibre, protein, fvnlPct) {
 }
 
 function buildHsrLabelHtml(stars) {
-  const full  = Math.floor(stars);
-  const half  = (stars % 1) >= 0.5 ? 1 : 0;
-  const empty = 5 - full - half;
-  const starHtml =
-    '<span class="hsr-star hsr-star-full">★</span>'.repeat(full) +
-    (half ? '<span class="hsr-star hsr-star-half">★</span>' : '') +
-    '<span class="hsr-star hsr-star-empty">★</span>'.repeat(empty);
-  return `
-    <div class="hsr-label">
-      <div class="hsr-text-block">
-        <div class="hsr-word">Health</div>
-        <div class="hsr-word">Star</div>
-        <div class="hsr-word">Rating</div>
-      </div>
-      <div class="hsr-stars-block">
-        <div class="hsr-stars">${starHtml}</div>
-        <div class="hsr-score-num">${stars.toFixed(1)}</div>
-      </div>
-    </div>`;
+  // Woolworths NZ hosts official FSANZ HSR images numbered 1–10
+  // where image number = stars × 2  (e.g. 3.5★ → image 7)
+  const imgNum = Math.round(stars * 2);
+  const src = `https://www.woolworths.co.nz/assets/images/product-details/health-star-rating/${imgNum}.png`;
+  return `<img class="hsr-img" src="${src}" alt="${stars.toFixed(1)} Health Stars" />`;
 }
 
 function renderHSR(recipeName, trimName, userTrimName) {

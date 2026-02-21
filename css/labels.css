@@ -285,64 +285,10 @@
     color: var(--fable-sage);
   }
 
-  .hsr-label {
-    display: inline-flex;
-    align-items: stretch;
-    border: 2px solid #1a1a1a;
-    border-radius: 6px;
-    overflow: hidden;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #fff;
-  }
-
-  .hsr-text-block {
-    background: #006eb7;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 10px;
-    min-width: 48px;
-  }
-
-  .hsr-word {
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.3;
-    text-align: center;
-  }
-
-  .hsr-stars-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 14px;
-    gap: 2px;
-  }
-
-  .hsr-stars {
-    display: flex;
-    gap: 1px;
-    line-height: 1;
-  }
-
-  .hsr-star {
-    font-size: 26px;
-    line-height: 1;
-  }
-
-  .hsr-star-full  { color: #ffc200; }
-  .hsr-star-half  { color: #ffc200; opacity: 0.55; }
-  .hsr-star-empty { color: #ddd; }
-
-  .hsr-score-num {
-    font-size: 13px;
-    font-weight: 900;
-    color: #1a1a1a;
-    letter-spacing: 0.04em;
+  /* Official FSANZ HSR image from Woolworths NZ asset CDN */
+  .hsr-img {
+    display: block;
+    height: 80px;
+    width: auto;
   }
 
