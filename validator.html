@@ -100,6 +100,41 @@
   .delta-better { background: #e8f5d8; color: #166534; border: 1px solid #86efac; }
   .delta-neutral{ background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
 
+  /* ── UK Traffic Light Label (validator comparison) ── */
+  .tfl-comparison { display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap; margin-top: 24px; }
+  .tfl-col { display: flex; flex-direction: column; gap: 6px; }
+  .tfl-col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+                   text-transform: uppercase; color: #4a5a3a; }
+  .tfl-label { display: inline-flex; border: 2px solid #1a1a1a; border-radius: 4px;
+               overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
+  .tfl-per100 { background: #1a1a1a; color: #fff; display: flex; flex-direction: column;
+                align-items: center; justify-content: center; padding: 10px;
+                font-size: 10px; font-weight: 700; text-align: center; line-height: 1.3;
+                min-width: 46px; letter-spacing: 0.02em; text-transform: uppercase; }
+  .tfl-nutrients { display: flex; }
+  .tfl-cell { display: flex; flex-direction: column; align-items: center;
+              justify-content: flex-end; padding: 8px 10px; min-width: 72px;
+              border-left: 1px solid #1a1a1a; }
+  .tfl-cell-inner { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .tfl-pill { width: 100%; border-radius: 3px; padding: 6px 4px 5px; text-align: center;
+              margin-bottom: 6px; display: flex; flex-direction: column; align-items: center;
+              justify-content: center; min-height: 42px; }
+  .tfl-pill.green  { background: #008000; color: #fff; }
+  .tfl-pill.amber  { background: #ffc000; color: #1a1a1a; }
+  .tfl-pill.red    { background: #cc0000; color: #fff; }
+  .tfl-pill.dark   { background: #1a1a1a; color: #fff; }
+  .tfl-traffic-word { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.04em; line-height: 1; }
+  .tfl-value { font-size: 15px; font-weight: 900; line-height: 1.1; margin-top: 3px; }
+  .tfl-unit { font-size: 9px; font-weight: 400; margin-top: 1px; opacity: 0.85; }
+  .tfl-nutrient-name { font-size: 10px; font-weight: 700; text-align: center;
+                       color: #1a1a1a; line-height: 1.2; margin-bottom: 2px; }
+  .tfl-ri { font-size: 9px; color: #555; text-align: center; line-height: 1.2; }
+  .tfl-ri-note { font-size: 10px; color: #6b7a5c; margin-top: 6px; }
+  .tfl-section-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+                         text-transform: uppercase; color: #4a5a3a; margin-bottom: 10px;
+                         margin-top: 28px; }
+
   /* ── Responsive ── */
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -516,6 +551,105 @@ function recipeCell(c, winner, isWinner, badgeLabel) {
   return `${c.recipeName}${fb}`;
 }
 
+/* ── UK Traffic Light helpers ── */
+const TFL_THRESHOLDS = {
+  fat:       { green: 3,    amber: 17.5, unit: 'g',  name: 'Fat',       ri: 70 },
+  saturates: { green: 1.5,  amber: 5,    unit: 'g',  name: 'Saturates', ri: 20 },
+  sugars:    { green: 5,    amber: 22.5, unit: 'g',  name: 'Sugars',    ri: 90 },
+  salt:      { green: 0.3,  amber: 1.5,  unit: 'g',  name: 'Salt',      ri: 6  },
+};
+const ENERGY_RI_KJ = 8400;
+
+function tflColour(val, green, amber) {
+  return val <= green ? 'green' : val <= amber ? 'amber' : 'red';
+}
+
+function buildTflLabelHtml(energyKJ, energyKcal, fat, saturates, sugars, salt) {
+  const energyRiPct = Math.round((energyKJ / ENERGY_RI_KJ) * 100);
+  const nutrients = [
+    { key: 'fat',       val: fat,       fmt: fat.toFixed(1)       },
+    { key: 'saturates', val: saturates, fmt: saturates.toFixed(1) },
+    { key: 'sugars',    val: sugars,    fmt: sugars.toFixed(1)     },
+    { key: 'salt',      val: salt,      fmt: salt.toFixed(2)       },
+  ];
+  const cellsHtml = nutrients.map(({ key, val, fmt }) => {
+    const t      = TFL_THRESHOLDS[key];
+    const colour = tflColour(val, t.green, t.amber);
+    const riPct  = Math.round((val / t.ri) * 100);
+    return `<div class="tfl-cell">
+      <div class="tfl-cell-inner">
+        <div class="tfl-pill ${colour}">
+          <span class="tfl-traffic-word">${colour.charAt(0).toUpperCase() + colour.slice(1)}</span>
+          <span class="tfl-value">${fmt}</span>
+          <span class="tfl-unit">${t.unit}</span>
+        </div>
+        <div class="tfl-nutrient-name">${t.name}</div>
+        <div class="tfl-ri">${riPct}% RI*</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="tfl-label">
+    <div class="tfl-per100">per<br>100g</div>
+    <div class="tfl-nutrients">
+      <div class="tfl-cell" style="min-width:80px; border-left:1px solid #1a1a1a;">
+        <div class="tfl-cell-inner">
+          <div class="tfl-pill dark">
+            <span class="tfl-value" style="font-size:13px;">${Math.round(energyKJ)}</span>
+            <span class="tfl-unit">kJ</span>
+            <span class="tfl-value" style="font-size:11px; margin-top:2px;">${Math.round(energyKcal)}</span>
+            <span class="tfl-unit">kcal</span>
+          </div>
+          <div class="tfl-nutrient-name">Energy</div>
+          <div class="tfl-ri">${energyRiPct}% RI*</div>
+        </div>
+      </div>
+      ${cellsHtml}
+    </div>
+  </div>`;
+}
+
+function renderTflComparison(winner, format) {
+  if (CC.code !== 'UK') return '';
+
+  const rn = winner.recipeName, tn = winner.trimName;
+
+  // Blend values
+  const bEnergyKJ  = getBlendNutrient('Energy (kJ)',       rn, tn, format);
+  const bEnergyKcal= getBlendNutrient('Energy (Calories)', rn, tn, format);
+  const bFat       = getBlendNutrient('Total Fat',         rn, tn, format);
+  const bSaturates = getBlendNutrient('Saturated Fat',     rn, tn, format);
+  const bSugars    = getBlendNutrient('Total Sugars',      rn, tn, format);
+  const bSalt      = getBlendNutrient('Salt',              rn, tn, format);
+
+  // 100% beef reference (same trim)
+  const beefRef    = HEALTH_REF.beef[tn] ?? {};
+  const rEnergyKJ  = beefRef['Energy (kJ)']       ?? 0;
+  const rEnergyKcal= beefRef['Energy (Calories)'] ?? 0;
+  const rFat       = beefRef['Total Fat']          ?? 0;
+  const rSaturates = beefRef['Saturated Fat']      ?? 0;
+  const rSugars    = beefRef['Total Sugars']       ?? 0;
+  const rSalt      = beefRef['Salt']               ?? (beefRef['Sodium'] ? beefRef['Sodium'] / 400 : 0);
+
+  const blendLabel = buildTflLabelHtml(bEnergyKJ, bEnergyKcal, bFat, bSaturates, bSugars, bSalt);
+  const beefLabel  = buildTflLabelHtml(rEnergyKJ, rEnergyKcal, rFat, rSaturates, rSugars, rSalt);
+  const beefColHdr = '100% ' + tn.replace(' Beef Trim', '') + ' Beef Trim';
+
+  return `
+    <div class="tfl-section-heading">UK Traffic Light — per 100g</div>
+    <div class="tfl-comparison">
+      <div class="tfl-col">
+        <div class="tfl-col-label">${winner.recipeName}</div>
+        ${blendLabel}
+      </div>
+      <div class="tfl-col">
+        <div class="tfl-col-label">${beefColHdr}</div>
+        ${beefLabel}
+      </div>
+    </div>
+    <p class="tfl-ri-note">*RI = Reference Intake for an average adult (8,400 kJ / 2,000 kcal)</p>`;
+}
+
 /* ── Render balance section ── */
 function renderBalanceSection(format, userFat) {
   const ranked = scoringEngine(format, 'balance', userFat);
@@ -550,7 +684,8 @@ function renderBalanceSection(format, userFat) {
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
   ];
 
-  return renderRankedTable(ranked, '★ Recommended', cols);
+  return renderRankedTable(ranked, '★ Recommended', cols)
+       + renderTflComparison(winner, format);
 }
 
 /* ── Render cost section ── */
