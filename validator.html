@@ -177,7 +177,7 @@
 
 <div class="controls-bar">
   <label>Country:</label>
-  <select id="country-select">
+  <select id="country-select" onchange="runValidator()">
     <option value="US">🇺🇸 United States</option>
     <option value="UK">🇬🇧 United Kingdom</option>
     <option value="AU">🇦🇺 Australia</option>
@@ -198,6 +198,7 @@
         <div class="check-sub" id="fiber-sub">≥5g fiber per 100g</div>
       </div>
     </div>
+    <div id="fiber-note" style="display:none; font-size:11px; color:#6b7a5c; align-self:center;"></div>
     <div class="check-item" id="check-protein" onclick="toggleConstraint('protein')">
       <div class="check-box"></div>
       <div>
@@ -287,9 +288,22 @@ function toggleConstraint(which) {
    too low at burger ratios — hide when that format is active.      */
 function updateFiberVisibility() {
   const fiberEl  = document.getElementById('check-fiber');
+  const noteEl   = document.getElementById('fiber-note');
   const isBurger = activeFormat === 'Burger / Meatball';
-  const hide     = CC.code === 'AU' || ((CC.code === 'UK' || CC.code === 'EU') && isBurger);
+  const hideAU   = CC.code === 'AU';
+  const hideBurger = (CC.code === 'UK' || CC.code === 'EU') && isBurger;
+  const hide     = hideAU || hideBurger;
+
   fiberEl.style.display = hide ? 'none' : '';
+
+  if (hideBurger) {
+    noteEl.style.display = '';
+    noteEl.textContent = 'High in Fibre not available for Burger / Meatball — insufficient fibre for a strong bind.';
+  } else {
+    noteEl.style.display = 'none';
+    noteEl.textContent = '';
+  }
+
   if (hide && mustFiber) {
     mustFiber = false;
     fiberEl.classList.remove('checked');
