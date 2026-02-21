@@ -458,4 +458,3 @@ async function runValidator() {
 }
 
 window.addEventListener('DOMContentLoaded', () => { runValidator(); });
-</script>
