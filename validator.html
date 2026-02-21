@@ -61,9 +61,6 @@
   .price-input-group input:focus { outline: none; border-color: #2e4214; }
 
   .loading { color: #6b7a5c; font-size: 14px; padding: 40px 0; text-align: center; }
-  .fallback-badge { display: inline-block; background: #fff3cd; color: #856404;
-                    font-size: 11px; font-weight: 600; padding: 2px 8px;
-                    border-radius: 100px; margin-left: 8px; border: 1px solid #ffc107; }
 
   /* ── Section headings ── */
   .section-block { margin-bottom: 48px; }
@@ -276,6 +273,21 @@ function toggleConstraint(which) {
   }
 }
 
+/* ── Hide the fiber constraint when it cannot be achieved ──
+   AU: threshold (7g) is never reachable — hide always.
+   UK/EU + Burger/Meatball: water recipes excluded, shiitake % is
+   too low at burger ratios — hide when that format is active.      */
+function updateFiberVisibility() {
+  const fiberEl  = document.getElementById('check-fiber');
+  const isBurger = activeFormat === 'Burger / Meatball';
+  const hide     = CC.code === 'AU' || ((CC.code === 'UK' || CC.code === 'EU') && isBurger);
+  fiberEl.style.display = hide ? 'none' : '';
+  if (hide && mustFiber) {
+    mustFiber = false;
+    fiberEl.classList.remove('checked');
+  }
+}
+
 const CL_ORDER_LEAN = [
   '60CL Beef Trim','65CL Beef Trim','70CL Beef Trim',
   '75CL Beef Trim','80CL Beef Trim','85CL Beef Trim','90CL Beef Trim'
@@ -294,6 +306,7 @@ async function loadData() {
   document.getElementById('fiber-sub').textContent = fiberSub;
   document.getElementById('protein-sub').textContent = proteinSub;
   document.querySelector('#check-fiber .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
+  updateFiberVisibility();
 
   const countryFilter = `country=eq.${selectedCountry}`;
   const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
@@ -406,9 +419,8 @@ function scoringEngine(format, priority, userFat) {
     return out;
   }
 
-  const constrained  = buildCandidates(true);
-  const usedFallback = constrained.length === 0 && (mustFiber || mustProtein);
-  const pool         = constrained.length > 0 ? constrained : buildCandidates(false);
+  const constrained = buildCandidates(true);
+  const pool        = constrained.length > 0 ? constrained : buildCandidates(false);
   if (pool.length === 0) return [];
 
   function normalise(values, lowerBetter) {
@@ -457,7 +469,7 @@ function scoringEngine(format, priority, userFat) {
   });
 
   return pool
-    .map((c, i) => ({ ...c, nutritionScore: nutritionScore[i], finalScore: finalScores[i], usedFallback }))
+    .map((c, i) => ({ ...c, nutritionScore: nutritionScore[i], finalScore: finalScores[i] }))
     .sort((a, b) => b.finalScore - a.finalScore);
 }
 
@@ -491,6 +503,7 @@ function buildFormatTabs(formats) {
       document.querySelectorAll('.fmt-tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       activeFormat = fmt;
+      updateFiberVisibility();
       renderOutput();
     };
     wrap.appendChild(btn);
@@ -542,13 +555,12 @@ function renderRankedTable(ranked, recBadgeLabel, colDefs) {
 
 /* ── Recipe name cell for winner vs alternative ── */
 function recipeCell(c, winner, isWinner, badgeLabel) {
-  const fb = c.usedFallback ? `<span class="fallback-badge">constraint not met</span>` : '';
   if (isWinner) {
-    return `<div class="winner-recipe-name">${c.recipeName}${fb}
+    return `<div class="winner-recipe-name">${c.recipeName}
               <span class="rec-badge">${badgeLabel}</span></div>
             <div class="winner-trim-name">${c.trimName.replace(' Beef Trim', '')}</div>`;
   }
-  return `${c.recipeName}${fb}`;
+  return c.recipeName;
 }
 
 /* ── UK Traffic Light helpers ── */
@@ -799,6 +811,7 @@ async function runValidator() {
   const formats = Object.keys(RECIPES);
   activeFormat  = activeFormat && formats.includes(activeFormat) ? activeFormat : formats[0];
   buildFormatTabs(formats);
+  updateFiberVisibility();
   renderOutput();
 }
 
