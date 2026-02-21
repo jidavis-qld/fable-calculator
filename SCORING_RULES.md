@@ -32,10 +32,10 @@ Every trim from floor to ceiling (inclusive) is a candidate for that recipe.
 
 If enabled, candidates that fail these are dropped before scoring:
 
-| Constraint | US threshold | UK / EU threshold |
-|---|---|---|
-| Must be High in Fiber | ≥5g fiber per 100g | ≥6g fibre per 100g |
-| Must be High in Protein | ≥10g protein per 100g | ≥20% of energy from protein |
+| Constraint | US threshold | UK / EU threshold | AU threshold |
+|---|---|---|---|
+| Must be High in Fiber | ≥5g fiber per 100g | ≥6g fibre per 100g | ≥7g fibre per 100g (FSANZ 1.2.7) |
+| Must be High in Protein | ≥10g protein per 100g | ≥20% of energy from protein | ≥10g protein per 100g (FSANZ 1.2.7) |
 
 Thresholds follow the regulatory definition for the active country (`COUNTRY_CONFIG` in `js/country.js`). If applying constraints produces an empty pool, the engine falls back to the unconstrained pool.
 

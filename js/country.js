@@ -41,13 +41,13 @@ const COUNTRY_CONFIG = {
     priceUnit:   'per kg',
     fablePrice:  10.50,
     waterPrice:  0.001,
-    // Claim thresholds — FSANZ Standard 1.2.7 (same regulation for AU/NZ)
-    highFiber:        4,    // g per 100g ("good source of dietary fibre")
-    sourceFiber:      2,    // g per 100g
+    // Claim thresholds — FSANZ Standard 1.2.7
+    highFiber:        7,    // g per 100g ("high in dietary fibre")
+    sourceFiber:      4,    // g per 100g ("source of dietary fibre")
     highProtein:      { mode: 'grams', g: 10 },  // ≥10g per 100g
     sourceProtein:    { mode: 'grams', g: 5  },
     fiberSpelling:        'Fibre',
-    fiberConstraintSub:   '≥4g fibre per 100g (AU good source of fibre)',
+    fiberConstraintSub:   '≥7g fibre per 100g (AU high in fibre)',
     proteinConstraintSub: '≥10g protein per 100g',
   },
   'Europe': {
