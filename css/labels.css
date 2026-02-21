@@ -285,7 +285,7 @@
     color: var(--fable-sage);
   }
 
-  /* Official FSANZ HSR image from Woolworths NZ asset CDN */
+  /* Official FSANZ HSR images — locally hosted in img/hsr/1.png … 10.png */
   .hsr-img {
     display: block;
     height: 80px;

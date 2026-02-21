@@ -259,11 +259,10 @@ function calcHSR(energyKJ, satFat, sugars, sodiumMg, fibre, protein, fvnlPct) {
 }
 
 function buildHsrLabelHtml(stars) {
-  // Woolworths NZ hosts official FSANZ HSR images numbered 1–10
-  // where image number = stars × 2  (e.g. 3.5★ → image 7)
+  // Official FSANZ HSR images stored locally in img/hsr/
+  // numbered 1–10 where image number = stars × 2  (e.g. 3.5★ → img/hsr/7.png)
   const imgNum = Math.round(stars * 2);
-  const src = `https://www.woolworths.co.nz/assets/images/product-details/health-star-rating/${imgNum}.png`;
-  return `<img class="hsr-img" src="${src}" alt="${stars.toFixed(1)} Health Stars" />`;
+  return `<img class="hsr-img" src="img/hsr/${imgNum}.png" alt="${stars.toFixed(1)} Health Stars" />`;
 }
 
 function renderHSR(recipeName, trimName, userTrimName) {
