@@ -38,8 +38,8 @@ const CL_ORDER_LEAN = [
 async function loadData() {
   BEEF_PRICES = {}; RECIPES = {}; HEALTH_REF = { shiitake: {}, beef: {} };
   SHIITAKE_CO2 = 0; BEEF_CO2 = 0; SCORING_CONFIG = {};
-  const selectedCountry = document.getElementById('country-select').value;
-  CC = COUNTRY_CONFIG[selectedCountry];
+  const selectedCode = document.getElementById('country-select').value;
+  CC = Object.values(COUNTRY_CONFIG).find(c => c.code === selectedCode);
 
   const fiberSub = `≥${CC.highFiber}g ${CC.fiberSpelling.toLowerCase()} per 100g`;
   const proteinSub = CC.highProtein.mode === 'energyPct'
@@ -49,7 +49,7 @@ async function loadData() {
   document.getElementById('protein-sub').textContent = proteinSub;
   document.querySelector('#check-fiber .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
 
-  const countryFilter = `country=eq.${selectedCountry}`;
+  const countryFilter = `country=eq.${selectedCode}`;
   const [nutrition, beefPrices, recipes, co2, scoringCfg] = await Promise.all([
     sbFetch('nutrition',   countryFilter),
     sbFetch('beef_prices', countryFilter),
@@ -108,7 +108,7 @@ function meetsHighProtein(protein_g, energyKJ) {
 /* ── Scoring engine ── */
 function scoringEngine(format, priority, userFat) {
   const shiitakeFat   = (HEALTH_REF.shiitake['Total Fat']?.val ?? 0) / 100;
-  const shiitakeFiber = HEALTH_REF.shiitake['Dietary Fiber']?.val ?? 0;
+  const shiitakeFiber = (HEALTH_REF.shiitake['Dietary Fiber'] ?? HEALTH_REF.shiitake['Dietary Fibre'])?.val ?? 0;
   const userTrimName  = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === userFat)?.[0];
   const ceilIdx       = CL_ORDER_LEAN.indexOf(userTrimName);
 
@@ -141,11 +141,14 @@ function scoringEngine(format, priority, userFat) {
         if (!trimData) continue;
         const fiber    = shiitakeFiber * fablePct;
         const protein  = getBlendNutrient('Protein',           recipeName, trimName, format);
-        const cals     = getBlendNutrient('Energy (Calories)', recipeName, trimName, format);
+        const energyKJ = getBlendNutrient('Energy (kJ)',       recipeName, trimName, format);
+        // AU uses kJ only — convert to kcal for display; other countries have kcal stored directly
+        const cals     = CC.code === 'AU'
+          ? energyKJ / 4.184
+          : getBlendNutrient('Energy (Calories)',               recipeName, trimName, format);
         const satFat   = getBlendNutrient('Saturated Fat',     recipeName, trimName, format);
         const cost     = beefPct * trimData.price + fablePct * CC.fablePrice + waterPct * CC.waterPrice;
         const co2      = beefPct * BEEF_CO2 + fablePct * SHIITAKE_CO2;
-        const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName, format);
         const blendedFat = (trimData.fat * beefPct) + (shiitakeFat * fablePct);
         if (applyConstraints) {
           if (mustFiber   && fiber < CC.highFiber)                continue;
