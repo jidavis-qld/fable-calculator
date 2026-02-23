@@ -684,9 +684,20 @@ function renderTflComparison(winner, format) {
     <p class="tfl-ri-note">*RI = Reference Intake for an average adult (8,400 kJ / 2,000 kcal)</p>`;
 }
 
-/* ── Claim tiles — shown beneath the balanced table when claims are met ── */
+/* ── Claim tiles — shown beneath each section's winner when claims are met ── */
 function renderClaimTiles(winner) {
   const tiles = [];
+
+  // High in Fibre — country-aware threshold
+  if (winner.fiber >= CC.highFiber) {
+    tiles.push(`<div class="claim-tile">
+      <span class="claim-tile-icon">🌿</span>
+      <div>
+        <div>High in ${CC.fiberSpelling}</div>
+        <div class="claim-tile-label">≥${CC.highFiber}g per 100g</div>
+      </div>
+    </div>`);
+  }
 
   // High in Protein — uses the same country-aware check as the scoring engine
   if (meetsHighProtein(winner.protein, winner.energyKJ)) {
@@ -773,7 +784,8 @@ function renderCostSection(format, userFat) {
       cell: (c) => c.satFat.toFixed(1) },
   ];
 
-  return renderRankedTable(ranked, '$ Lowest Cost', cols);
+  return renderRankedTable(ranked, '$ Lowest Cost', cols)
+       + renderClaimTiles(ranked[0]);
 }
 
 /* ── Render nutrition section ── */
@@ -812,7 +824,8 @@ function renderNutritionSection(format, userFat) {
         : `${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - w.cost, CC.currency, true)}` },
   ];
 
-  return renderRankedTable(ranked, '✦ Best Nutrition', cols);
+  return renderRankedTable(ranked, '✦ Best Nutrition', cols)
+       + renderClaimTiles(winner);
 }
 
 /* ── Main render ── */
