@@ -30,7 +30,7 @@ function selectOpt(el, group) {
   document.querySelectorAll('#'+group+'-options .opt-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   if (group === 'q1') { state.q1 = parseFloat(el.dataset.value); document.getElementById('btn-4').disabled = false; }
-  if (group === 'q2') { state.q2 = el.dataset.value; document.getElementById('btn-5').disabled = false; }
+  if (group === 'q2') { state.q2 = el.dataset.value; document.getElementById('btn-5').disabled = false; updateQuizFiberVisibility(); }
 }
 
 function selectBiz(el) {
@@ -64,9 +64,42 @@ function selectCountry(el) {
     document.getElementById('q2-sub').textContent = useMince
       ? "Select burgers/meatballs if you're giving your customers beef mince but you want them to form it themselves"
       : "Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves";
+    updateQuizFiberVisibility();
   } else {
     comingSoon.style.display = 'block';
     btn.disabled = true;
+  }
+}
+
+/* ── Hide fiber constraint on step 5 when it cannot be achieved ──
+   AU: ≥7g threshold is never reachable — hide always.
+   UK/EU + Burger/Meatball: insufficient fibre for a strong bind — hide
+   and show an explanatory note instead.                              */
+function updateQuizFiberVisibility() {
+  const fiberItem = document.getElementById('check-fiber-item');
+  const noteEl    = document.getElementById('fiber-constraint-note');
+  if (!fiberItem || !noteEl) return;
+
+  const isAU     = CC && CC.code === 'AU';
+  const isBurger = state.q2 === 'Burger / Meatball';
+  const isUKorEU = CC && (CC.code === 'UK' || CC.code === 'EU');
+  const hideBurger = isUKorEU && isBurger;
+  const hide       = isAU || hideBurger;
+
+  fiberItem.style.display = hide ? 'none' : '';
+
+  if (hideBurger) {
+    noteEl.style.display = '';
+    noteEl.textContent = 'High in Fibre not available for Burger / Meatball — insufficient fibre for a strong bind.';
+  } else {
+    noteEl.style.display = 'none';
+    noteEl.textContent = '';
+  }
+
+  // Clear state if hidden
+  if (hide && state.mustFiber) {
+    state.mustFiber = false;
+    fiberItem.classList.remove('checked');
   }
 }
 

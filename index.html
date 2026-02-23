@@ -229,13 +229,14 @@
       <div style="margin-top: 24px; width: 100%;">
         <h2 style="font-size: 18px; font-weight: 700; color: #2e4214; margin-bottom: 12px; text-align: left;">Any non-negotiable requirements?</h2>
         <div class="check-list" id="check-list">
-          <div class="check-item" onclick="toggleCheck(this,'fiber')">
+          <div class="check-item" id="check-fiber-item" onclick="toggleCheck(this,'fiber')">
             <div class="check-box"></div>
             <div>
               <div class="check-text">Must be High in Fiber</div>
               <div class="check-sub" id="fiber-constraint-sub">≥5g fiber per 100g — achievable in all blends</div>
             </div>
           </div>
+          <div id="fiber-constraint-note" style="display:none; font-size:12px; color:#6b7a5c; padding: 4px 0;"></div>
           <div class="check-item" onclick="toggleCheck(this,'protein')">
             <div class="check-box"></div>
             <div>
