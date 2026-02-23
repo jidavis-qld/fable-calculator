@@ -190,6 +190,13 @@
     margin-top: 4px;
   }
 
+  .key-stat-badge--source {
+    background: transparent;
+    border: 1.5px solid rgba(207,255,142,0.35);
+    color: rgba(207,255,142,0.75);
+    font-weight: 600;
+  }
+
   .actions-bar {
     display: flex;
     gap: 12px;

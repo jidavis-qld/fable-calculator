@@ -41,9 +41,19 @@ async function calculate() {
   // Key stats
   document.getElementById('stat-price').textContent = CC.currency+blendPrice.toFixed(2);
   document.getElementById('stat-fiber').textContent = fiber.toFixed(1)+'g';
-  document.getElementById('stat-fiber-badge').style.display = fiber >= CC.highFiber ? '' : 'none';
+  const highFiber   = fiber >= CC.highFiber;
+  const sourceFiber = !highFiber && fiber >= CC.sourceFiber;
+  const fiberBadge  = document.getElementById('stat-fiber-badge');
+  fiberBadge.textContent   = `High in ${CC.fiberSpelling}`;
+  fiberBadge.style.display = highFiber ? '' : 'none';
+  const fiberSrcBadge = document.getElementById('stat-fiber-source-badge');
+  fiberSrcBadge.textContent   = `Source of ${CC.fiberSpelling}`;
+  fiberSrcBadge.style.display = sourceFiber ? '' : 'none';
   document.getElementById('stat-protein').textContent = protein.toFixed(1)+'g';
-  document.getElementById('stat-protein-badge').style.display = meetsHighProtein(protein, energyKJ) ? '' : 'none';
+  const highProtein   = meetsHighProtein(protein, energyKJ);
+  const srcProtein    = !highProtein && meetsSourceProtein(protein, energyKJ);
+  document.getElementById('stat-protein-badge').style.display        = highProtein ? '' : 'none';
+  document.getElementById('stat-protein-source-badge').style.display = srcProtein  ? '' : 'none';
   document.getElementById('stat-carbon').textContent = carbonPct+'%';
 
   // Hero title
