@@ -53,10 +53,10 @@ async function calculate() {
   document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
   document.getElementById('price-beef-unit').textContent = CC.priceUnit;
-  renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice);
+  renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice, userTrimName);
   document.getElementById('price-blend').textContent = CC.currency+blendPrice.toFixed(2);
   document.getElementById('price-beef-label').textContent = '100% ' + userTrimName;
-  renderBeefPriceBlock(beefOnlyPrice);
+  renderBeefPriceBlock(beefOnlyPrice, userTrimName, trimName);
 
   // Nutrition
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
@@ -97,7 +97,8 @@ function renderBubbles(beefPct, fablePct, waterPct, trimName) {
   document.querySelector('.bubble-note').style.display = hasWater ? '' : 'none';
 }
 
-function renderBeefPriceBlock(beefOnlyPrice) {
+function renderBeefPriceBlock(beefOnlyPrice, userTrimName, trimName) {
+  const sameTrims = userTrimName === trimName;
   const el = document.getElementById('price-beef');
   el.innerHTML = `${CC.currency}<input
     type="number"
@@ -116,18 +117,19 @@ function renderBeefPriceBlock(beefOnlyPrice) {
   }
   document.getElementById('beef-only-price-input').addEventListener('input', function() {
     const newPrice = parseFloat(this.value) || 0;
-    document.getElementById('price-beef').querySelector('input').value;
-    // Also update the beef price input in the cost table if present
-    const costInput = document.getElementById('beef-price-input');
-    if (costInput) {
-      costInput.value = newPrice.toFixed(2);
-      costInput.dispatchEvent(new Event('input'));
+    // Only sync to the cost table beef input when both sides show the same CL trim
+    if (sameTrims) {
+      const costInput = document.getElementById('beef-price-input');
+      if (costInput) {
+        costInput.value = newPrice.toFixed(2);
+        costInput.dispatchEvent(new Event('input'));
+      }
     }
   });
 }
 
 
-function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice) {
+function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice, userTrimName) {
   const tbody = document.getElementById('cost-tbody');
   tbody.innerHTML = '';
   const cur = CC.currency;
@@ -170,6 +172,7 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
   tbody.appendChild(totalRow);
 
   // Live recalculate when beef price is edited
+  const sameTrims = userTrimName === trimName;
   document.getElementById('beef-price-input').addEventListener('input', function() {
     const newBeefPrice  = parseFloat(this.value) || 0;
     const newBeefCost   = beefPct * newBeefPrice;
@@ -177,9 +180,11 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
     document.getElementById('beef-cost-cell').textContent  = cur + newBeefCost.toFixed(2);
     document.getElementById('cost-total-cell').textContent = cur + newBlendPrice.toFixed(2);
     document.getElementById('price-blend').textContent     = cur + newBlendPrice.toFixed(2);
-    // Sync beef-only comparison bubble
-    const beefOnlyInput = document.getElementById('beef-only-price-input');
-    if (beefOnlyInput) beefOnlyInput.value = newBeefPrice.toFixed(2);
+    // Only sync to the comparison bubble beef input when both sides show the same CL trim
+    if (sameTrims) {
+      const beefOnlyInput = document.getElementById('beef-only-price-input');
+      if (beefOnlyInput) beefOnlyInput.value = newBeefPrice.toFixed(2);
+    }
   });
 }
 
