@@ -346,11 +346,17 @@
         <h2 class="section-title">Nutrition</h2>
       </div>
       <div class="section-body">
+        <div id="serving-toggle-wrap" style="display:none; margin-bottom:12px;">
+          <div class="serving-toggle">
+            <button class="serving-btn active" id="btn-per-100g" onclick="setServingMode('per100g')">Per 100g</button>
+            <button class="serving-btn" id="btn-per-serving" onclick="setServingMode('perServing')">Per serving (112g / 4 oz)</button>
+          </div>
+        </div>
         <table class="nutrition-table" id="nutrition-table">
           <thead>
             <tr>
               <th>Nutrient</th>
-              <th>Shiitake Infused</th>
+              <th id="nutrition-blend-header">Shiitake Infused</th>
               <th id="nutrition-beef-header">100% Beef</th>
               <th>Difference</th>
             </tr>

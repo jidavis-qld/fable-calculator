@@ -11,11 +11,20 @@ const COUNTRY_CONFIG = {
     priceUnit:   'per lb',
     fablePrice:  4.98,
     waterPrice:  0.001,
-    // Claim thresholds
+    // Serving size for US nutrition facts panel
+    servingG:         112,  // 4 oz serving
+    // Claim thresholds — per 100g (used by validator, stat tiles, scoring engine)
     highFiber:        5,    // g per 100g
     sourceFiber:      2.5,
     highProtein:      { mode: 'grams', g: 10 },
     sourceProtein:    { mode: 'grams', g: 5  },
+    // Claim thresholds — per serving (USDA FSIS, 112g / 4 oz serving)
+    // Fiber: USDA follows FDA DV of 28g — "Excellent source" ≥20% DV, "Good source" ≥10% DV
+    highFiberServing:     5.6,  // g per serving (≥20% DV = excellent source)
+    sourceFiberServing:   2.8,  // g per serving (≥10% DV = good source)
+    // Protein: USDA FSIS — "Good source" ≥10g, "Excellent source" ≥20g per serving
+    highProteinServing:   { mode: 'grams', g: 10 }, // ≥10g per serving (good source)
+    sourceProteinServing: { mode: 'grams', g: 5  }, // ≥5g per serving (contains protein)
     fiberSpelling:        'Fiber',
     fiberConstraintSub:   '≥5g fiber per 100g — achievable in all blends',
     proteinConstraintSub: '≥10g protein per 100g — may affect trim selection',

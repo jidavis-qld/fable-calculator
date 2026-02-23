@@ -415,6 +415,33 @@
   .price-block.highlight .pb-unit { color: rgba(250,250,250,0.65); }
 
   /* ── Nutrition table ─────────────────────── */
+  /* ── Per-serving toggle (US only) ─────────── */
+  .serving-toggle {
+    display: inline-flex;
+    background: var(--mist);
+    border-radius: 100px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .serving-btn {
+    padding: 6px 16px;
+    border-radius: 100px;
+    border: none;
+    background: transparent;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .serving-btn.active {
+    background: var(--forest);
+    color: var(--sage);
+  }
+
   .nutrition-table {
     width: 100%;
     border-collapse: collapse;

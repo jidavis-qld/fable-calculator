@@ -5,7 +5,25 @@
    renderCostTable():     the editable cost breakdown table.
    renderNutrition():     the nutrition comparison table with diff badges.
    renderSustainability(): the CO₂ comparison blocks and carbon callout.
+   setServingMode():      switches the US nutrition table between per-100g and
+                          per-serving (112g / 4 oz) views.
    ─────────────────────────────────────────────────────────────────────────── */
+
+// Module-level nutrition state — populated by calculate(), used by setServingMode()
+let _nutritionState = null;
+
+// 'per100g' | 'perServing'  — only relevant for US
+let _servingMode = 'per100g';
+
+function setServingMode(mode) {
+  _servingMode = mode;
+  document.getElementById('btn-per-100g').classList.toggle('active', mode === 'per100g');
+  document.getElementById('btn-per-serving').classList.toggle('active', mode === 'perServing');
+  if (_nutritionState) {
+    const { recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback } = _nutritionState;
+    renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
+  }
+}
 
 async function calculate() {
   await loadData();
@@ -72,7 +90,13 @@ async function calculate() {
   document.getElementById('price-beef-label').textContent = '100% ' + userTrimName;
   renderBeefPriceBlock(beefOnlyPrice, userTrimName, trimName);
 
-  // Nutrition
+  // Nutrition — reset to per-100g on each new calculation, show toggle for US only
+  _servingMode = 'per100g';
+  _nutritionState = { recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback };
+  const toggleWrap = document.getElementById('serving-toggle-wrap');
+  toggleWrap.style.display = CC.code === 'US' ? '' : 'none';
+  document.getElementById('btn-per-100g').classList.add('active');
+  document.getElementById('btn-per-serving').classList.remove('active');
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
   renderTrafficLight(recipeName, trimName);
   renderNutriScore(recipeName, trimName, userTrimName);
@@ -206,6 +230,18 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
 // US: simple g/100g threshold. UK: protein energy % = (protein_g * 17kJ) / energyKJ * 100
 
 function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback = false) {
+  // Per-serving scaling (US only)
+  const isUS       = CC.code === 'US';
+  const perServing = isUS && _servingMode === 'perServing';
+  const servingMult = perServing ? (CC.servingG / 100) : 1;
+
+  // Update column headers to reflect current view
+  const blendHeaderEl = document.getElementById('nutrition-blend-header');
+  const beefHeaderEl  = document.getElementById('nutrition-beef-header');
+  if (blendHeaderEl) blendHeaderEl.textContent = perServing
+    ? `Shiitake Infused (per ${CC.servingG}g)`
+    : 'Shiitake Infused';
+
   // Nutrient list differs by country
   const isUK = CC.code === 'UK' || CC.code === 'EU';
   const isAU = CC.code === 'AU';
@@ -293,13 +329,19 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
 
   const tbody = document.getElementById('nutrition-tbody');
   tbody.innerHTML = '';
-  document.getElementById('nutrition-beef-header').textContent = '100% ' + userTrimName;
+  if (beefHeaderEl) beefHeaderEl.textContent = perServing
+    ? `100% ${userTrimName} (per ${CC.servingG}g)`
+    : '100% ' + userTrimName;
   const claims = [];
 
   nutrients.forEach(({ key, label, bold, sub }) => {
-    const blendVal = getBlendNutrient(key, recipeName, trimName);
-    const beefVal  = HEALTH_REF.beef[userTrimName]?.[key] ?? 0;
-    const unit     = HEALTH_REF.shiitake[key]?.unit ?? '';
+    // Raw per-100g values — diff badge always uses ratio of per-100g values (unaffected by scale)
+    const blendVal100 = getBlendNutrient(key, recipeName, trimName);
+    const beefVal100  = HEALTH_REF.beef[userTrimName]?.[key] ?? 0;
+
+    // Display values — scaled when in per-serving mode
+    const blendVal = blendVal100 * servingMult;
+    const beefVal  = beefVal100  * servingMult;
 
     const isLower  = lowerBetter.has(key);
     const isHigher = higherBetter.has(key);
@@ -307,18 +349,18 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
     let diffHtml = '';
 
     // Special case: fiber with zero beef baseline — show a highlight badge instead of %
-    if (key === 'Dietary Fiber' && beefVal === 0 && blendVal > 0) {
+    if (key === 'Dietary Fiber' && beefVal100 === 0 && blendVal100 > 0) {
       diffHtml = `<span class="diff-badge diff-fiber">★ ADDED FIBER</span>`;
-    } else if (beefVal > 0) {
-      const ratio = blendVal / beefVal;
+    } else if (beefVal100 > 0) {
+      // Diff ratio always uses per-100g values so it doesn't change with serving toggle
+      const ratio = blendVal100 / beefVal100;
       const changePct = Math.round((ratio - 1) * 100);
       const { bg, fg } = badgeColors(ratio, isLower || !isHigher);
-      // Label: directional change vs 100% beef baseline
       const sign = changePct < 0 ? '▼ ' : changePct > 0 ? '▲ ' : '';
       const label2 = changePct === 0 ? '=' : `${sign}${Math.abs(changePct)}%`;
       diffHtml = `<span class="diff-badge" style="background:${bg};color:${fg}">${label2}</span>`;
-    } else if (beefVal === 0 && blendVal === 0) {
-      diffHtml = ''; // both zero, nothing to show
+    } else if (beefVal100 === 0 && blendVal100 === 0) {
+      diffHtml = '';
     }
 
     const tr = document.createElement('tr');
@@ -331,16 +373,24 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
     `;
     tbody.appendChild(tr);
 
-    // Health claims — thresholds differ by country
+    // Health claims — use per-serving thresholds for US when in serving mode, else per-100g
     if (key === 'Dietary Fiber' || key === 'Dietary Fibre') {
-      const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
-      if (blendVal >= CC.highFiber) claims.push(`High in ${CC.fiberSpelling}`);
-      else if (blendVal >= CC.sourceFiber) claims.push(`Source of ${CC.fiberSpelling}`);
+      const highThresh   = (isUS && perServing) ? CC.highFiberServing   : CC.highFiber;
+      const sourceThresh = (isUS && perServing) ? CC.sourceFiberServing : CC.sourceFiber;
+      if (blendVal >= highThresh) claims.push(`High in ${CC.fiberSpelling}`);
+      else if (blendVal >= sourceThresh) claims.push(`Source of ${CC.fiberSpelling}`);
     }
     if (key === 'Protein') {
-      const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName);
-      if (meetsHighProtein(blendVal, energyKJ)) claims.push('High in Protein');
-      else if (meetsSourceProtein(blendVal, energyKJ)) claims.push('Source of Protein');
+      const energyKJ = getBlendNutrient('Energy (kJ)', recipeName, trimName) * servingMult;
+      const hpCfg    = (isUS && perServing) ? CC.highProteinServing   : CC.highProtein;
+      const spCfg    = (isUS && perServing) ? CC.sourceProteinServing : CC.sourceProtein;
+      // Inline check using the selected config so we don't need to mutate CC
+      function checkProtein(cfg, prot, eKJ) {
+        if (cfg.mode === 'energyPct') return eKJ > 0 && (prot * 17 / eKJ * 100) >= cfg.pct;
+        return prot >= cfg.g;
+      }
+      if (checkProtein(hpCfg, blendVal, energyKJ)) claims.push('High in Protein');
+      else if (checkProtein(spCfg, blendVal, energyKJ)) claims.push('Source of Protein');
     }
     if (key === 'Vitamin D' && blendVal >= 10) claims.push('High in Vitamin D');
   });
