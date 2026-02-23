@@ -23,6 +23,8 @@ async function calculate() {
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
   const fiberKey      = CC.code === 'AU' ? 'Dietary Fibre' : 'Dietary Fiber';
   const fiber         = getBlendNutrient(fiberKey, recipeName, trimName);
+  const protein       = getBlendNutrient('Protein', recipeName, trimName);
+  const energyKJ      = getBlendNutrient('Energy (kJ)', recipeName, trimName);
   // beefOnlyPrice = the price of the user's originally selected fat % trim (Q1)
   const userTrimName  = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === state.q1)?.[0] || trimName;
   const beefOnlyPrice = BEEF_PRICES[userTrimName].price;
@@ -40,6 +42,8 @@ async function calculate() {
   document.getElementById('stat-price').textContent = CC.currency+blendPrice.toFixed(2);
   document.getElementById('stat-fiber').textContent = fiber.toFixed(1)+'g';
   document.getElementById('stat-fiber-badge').style.display = fiber >= CC.highFiber ? '' : 'none';
+  document.getElementById('stat-protein').textContent = protein.toFixed(1)+'g';
+  document.getElementById('stat-protein-badge').style.display = meetsHighProtein(protein, energyKJ) ? '' : 'none';
   document.getElementById('stat-carbon').textContent = carbonPct+'%';
 
   // Hero title
