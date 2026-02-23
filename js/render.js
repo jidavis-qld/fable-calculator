@@ -405,16 +405,20 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
 
 
 function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName) {
+  // Format a CO2 value: bold number + small muted unit label
+  const co2Val = (n) =>
+    `<span class="sust-num">${parseFloat(n).toFixed(1)}</span><span class="sust-unit"> kg CO₂e/kg</span>`;
+
   // Blend side — shows the recommended blend trim
   document.getElementById('sust-blend-rows').innerHTML = `
-    <div class="sust-row"><span class="sust-ingredient">Shiitake Infusion</span><span class="sust-val">${SHIITAKE_CO2} kgCo2E/kg</span></div>
-    <div class="sust-row"><span class="sust-ingredient">${trimName}</span><span class="sust-val">${BEEF_CO2} kgCo2E/kg</span></div>
-    <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${blendCO2.toFixed(2)} kgCo2E/kg</span></div>
+    <div class="sust-row"><span class="sust-ingredient">Shiitake Infusion</span><span class="sust-val">${co2Val(SHIITAKE_CO2)}</span></div>
+    <div class="sust-row"><span class="sust-ingredient">${trimName}</span><span class="sust-val">${co2Val(BEEF_CO2)}</span></div>
+    <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${co2Val(blendCO2)}</span></div>
   `;
   // Beef only side — shows the user's Q1 selected trim as the reference
   document.getElementById('sust-beef-rows').innerHTML = `
-    <div class="sust-row"><span class="sust-ingredient">${userTrimName}</span><span class="sust-val">${BEEF_CO2} kgCo2E/kg</span></div>
-    <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${beefCO2} kgCo2E/kg</span></div>
+    <div class="sust-row"><span class="sust-ingredient">${userTrimName}</span><span class="sust-val">${co2Val(BEEF_CO2)}</span></div>
+    <div class="sust-row sust-total"><span class="sust-ingredient">Total</span><span class="sust-val">${co2Val(beefCO2)}</span></div>
   `;
   // Callout
   document.getElementById('carbon-pct').textContent = carbonPct+'% reduction';

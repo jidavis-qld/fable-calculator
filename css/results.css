@@ -15,6 +15,18 @@
     overflow: hidden;
   }
 
+  .hero-sticker {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    opacity: 0.92;
+    pointer-events: none;
+    z-index: 2;
+  }
+
   .results-hero::before {
     content: '';
     position: absolute;
@@ -300,14 +312,15 @@
 
   .section-num {
     font-family: 'Zapf Humanist', Georgia, serif;
-    font-size: 14px;
-    color: #fafafa;
-    opacity: 0.7;
+    font-size: 28px;
+    color: var(--white);
+    font-weight: 700;
+    opacity: 0.9;
   }
 
   .section-title {
     font-family: 'Zapf Humanist', Georgia, serif;
-    font-size: 20px;
+    font-size: 28px;
     color: var(--white);
     font-weight: 700;
   }

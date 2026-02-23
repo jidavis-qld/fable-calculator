@@ -37,6 +37,8 @@
   .sust-row:last-child { border-bottom: none; }
   .sust-ingredient { color: var(--ink); }
   .sust-val { font-weight: 700; color: var(--forest); }
+  .sust-num { font-weight: 700; }
+  .sust-unit { font-size: 12px; font-weight: 400; opacity: 0.65; letter-spacing: 0.01em; }
 
   .sust-total {
     font-size: 18px;
@@ -69,11 +71,11 @@
   .carbon-text .ct-pct {
     font-family: 'Zapf Humanist', Georgia, serif;
     font-size: 30px;
-    color: var(--sage);
+    color: #ffffff;
     font-weight: 700;
   }
 
-  .carbon-text .ct-desc { font-size: 16px; color: rgba(250,250,250,0.75); margin-top: 2px; }
+  .carbon-text .ct-desc { font-size: 16px; color: rgba(255,255,255,0.90); margin-top: 2px; }
 
   /* ── Footer ─────────────────────────── */
   .results-footer {
@@ -85,27 +87,30 @@
 
   .footer-img-wrap {
     width: 100%;
-    height: 260px;
+    height: 380px;
     position: relative;
     overflow: hidden;
-    background: var(--forest);
+    background: #f5ece0;
   }
 
   .footer-img-wrap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.35;
+    object-position: center 30%;
+    opacity: 1;
   }
 
   .footer-img-overlay {
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-end;
+    justify-content: flex-start;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    padding: 28px 36px;
+    background: linear-gradient(to left, rgba(46,66,20,0.70) 0%, rgba(46,66,20,0.0) 60%);
   }
 
   .footer-thankyou {
@@ -113,14 +118,16 @@
     font-size: 48px;
     color: var(--white);
     font-weight: 700;
+    text-align: right;
   }
 
   .footer-tagline {
     font-size: 12px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: rgba(207,255,142,0.4);
+    color: rgba(207,255,142,0.85);
     font-weight: 700;
+    text-align: right;
   }
 
   .footer-tagline a { color: var(--sage); text-decoration: none; }
