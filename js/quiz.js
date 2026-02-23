@@ -57,6 +57,13 @@ function selectCountry(el) {
     document.querySelector('#check-list .check-item:first-child .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
     document.getElementById('stat-fiber-badge').textContent = `High in ${CC.fiberSpelling}`;
     document.getElementById('stat-fiber-label').textContent = `${CC.fiberSpelling.toLowerCase()} per 100g`;
+    // Step 4: use "Beef Mince" for UK/EU/AU, "Ground Beef" for US
+    const useMince = country !== 'United States';
+    document.getElementById('q2-unformed-title').textContent = useMince ? 'Beef Mince (unformed)' : 'Ground Beef (unformed)';
+    document.getElementById('q2-unformed-desc').textContent  = 'Loose mince — tacos, pasta, bolognese, etc.';
+    document.getElementById('q2-sub').textContent = useMince
+      ? "Select burgers/meatballs if you're giving your customers beef mince but you want them to form it themselves"
+      : "Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves";
   } else {
     comingSoon.style.display = 'block';
     btn.disabled = true;

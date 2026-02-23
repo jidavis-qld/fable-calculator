@@ -74,11 +74,10 @@ const CONFIG = {
     q2Label:  "Step 4 of 5",
     q3Label:  "Step 5 of 5",
 
-    q1Title:  "What fat percentage does your beef trim usually have?",
-    q1Sub:    "This helps us match your blend to the right cut.",
+    q1Title:  "How much fat should the finished product contain?",
 
-    q2Title:  "What format are you making?",
-    q2Sub:    "Burgers and meatballs hold together differently to loose ground beef.",
+    q2Title:  "Do you want your product to be used for making formed or unformed beef?",
+    q2Sub:    "Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves",
 
     q3Title:  "Rank what matters most to you",
     q3Sub:    "Drag to reorder — most important at the top.",

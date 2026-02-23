@@ -104,7 +104,6 @@
     <div class="slide" id="slide-3">
       <div class="slide-label">Step 2 of 5</div>
       <h1 class="slide-question">Where is your business based?</h1>
-      <p class="slide-sub">We'll use the right pricing and nutritional data for your region.</p>
       <div class="options-grid cols-2" id="country-options">
         <div class="opt-card" data-value="United States" onclick="selectCountry(this)">
           <div class="opt-check"></div>
@@ -120,13 +119,11 @@
           <div class="opt-check"></div>
           <span class="opt-icon">🇦🇺</span>
           <div class="opt-title">Australia</div>
-          <div class="opt-desc">AU pricing &amp; Health Star Rating</div>
         </div>
         <div class="opt-card" data-value="Europe" onclick="selectCountry(this)">
           <div class="opt-check"></div>
           <span class="opt-icon">🇪🇺</span>
           <div class="opt-title">Europe</div>
-          <div class="opt-desc">EU pricing &amp; Nutri-Score</div>
         </div>
       </div>
       <div id="country-coming-soon" style="display:none; text-align:center; padding:16px; color:#cfff8e; font-size:14px; opacity:0.7;">
@@ -140,8 +137,7 @@
 
     <div class="slide" id="slide-4">
       <div class="slide-label">Step 3 of 5</div>
-      <h1 class="slide-question">What fat percentage does your beef trim usually have?</h1>
-      <p class="slide-sub">This helps us match your blend to the right cut.</p>
+      <h1 class="slide-question">How much fat should the finished product contain?</h1>
       <div class="options-grid cols-2" id="q1-options">
         <div class="opt-card" data-value="0.1" onclick="selectOpt(this,'q1')">
           <div class="opt-check"></div>
@@ -177,8 +173,8 @@
     <!-- SLIDE 2 -->
     <div class="slide" id="slide-5">
       <div class="slide-label">Step 4 of 5</div>
-      <h1 class="slide-question">What format are you making?</h1>
-      <p class="slide-sub">Burgers and meatballs hold together differently to loose ground beef.</p>
+      <h1 class="slide-question">Do you want your product to be used for making formed or unformed beef?</h1>
+      <p class="slide-sub" id="q2-sub">Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves</p>
       <div class="options-grid cols-2" id="q2-options">
         <div class="opt-card" data-value="Burger / Meatball" onclick="selectOpt(this,'q2')">
           <div class="opt-check"></div>
@@ -189,8 +185,8 @@
         <div class="opt-card" data-value="Ground Beef (unformed)" onclick="selectOpt(this,'q2')">
           <div class="opt-check"></div>
           <span class="opt-icon">&#x1FAD9;</span>
-          <div class="opt-title">Ground Beef (unformed)</div>
-          <div class="opt-desc">Loose mince — tacos, pasta, bolognese, etc.</div>
+          <div class="opt-title" id="q2-unformed-title">Ground Beef (unformed)</div>
+          <div class="opt-desc" id="q2-unformed-desc">Loose mince — tacos, pasta, bolognese, etc.</div>
         </div>
       </div>
       <div class="quiz-nav">
@@ -202,8 +198,7 @@
     <!-- SLIDE 6: Priority -->
     <div class="slide" id="slide-6">
       <div class="slide-label">Step 5 of 5</div>
-      <h1 class="slide-question">What matters most to you?</h1>
-      <p class="slide-sub">Select your primary goal for this blend.</p>
+      <h1 class="slide-question">Select what feature is most important to you</h1>
       <div class="options-grid cols-2" id="priority-options">
         <div class="opt-card" data-value="cost" onclick="selectPriority(this)">
           <div class="opt-check"></div>
@@ -232,7 +227,7 @@
       </div>
 
       <div style="margin-top: 24px; width: 100%;">
-        <p style="font-size: 13px; color: #5a6b47; margin-bottom: 12px; text-align: left; letter-spacing: 0.02em;">Any non-negotiable requirements?</p>
+        <h2 style="font-size: 18px; font-weight: 700; color: #2e4214; margin-bottom: 12px; text-align: left;">Any non-negotiable requirements?</h2>
         <div class="check-list" id="check-list">
           <div class="check-item" onclick="toggleCheck(this,'fiber')">
             <div class="check-box"></div>
