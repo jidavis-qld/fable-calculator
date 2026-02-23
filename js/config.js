@@ -65,7 +65,7 @@ const CONFIG = {
   footer: {
     thankYouText: "Thank you!",
     /* URL for the footer background food photo (must be a direct image link) */
-    footerImageUrl: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=1200&q=80",
+    footerImageUrl: "images/banner.jpg",
   },
 
   quiz: {
