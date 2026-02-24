@@ -76,8 +76,9 @@ async function calculate() {
 
   // Hero title
   const trimShort = trimName.replace(' Beef Trim', '');
+  const formatLabel = state.q2 === 'Burger / Meatball' ? 'Burger / Meatball' : 'Ground Beef / Beef Mince';
   document.getElementById('hero-subtitle').textContent =
-    `A ${Math.round(beefPct*100)}/${Math.round((fablePct+waterPct)*100)} ${trimShort}/Shiitake blend — ${state.q2}`;
+    `A ${Math.round(beefPct*100)}% ${trimShort} Beef & ${Math.round((fablePct+waterPct)*100)}% Shiitake blend — ${formatLabel}`;
 
   // Cost section
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
