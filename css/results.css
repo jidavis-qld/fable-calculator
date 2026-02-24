@@ -416,9 +416,11 @@
 
   .price-block .pb-val {
     font-family: 'Zapf Humanist', Georgia, serif;
-    font-size: 32px;
+    font-size: clamp(20px, 4.5vw, 32px);
     font-weight: 700;
     color: var(--forest);
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .price-block .pb-unit { font-size: 14px; color: var(--fable-sage); margin-top: 2px; }
