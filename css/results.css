@@ -745,3 +745,384 @@
     font-size: 14px;
     color: var(--fable-sage);
   }
+
+/* ══════════════════════════════════════════
+   PRINT STYLES
+   Only affects @media print / Save as PDF
+   ══════════════════════════════════════════ */
+@media print {
+
+  /* ── Global reset ── */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hide everything that isn't the results page */
+  #quiz-shell,
+  .contact-fab,
+  #contact-modal-overlay,
+  #email-modal-overlay {
+    display: none !important;
+  }
+
+  /* Show results page regardless of JS-set display */
+  #results-page {
+    display: block !important;
+    background: #ffffff !important;
+  }
+
+  /* ── Hero section ── */
+  .results-hero {
+    background: #2e4214 !important;
+    padding: 32px 40px 40px !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    overflow: visible !important;
+  }
+
+  /* Hide the decorative sticker image in print */
+  .hero-sticker {
+    display: none !important;
+  }
+
+  /* Logo in eyebrow: keep visible */
+  .results-eyebrow {
+    margin-bottom: 12px !important;
+  }
+
+  .hero-logo {
+    height: 28px !important;
+    filter: brightness(0) invert(1);  /* ensure white on dark bg */
+  }
+
+  .results-title {
+    color: #ffffff !important;
+    font-size: 36px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .results-subtitle {
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 15px !important;
+    margin-bottom: 28px !important;
+  }
+
+  /* Blend bubbles */
+  .blend-bubbles {
+    gap: 12px !important;
+    margin-bottom: 28px !important;
+  }
+
+  .bubble-lg {
+    width: 110px !important;
+    height: 110px !important;
+    background: #4a6a22 !important;
+  }
+
+  .bubble-md {
+    width: 88px !important;
+    height: 88px !important;
+    background: #5e7462 !important;
+  }
+
+  .bubble-sm {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .bubble-pct {
+    color: #ffffff !important;
+    font-size: 24px !important;
+  }
+
+  .bubble-lg .bubble-pct { font-size: 28px !important; }
+
+  .bubble-label {
+    color: rgba(255,255,255,0.9) !important;
+    font-size: 11px !important;
+  }
+
+  .bubble-note {
+    color: rgba(207,255,142,0.7) !important;
+    font-size: 12px !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* Key stats bar */
+  .key-stats {
+    background: rgba(207,255,142,0.08) !important;
+    border-color: rgba(207,255,142,0.2) !important;
+    margin-bottom: 20px !important;
+  }
+
+  .key-stat-val {
+    color: #ffffff !important;
+    font-size: 22px !important;
+  }
+
+  .key-stat-label {
+    color: rgba(255,255,255,0.8) !important;
+    font-size: 12px !important;
+  }
+
+  .key-stat-badge {
+    background: #cfff8e !important;
+    color: #2e4214 !important;
+    font-size: 11px !important;
+  }
+
+  /* Hide action buttons entirely */
+  .actions-bar {
+    display: none !important;
+  }
+
+  /* ── Section cards ── */
+  .results-sections {
+    padding: 24px 16px 32px !important;
+    gap: 24px !important;
+  }
+
+  .section-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Section headers: keep coloured backgrounds but ensure text is white */
+  .section-header {
+    padding: 14px 24px !important;
+  }
+
+  .section-header.cost         { background: #2e4214 !important; }
+  .section-header.nutrition    { background: #4a6a22 !important; }
+  .section-header.sustainability { background: #3a5518 !important; }
+
+  .section-num,
+  .section-title {
+    color: #ffffff !important;
+  }
+
+  .section-body {
+    padding: 20px 24px !important;
+  }
+
+  /* Section note italic text */
+  .section-note {
+    color: #5e7462 !important;
+    font-size: 13px !important;
+  }
+
+  /* Recipe pill */
+  .recipe-pill {
+    background: #e8f3d4 !important;
+    color: #2e4214 !important;
+    font-size: 14px !important;
+  }
+
+  /* ── Cost table ── */
+  .cost-table thead th {
+    color: #2e4214 !important;
+    font-size: 12px !important;
+  }
+
+  .cost-table tbody td {
+    color: #1a1a1a !important;
+  }
+
+  .cost-table tbody tr:last-child td:last-child {
+    color: #2e4214 !important;
+  }
+
+  /* Price blocks */
+  .price-block {
+    background: #f0f4ec !important;
+  }
+
+  .price-block .pb-label {
+    color: #2e4214 !important;
+  }
+
+  .price-block .pb-val {
+    color: #2e4214 !important;
+    font-size: 28px !important;
+  }
+
+  .price-block .pb-unit {
+    color: #5e7462 !important;
+  }
+
+  /* Highlighted (blend) price block */
+  .price-block.highlight {
+    background: #2e4214 !important;
+  }
+
+  .price-block.highlight .pb-label {
+    color: #cfff8e !important;
+  }
+
+  .price-block.highlight .pb-val {
+    color: #ffffff !important;
+  }
+
+  .price-block.highlight .pb-unit {
+    color: rgba(255,255,255,0.75) !important;
+  }
+
+  .vs-label {
+    color: #5e7462 !important;
+  }
+
+  /* ── Nutrition table ── */
+  .nutrition-table thead th {
+    color: #2e4214 !important;
+    font-size: 11px !important;
+  }
+
+  .nutrition-table tbody td {
+    color: #1a1a1a !important;
+  }
+
+  .nutrition-table tbody tr.bold-row td {
+    color: #1a1a1a !important;
+  }
+
+  .nutrition-table tbody tr.sub-row td:first-child {
+    color: #5e7462 !important;
+  }
+
+  /* Diff badges */
+  .diff-good    { background: #ddf5d0 !important; color: #2e5a14 !important; }
+  .diff-bad     { background: #fce4ec !important; color: #c62828 !important; }
+  .diff-neutral { background: #f0efe6 !important; color: #5e7462 !important; }
+  .diff-fiber   { background: #cfff8e !important; color: #1a3a00 !important; }
+
+  /* Health claims */
+  .hc-label {
+    color: #2e4214 !important;
+  }
+
+  .hc-chip {
+    background: #e8f3d4 !important;
+    color: #2e4214 !important;
+  }
+
+  /* Serving toggle — hide, keep per-100g data visible */
+  .serving-toggle {
+    display: none !important;
+  }
+
+  /* ── Sustainability ── */
+  .sust-block.shiitake {
+    background: #eef5e8 !important;
+  }
+
+  .sust-block.beef-only {
+    background: #f5efe4 !important;
+  }
+
+  .sust-block-title {
+    color: #2e4214 !important;
+  }
+
+  .sust-ingredient {
+    color: #1a1a1a !important;
+  }
+
+  .sust-val {
+    color: #2e4214 !important;
+  }
+
+  .sust-total .sust-val {
+    color: #2e4214 !important;
+  }
+
+  /* Carbon callout */
+  .carbon-callout {
+    background: #2e4214 !important;
+  }
+
+  .ct-pct {
+    color: #ffffff !important;
+  }
+
+  .ct-desc {
+    color: rgba(255,255,255,0.9) !important;
+  }
+
+  /* ── Explore CTA bar ── */
+  .explore-cta {
+    border-top-color: #ddd !important;
+    padding: 16px 16px !important;
+  }
+
+  .explore-cta-text {
+    color: #2e4214 !important;
+    font-size: 14px !important;
+  }
+
+  .explore-cta-btn {
+    background: #cfff8e !important;
+    color: #2e4214 !important;
+    font-size: 13px !important;
+    padding: 8px 20px !important;
+  }
+
+  /* ── Footer: simplify to text-only, no image ── */
+  .results-footer {
+    background: #2e4214 !important;
+    padding: 20px 40px !important;
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  /* Hide the large food photo */
+  .footer-img-wrap img {
+    display: none !important;
+  }
+
+  .footer-img-wrap {
+    height: auto !important;
+    background: transparent !important;
+  }
+
+  .footer-img-overlay {
+    position: static !important;
+    background: none !important;
+    padding: 16px 0 !important;
+    align-items: flex-end !important;
+  }
+
+  .footer-thankyou {
+    color: #ffffff !important;
+    font-size: 32px !important;
+  }
+
+  .footer-tagline {
+    color: rgba(207,255,142,0.85) !important;
+  }
+
+  .footer-tagline a {
+    color: rgba(207,255,142,0.85) !important;
+  }
+
+  /* ── Page break hints ── */
+  /* Hero always starts at top of page 1 */
+  .results-hero { page-break-before: avoid; break-before: avoid; }
+
+  /* Cost and Nutrition sections: try to keep together */
+  #section-cost       { page-break-inside: avoid; break-inside: avoid; }
+  #section-nutrition  { page-break-before: auto; break-before: auto; }
+  #section-sustainability { page-break-before: auto; break-before: auto; }
+
+  /* Footer at end */
+  .explore-cta,
+  .results-footer { page-break-before: auto; break-before: auto; }
+}
