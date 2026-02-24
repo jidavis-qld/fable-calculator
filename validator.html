@@ -510,7 +510,7 @@ function scoringEngine(format, priority, userFat) {
 function priceStorageKey(country) { return `beef_prices_${country}`; }
 
 function savePricesToStorage(country) {
-  const saved = {};
+  const saved = { __fable__: CC.fablePrice };
   Object.entries(BEEF_PRICES).forEach(([k, v]) => { saved[k] = v.price; });
   localStorage.setItem(priceStorageKey(country), JSON.stringify(saved));
 }
@@ -527,7 +527,8 @@ function applyStoredPrices(country) {
   const stored = loadPricesFromStorage(country);
   if (!stored) return;
   Object.entries(stored).forEach(([trimName, price]) => {
-    if (BEEF_PRICES[trimName]) BEEF_PRICES[trimName].price = price;
+    if (trimName === '__fable__') { CC.fablePrice = price; }
+    else if (BEEF_PRICES[trimName]) BEEF_PRICES[trimName].price = price;
   });
 }
 
@@ -538,6 +539,14 @@ function buildPriceInputs() {
 
   // Apply any previously-saved prices for this country
   applyStoredPrices(CC.code);
+
+  // Fable price input — leftmost
+  const fableDiv = document.createElement('div');
+  fableDiv.className = 'price-input-group';
+  fableDiv.innerHTML = `<label>Fable (${CC.currency}/${CC.priceUnit.replace('per ', '')})</label>
+    <input type="number" step="0.01" min="0" value="${CC.fablePrice.toFixed(2)}"
+      data-trimname="__fable__" style="border-color:#7db84a;">`;
+  wrap.appendChild(fableDiv);
 
   CL_ORDER_LEAN.slice().reverse().forEach(trimName => {
     const data = BEEF_PRICES[trimName];
@@ -557,7 +566,11 @@ function buildPriceInputs() {
       const trimName = input.dataset.trimname;
       const val = parseFloat(input.value);
       if (!isNaN(val) && val >= 0) {
-        BEEF_PRICES[trimName].price = val;
+        if (trimName === '__fable__') {
+          CC.fablePrice = val;
+        } else {
+          BEEF_PRICES[trimName].price = val;
+        }
         savePricesToStorage(CC.code);
         renderOutput();
       }
@@ -639,6 +652,22 @@ function recipeCell(c, winner, isWinner, badgeLabel) {
               <span class="rec-badge">${badgeLabel}</span></div>`;
   }
   return c.recipeName;
+}
+
+/* ── Blend percentage columns (format-aware) ── */
+function blendCols(format, badgeLabel) {
+  const isUnformed = format !== 'Burger / Meatball';
+  const pct = v => `${Math.round(v * 100)}%`;
+  const cols = [
+    { header: 'Recipe', className: 'col-recipe',
+      cell: (c, w, iw) => recipeCell(c, w, iw, badgeLabel) },
+    { header: 'Beef %',  cell: c => pct(c.beefPct)  },
+    { header: 'Fable %', cell: c => pct(c.fablePct) },
+  ];
+  if (isUnformed) {
+    cols.push({ header: 'Water %', cell: c => pct(c.waterPct) });
+  }
+  return cols;
 }
 
 /* ── UK Traffic Light helpers ── */
@@ -781,8 +810,7 @@ function renderBalanceSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
-      cell: (c, w, iw) => recipeCell(c, w, iw, '★ Recommended') },
+    ...blendCols(format, '★ Recommended'),
     { header: 'Beef Trim',
       cell: (c) => c.trimName.replace(' Beef Trim', '') },
     { header: `${CC.currency}/${priceUnit}`,
@@ -819,8 +847,7 @@ function renderCostSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
-      cell: (c, w, iw) => recipeCell(c, w, iw, '$ Lowest Cost') },
+    ...blendCols(format, '$ Lowest Cost'),
     { header: 'Beef Trim',
       cell: (c) => c.trimName.replace(' Beef Trim', '') },
     { header: `${CC.currency}/${priceUnit}`,
@@ -852,8 +879,7 @@ function renderNutritionSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
-      cell: (c, w, iw) => recipeCell(c, w, iw, '✦ Best Nutrition') },
+    ...blendCols(format, '✦ Best Nutrition'),
     { header: 'Beef Trim',
       cell: (c) => c.trimName.replace(' Beef Trim', '') },
     { header: `${CC.fiberSpelling} (g/100g)`,
