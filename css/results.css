@@ -273,8 +273,8 @@
     gap: 8px;
     padding: 12px 20px;
     background: var(--fable-hero);
-    color: var(--fable-lime);
-    border: 2px solid var(--fable-lime);
+    color: var(--white);
+    border: none;
     border-radius: 100px;
     font-family: 'Zapf Humanist', Georgia, serif;
     font-size: 15px;
