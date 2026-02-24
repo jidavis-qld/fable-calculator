@@ -309,11 +309,19 @@
 
     <div class="actions-bar">
       <button class="action-btn ghost" onclick="savePDF()">Save as PDF</button>
-      <button class="action-btn ghost" onclick="openContactModal()">Contact Us</button>
-      <button class="action-btn primary" onclick="restart()">Try Another Recipe</button>
-      <a href="validator.html" class="action-btn ghost" style="text-decoration:none;">View All Recipes</a>
+      <button class="action-btn ghost" onclick="restart()">Try Another Recipe</button>
+      <div class="action-advanced-wrap">
+        <span class="action-advanced-label">advanced</span>
+        <a href="validator.html" class="action-btn primary" style="text-decoration:none;">View All Recipes</a>
+      </div>
     </div>
   </div>
+
+  <!-- ── Floating Contact Us button ───────────────── -->
+  <button class="contact-fab" onclick="openContactModal()" aria-label="Contact Us">
+    <span class="contact-fab-icon">💬</span>
+    <span class="contact-fab-label">Contact Us</span>
+  </button>
 
   <!-- ── Contact Us modal ───────────────────────── -->
   <div id="contact-modal-overlay" class="email-modal-overlay" onclick="closeContactModal(event)" style="display:none;">
