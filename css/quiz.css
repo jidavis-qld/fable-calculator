@@ -39,38 +39,16 @@
     z-index: 1;
   }
 
-  /* ── FABLE LOGO (SVG-style wordmark) ─────────── */
+  /* ── FABLE LOGO ─────────── */
   .quiz-logo {
     display: flex;
     align-items: center;
-    gap: 8px;
   }
 
-  .quiz-logo .logo-text {
-    font-family: 'Zapf Humanist', Georgia, serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--forest);
-    letter-spacing: 0.06em;
-    line-height: 1;
-  }
-
-  /* Mushroom holding device — organic circle from brand book p.22 */
-  .logo-device {
-    width: 36px;
-    height: 36px;
-    border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
-    background: var(--forest);
-    border: 2px solid var(--forest);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .logo-device svg {
-    width: 18px;
-    height: 18px;
-    fill: var(--sage);
+  .quiz-logo-img {
+    height: 28px;
+    width: auto;
+    display: block;
   }
 
   .progress-bar-wrap {
