@@ -43,52 +43,32 @@ function tflWord(colour) {
   return colour.charAt(0).toUpperCase() + colour.slice(1); // "Green" → nope, keep as label
 }
 
-function renderTrafficLight(recipeName, trimName) {
-  const wrap  = document.getElementById('tfl-wrap');
-  const label = document.getElementById('tfl-label');
-
-  // Only show for UK
-  if (CC.code !== 'UK') { wrap.classList.remove('visible'); return; }
-  wrap.classList.add('visible');
-
-  const energyKJ   = getBlendNutrient('Energy (kJ)',       recipeName, trimName);
-  const energyKcal = getBlendNutrient('Energy (Calories)', recipeName, trimName);
-  const fat        = getBlendNutrient('Total Fat',         recipeName, trimName);
-  const saturates  = getBlendNutrient('Saturated Fat',     recipeName, trimName);
-  const sugars     = getBlendNutrient('Total Sugars',      recipeName, trimName);
-  const salt       = getBlendNutrient('Salt',              recipeName, trimName);
-
-  // Energy % RI
+function buildTflLabelHtml(energyKJ, energyKcal, fat, saturates, sugars, salt) {
   const energyRiPct = Math.round((energyKJ / ENERGY_RI_KJ) * 100);
-
-  // Build nutrient cells
   const nutrients = [
     { key: 'fat',       val: fat,       fmt: fat.toFixed(1)       },
     { key: 'saturates', val: saturates, fmt: saturates.toFixed(1) },
     { key: 'sugars',    val: sugars,    fmt: sugars.toFixed(1)     },
     { key: 'salt',      val: salt,      fmt: salt.toFixed(2)       },
   ];
-
   const cellsHtml = nutrients.map(({ key, val, fmt }) => {
     const t      = TFL_THRESHOLDS[key];
     const colour = tflColour(val, t.green, t.amber);
     const riPct  = Math.round((val / t.ri) * 100);
-    return `
-      <div class="tfl-cell">
-        <div class="tfl-cell-inner">
-          <div class="tfl-pill ${colour}">
-            <span class="tfl-traffic-word">${colour.charAt(0).toUpperCase() + colour.slice(1)}</span>
-            <span class="tfl-value">${fmt}</span>
-            <span class="tfl-unit">${t.unit}</span>
-          </div>
-          <div class="tfl-nutrient-name">${t.name}</div>
-          <div class="tfl-ri">${riPct}% RI*</div>
+    return `<div class="tfl-cell">
+      <div class="tfl-cell-inner">
+        <div class="tfl-pill ${colour}">
+          <span class="tfl-traffic-word">${colour.charAt(0).toUpperCase() + colour.slice(1)}</span>
+          <span class="tfl-value">${fmt}</span>
+          <span class="tfl-unit">${t.unit}</span>
         </div>
-      </div>`;
+        <div class="tfl-nutrient-name">${t.name}</div>
+        <div class="tfl-ri">${riPct}% RI*</div>
+      </div>
+    </div>`;
   }).join('');
 
-  label.innerHTML = `
-    <div class="tfl-per100">per<br>100g</div>
+  return `<div class="tfl-per100">per<br>100g</div>
     <div class="tfl-nutrients">
       <div class="tfl-cell" style="min-width:80px; border-left:1px solid #1a1a1a;">
         <div class="tfl-cell-inner">
@@ -104,6 +84,36 @@ function renderTrafficLight(recipeName, trimName) {
       </div>
       ${cellsHtml}
     </div>`;
+}
+
+function renderTrafficLight(recipeName, trimName, userTrimName) {
+  const wrap = document.getElementById('tfl-wrap');
+
+  // Only show for UK
+  if (CC.code !== 'UK') { wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+
+  // Blend values
+  const bEnergyKJ   = getBlendNutrient('Energy (kJ)',       recipeName, trimName);
+  const bEnergyKcal = getBlendNutrient('Energy (Calories)', recipeName, trimName);
+  const bFat        = getBlendNutrient('Total Fat',         recipeName, trimName);
+  const bSaturates  = getBlendNutrient('Saturated Fat',     recipeName, trimName);
+  const bSugars     = getBlendNutrient('Total Sugars',      recipeName, trimName);
+  const bSalt       = getBlendNutrient('Salt',              recipeName, trimName);
+
+  // 100% beef reference (user's selected trim)
+  const tn         = userTrimName ?? trimName;
+  const beefRef    = HEALTH_REF.beef[tn] ?? {};
+  const rEnergyKJ  = beefRef['Energy (kJ)']       ?? 0;
+  const rEnergyKcal= beefRef['Energy (Calories)'] ?? 0;
+  const rFat       = beefRef['Total Fat']          ?? 0;
+  const rSaturates = beefRef['Saturated Fat']      ?? 0;
+  const rSugars    = beefRef['Total Sugars']       ?? 0;
+  const rSalt      = beefRef['Salt']               ?? (beefRef['Sodium'] ? beefRef['Sodium'] / 400 : 0);
+
+  document.getElementById('tfl-label-blend').innerHTML = buildTflLabelHtml(bEnergyKJ, bEnergyKcal, bFat, bSaturates, bSugars, bSalt);
+  document.getElementById('tfl-label-beef').innerHTML  = buildTflLabelHtml(rEnergyKJ, rEnergyKcal, rFat, rSaturates, rSugars, rSalt);
+  document.getElementById('tfl-col-beef-label').textContent = '100% ' + tn;
 }
 
 // ── EU Nutri-Score ────────────────────────────────────────────────────────────

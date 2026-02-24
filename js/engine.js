@@ -168,8 +168,8 @@ function scoringEngine() {
 
   // Nutrition composite: weighted sum then sqrt for diminishing returns
   const nutritionRaw = pool.map((_, i) =>
-    (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
-    (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
+    (cfg.nutr_w_fiber    ?? 0.47) * nFiber[i] +
+    (cfg.nutr_w_protein  ?? 0.23) * nProtein[i] +
     (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
     (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
   );

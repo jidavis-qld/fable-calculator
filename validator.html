@@ -474,8 +474,8 @@ function scoringEngine(format, priority, userFat) {
   }
 
   const nutritionScore = pool.map(c =>
-    (cfg.nutr_w_fiber    ?? 0.35) * benchScore(c.fiber,   benchFiber,   false) +
-    (cfg.nutr_w_protein  ?? 0.35) * benchScore(c.protein, benchProtein, false) +
+    (cfg.nutr_w_fiber    ?? 0.47) * benchScore(c.fiber,   benchFiber,   false) +
+    (cfg.nutr_w_protein  ?? 0.23) * benchScore(c.protein, benchProtein, false) +
     (cfg.nutr_w_calories ?? 0.20) * benchScore(c.cals,    benchCalsRaw, true)  +
     (cfg.nutr_w_satfat   ?? 0.10) * benchScore(c.satFat,  benchSatFat,  true)
   );
@@ -833,8 +833,7 @@ function renderBalanceSection(format, userFat) {
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
   ];
 
-  return renderRankedTable(ranked, '★ Recommended', cols)
-       + renderTflComparison(winner, format);
+  return renderRankedTable(ranked, '★ Recommended', cols);
 }
 
 /* ── Render cost section ── */

@@ -188,8 +188,8 @@ function scoringEngine(format, priority, userFat) {
   const nCO2     = normalisePadded(pool.map(c => c.co2),  true, cfg.co2_pad  ?? 1.0);
 
   const nutritionScore = pool.map((_, i) => Math.sqrt(
-    (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
-    (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
+    (cfg.nutr_w_fiber    ?? 0.47) * nFiber[i] +
+    (cfg.nutr_w_protein  ?? 0.23) * nProtein[i] +
     (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
     (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
   ));

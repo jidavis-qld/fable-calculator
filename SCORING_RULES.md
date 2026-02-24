@@ -76,8 +76,8 @@ The benchmark values are computed from 100% beef at the user's selected trim (fi
 
 | Component | Direction | Weight (`scoring_config` key) | Value |
 |---|---|---|---|
-| Dietary Fiber | higher = better | `nutr_w_fiber` | 0.35 |
-| Protein | higher = better | `nutr_w_protein` | 0.35 |
+| Dietary Fiber | higher = better | `nutr_w_fiber` | 0.47 |
+| Protein | higher = better | `nutr_w_protein` | 0.23 |
 | Calories | lower = better | `nutr_w_calories` | 0.20 |
 | Saturated Fat | lower = better | `nutr_w_satfat` | 0.10 |
 
@@ -146,8 +146,8 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 | `sustainability_n` | 0.15 | Nutrition weight for sustainability priority |
 | `sustainability_c` | 0.10 | Cost weight for sustainability priority |
 | `sustainability_s` | 1.00 | Sustainability weight for sustainability priority |
-| `nutr_w_fiber` | 0.35 | Fiber weight in nutrition composite |
-| `nutr_w_protein` | 0.35 | Protein weight in nutrition composite |
+| `nutr_w_fiber` | 0.47 | Fiber weight in nutrition composite |
+| `nutr_w_protein` | 0.23 | Protein weight in nutrition composite |
 | `nutr_w_calories` | 0.20 | Calories weight in nutrition composite |
 | `nutr_w_satfat` | 0.10 | Saturated fat weight in nutrition composite |
 | `trim_penalty` | 0.05 | Per-step penalty for balance priority (balance only) |

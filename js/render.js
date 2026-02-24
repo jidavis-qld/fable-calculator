@@ -99,7 +99,7 @@ async function calculate() {
   document.getElementById('btn-per-100g').classList.add('active');
   document.getElementById('btn-per-serving').classList.remove('active');
   renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, fiberFallback);
-  renderTrafficLight(recipeName, trimName);
+  renderTrafficLight(recipeName, trimName, userTrimName);
   renderNutriScore(recipeName, trimName, userTrimName);
   renderHSR(recipeName, trimName, userTrimName);
 
