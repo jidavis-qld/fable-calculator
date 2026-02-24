@@ -467,7 +467,7 @@ function scoringEngine(format, priority, userFat) {
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);
-  const nCost    = normalisePadded(pool.map(c => c.cost), true, cfg.cost_pad ?? 1.5);
+  const nCost    = normalise(pool.map(c => c.cost), true);
   const nCO2     = normalisePadded(pool.map(c => c.co2),  true, cfg.co2_pad  ?? 1.0);
 
   const nutritionScore = pool.map((_, i) => Math.sqrt(
