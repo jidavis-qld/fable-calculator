@@ -659,9 +659,10 @@ function blendCols(format, badgeLabel) {
   const isUnformed = format !== 'Burger / Meatball';
   const pct = v => `${Math.round(v * 100)}%`;
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
-      cell: (c, w, iw) => recipeCell(c, w, iw, badgeLabel) },
-    { header: 'Beef %',  cell: c => pct(c.beefPct)  },
+    { header: 'Beef %',
+      cell: (c, w, iw) => iw
+        ? `${pct(c.beefPct)} <span class="rec-badge">${badgeLabel}</span>`
+        : pct(c.beefPct) },
     { header: 'Fable %', cell: c => pct(c.fablePct) },
   ];
   if (isUnformed) {
