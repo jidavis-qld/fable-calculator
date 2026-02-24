@@ -308,32 +308,24 @@
     </div>
 
     <div class="actions-bar">
-      <button class="action-btn ghost" onclick="openEmailModal()">✉ Email Results</button>
+      <button class="action-btn ghost" onclick="savePDF()">Save as PDF</button>
+      <button class="action-btn ghost" onclick="openContactModal()">Contact Us</button>
       <button class="action-btn primary" onclick="restart()">Try Another Recipe</button>
       <a href="validator.html" class="action-btn ghost" style="text-decoration:none;">View All Recipes</a>
     </div>
   </div>
 
-  <!-- ── Email capture modal ───────────────────────── -->
-  <div id="email-modal-overlay" class="email-modal-overlay" onclick="closeEmailModal(event)" style="display:none;">
-    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="email-modal-title">
-      <button class="email-modal-close" onclick="closeEmailModal()" aria-label="Close">✕</button>
+  <!-- ── Contact Us modal ───────────────────────── -->
+  <div id="contact-modal-overlay" class="email-modal-overlay" onclick="closeContactModal(event)" style="display:none;">
+    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+      <button class="email-modal-close" onclick="closeContactModal()" aria-label="Close">✕</button>
       <div class="email-modal-logo">
         <img src="images/FAB Fable logo.png" alt="Fable" style="height:32px;width:auto;">
       </div>
-      <h2 class="email-modal-title" id="email-modal-title">Get your results by email</h2>
-      <p class="email-modal-sub">We'll send you a summary of your personalised blend — ratios, cost, nutrition and sustainability.</p>
-      <div class="email-modal-fields">
-        <div class="email-field-row">
-          <input type="text" id="email-first-name" placeholder="First name" class="email-input" autocomplete="given-name">
-          <input type="text" id="email-last-name" placeholder="Last name" class="email-input" autocomplete="family-name">
-        </div>
-        <input type="email" id="email-address" placeholder="Work email address" class="email-input full" autocomplete="email">
-        <input type="text" id="email-company" placeholder="Company (optional)" class="email-input full" autocomplete="organization">
-      </div>
-      <div id="email-modal-error" class="email-modal-error" style="display:none;"></div>
-      <button class="email-modal-btn" id="email-send-btn" onclick="sendResults()">Send my results →</button>
-      <p class="email-modal-privacy">By submitting you agree to receive this email from Fable. We won't spam you.</p>
+      <h2 class="email-modal-title" id="contact-modal-title">Get in touch</h2>
+      <p class="email-modal-sub">Have a question about your blend or want to talk to the Fable team?</p>
+      <script src="https://js.hsforms.net/forms/embed/20432846.js" defer></script>
+      <div class="hs-form-frame" data-region="na1" data-form-id="b50910b0-19c9-413a-b893-ad7b7c693813" data-portal-id="20432846"></div>
     </div>
   </div>
 
@@ -522,8 +514,6 @@
 <!-- Utility actions (restart, savePDF) -->
 <script src="js/misc.js"></script>
 
-<!-- Email modal -->
-<script src="js/email.js"></script>
 
 </body>
 </html>

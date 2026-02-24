@@ -23,3 +23,12 @@ function restart() {
 function savePDF() {
   window.print();
 }
+
+function openContactModal() {
+  document.getElementById('contact-modal-overlay').style.display = 'flex';
+}
+
+function closeContactModal(e) {
+  if (e && e.target !== document.getElementById('contact-modal-overlay')) return;
+  document.getElementById('contact-modal-overlay').style.display = 'none';
+}
