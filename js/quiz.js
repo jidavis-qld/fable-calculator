@@ -30,10 +30,9 @@ function goTo(step) {
   document.getElementById('progress-bar').style.width = (progressStep / total * 100) + '%';
   document.getElementById('step-count').textContent = progressStep + ' / ' + total;
 
-  // Update slide-6 label depending on which path arrived
+  // Slide-6 is always the last step on both paths
   if (step === 6) {
-    const viaMince = state.q2 === 'Ground Beef (unformed)';
-    document.getElementById('slide-6-label').textContent = viaMince ? 'Step 6 of 6' : 'Step 5 of 6';
+    document.getElementById('slide-6-label').textContent = 'Step 6 of 6';
   }
 }
 
@@ -85,9 +84,9 @@ function selectCountry(el) {
     document.querySelector('#check-list .check-item:first-child .check-text').textContent = `Must be High in ${CC.fiberSpelling}`;
     document.getElementById('stat-fiber-badge').textContent = `High in ${CC.fiberSpelling}`;
     document.getElementById('stat-fiber-label').textContent = `${CC.fiberSpelling.toLowerCase()} per 100g`;
-    // Step 4: use "Beef Mince" for UK/EU/AU, "Ground Beef" for US
-    const useMince = country !== 'United States';
-    document.getElementById('q2-mince-title').textContent = useMince ? 'Beef Mince / Ground Beef' : 'Ground Beef / Beef Mince';
+    // Beef Mince for UK/EU/AU, Ground Beef for US — applied consistently across steps 4 & 5
+    const isUS = CC.code === 'US';
+    document.getElementById('q2-mince-title').textContent = isUS ? 'Ground Beef' : 'Beef Mince';
     updateQuizFiberVisibility();
   } else {
     comingSoon.style.display = 'block';
