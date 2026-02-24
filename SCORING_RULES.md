@@ -43,28 +43,36 @@ Thresholds follow the regulatory definition for the active country (`COUNTRY_CON
 
 ---
 
-## 2. Normalisation
+## 2. Benchmark
 
-Each raw dimension is normalised to a 0–1 scale across all candidates in the pool using plain linear normalisation.
+All nutrition and cost scoring is relative to a fixed benchmark: **the user's selected trim at 100% beef (0% Fable)**. This anchors scores to a real-world reference rather than compressing them across the candidate pool.
 
-Maps `[min, max]` → `[0, 1]` linearly. Higher-is-better dimensions are mapped ascending; lower-is-better are inverted. This applies to all dimensions: fiber, protein, calories, saturated fat, cost, and CO2.
+Each dimension is scored using `benchScore()`:
+
+```
+delta      = (candidate − benchmark) / |benchmark|   ← for higher-is-better
+           = (benchmark − candidate) / |benchmark|   ← for lower-is-better
+benchScore = clamp(0.5 + delta × 0.5, 0, 1)
+```
+
+A score of **0.5** means the candidate matches the benchmark exactly. Above 0.5 = better than pure beef; below 0.5 = worse. The maximum possible improvement maps to 1.0 and the maximum possible penalty maps to 0.0.
+
+CO2 has no meaningful pure-beef baseline (it depends on blend ratio only), so it retains plain pool-relative normalisation: `[min, max]` → `[0, 1]` linearly, lower = better.
 
 ---
 
 ## 3. Nutrition Composite
 
-Each of the four nutrition dimensions is first normalised individually to 0–1 (see Section 2), then combined as a weighted average:
+Each of the four nutrition components is scored against the benchmark independently using `benchScore()`, then combined as a weighted average:
 
 ```
-nutritionScore = (nutr_w_fiber    × nFiber)
-               + (nutr_w_protein  × nProtein)
-               + (nutr_w_calories × nCals)
-               + (nutr_w_satfat   × nSatFat)
+nutritionScore = (nutr_w_fiber    × benchScore(fiber,   benchFiber,   ↑))
+               + (nutr_w_protein  × benchScore(protein, benchProtein, ↑))
+               + (nutr_w_calories × benchScore(cals,    benchCals,    ↓))
+               + (nutr_w_satfat   × benchScore(satFat,  benchSatFat,  ↓))
 ```
 
-Because each component is already on a 0–1 scale, the weighted sum is itself bounded 0–1 and no further normalisation or transform is applied. This ensures no single dimension (e.g. calories, which is numerically larger) can dominate through scale alone.
-
-Fiber and calories/satfat favour Fable (high fiber, low calories); protein favours beef (beef has ~22g/100g vs Fable's ~2g/100g).
+The benchmark values are computed from 100% beef at the user's selected trim (fiber = 0 since Fable contributes all fiber). This means every component reflects meaningful improvement or trade-off vs straight beef, regardless of pool composition.
 
 | Component | Direction | Weight (`scoring_config` key) | Value |
 |---|---|---|---|
@@ -80,14 +88,16 @@ Fiber and calories/satfat favour Fable (high fiber, low calories); protein favou
 Each priority defines how much weight to give nutrition (n), cost (c), and sustainability/CO2 (s):
 
 ```
-rawScore = wN × nutritionScore + wC × nCost + wS × nCO2
+rawScore = wN × nutritionScore + wC × costScore + wS × nCO2
 ```
+
+Where `costScore = benchScore(blendCost, pureBeefCost, lowerIsBetter)` and `nCO2` is pool-relative normalised CO2.
 
 | Priority | wN (`_n`) | wC (`_c`) | wS (`_s`) |
 |---|---|---|---|
 | Lower Cost | 0.00 | 1.00 | 0.00 |
 | Better Nutrition | 1.00 | 0.15 | 0.10 |
-| Balance | 0.60 | 0.40 | 0.00 |
+| Balance | 0.50 | 0.50 | 0.00 |
 | Sustainability | 0.15 | 0.10 | 1.00 |
 
 **Lower Cost** uses pure cost only (n=0, s=0) — it always picks the cheapest blend within the eligible trim range, with no nutrition or sustainability influence.
@@ -130,8 +140,8 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 | `nutrition_n` | 1.00 | Nutrition weight for nutrition priority |
 | `nutrition_c` | 0.15 | Cost weight for nutrition priority |
 | `nutrition_s` | 0.10 | Sustainability weight for nutrition priority |
-| `balance_n` | 0.60 | Nutrition weight for balance priority |
-| `balance_c` | 0.40 | Cost weight for balance priority |
+| `balance_n` | 0.50 | Nutrition weight for balance priority |
+| `balance_c` | 0.50 | Cost weight for balance priority |
 | `balance_s` | 0.00 | Sustainability weight for balance priority |
 | `sustainability_n` | 0.15 | Nutrition weight for sustainability priority |
 | `sustainability_c` | 0.10 | Cost weight for sustainability priority |
