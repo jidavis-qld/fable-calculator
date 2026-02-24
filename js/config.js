@@ -103,7 +103,7 @@ const CONFIG = {
   r.setProperty('--cream',  CONFIG.colors.cream);
   r.setProperty('--rust',   CONFIG.colors.rust);
 
-  document.querySelectorAll('.quiz-logo').forEach(el => el.innerHTML = CONFIG.brand.name.split(' ')[0].toLowerCase()+' <span>'+CONFIG.brand.name.split(' ').slice(1).join(' ').toLowerCase()+'</span>');
+  document.querySelectorAll('.quiz-logo').forEach(el => el.innerHTML = '<img src="images/FAB Fable logo.png" alt="Fable" class="quiz-logo-img">');
   document.querySelector('.results-eyebrow').textContent = CONFIG.hero.eyebrow;
   document.querySelector('.bubble-note').textContent = CONFIG.hero.bubbleNote;
   document.querySelector('.footer-thankyou').textContent = CONFIG.footer.thankYouText;
