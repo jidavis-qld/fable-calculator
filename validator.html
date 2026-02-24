@@ -374,7 +374,7 @@ function getBlendNutrient(nutrient, recipeName, trimName, format) {
 function getWeightSets() {
   const cfg = SCORING_CONFIG;
   return {
-    balance:        { n: cfg.balance_n        ?? 0.66, c: cfg.balance_c        ?? 0.34, s: cfg.balance_s        ?? 0.00 },
+    balance:        { n: cfg.balance_n        ?? 0.60, c: cfg.balance_c        ?? 0.40, s: cfg.balance_s        ?? 0.00 },
     cost:           { n: cfg.cost_n           ?? 0.00, c: cfg.cost_c           ?? 1.00, s: cfg.cost_s           ?? 0.00 },
     nutrition:      { n: cfg.nutrition_n      ?? 1.00, c: cfg.nutrition_c      ?? 0.15, s: cfg.nutrition_s      ?? 0.10 },
     sustainability: { n: cfg.sustainability_n ?? 0.15, c: cfg.sustainability_c ?? 0.10, s: cfg.sustainability_s ?? 1.00 },
