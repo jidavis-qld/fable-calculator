@@ -450,25 +450,44 @@ function scoringEngine(format, priority, userFat) {
   const pool        = constrained.length > 0 ? constrained : buildCandidates(false);
   if (pool.length === 0) return [];
 
+  const cfg = SCORING_CONFIG;
+
+  /* ── Benchmark: pure beef at the user's selected trim ── */
+  const benchTrimData = BEEF_PRICES[userTrimName] ?? Object.values(BEEF_PRICES)[0];
+  const benchFiber    = 0; // no Fable, so no fiber
+  const benchProtein  = HEALTH_REF.beef[userTrimName]?.['Protein'] ?? 0;
+  const benchCalsRaw  = CC.code === 'AU'
+    ? (HEALTH_REF.beef[userTrimName]?.['Energy (kJ)'] ?? 0) / 4.184
+    : (HEALTH_REF.beef[userTrimName]?.['Energy (Calories)'] ?? 0);
+  const benchSatFat   = HEALTH_REF.beef[userTrimName]?.['Saturated Fat'] ?? 0;
+  const benchCost     = benchTrimData.price; // 100% beef, so cost = trim price
+
+  /* ── Score each candidate relative to benchmark ──
+     For higher-is-better (fiber, protein): score = (candidate - bench) / |bench|
+       clamped to [-1, +1] then shifted to [0, 1] so bench = 0.5
+     For lower-is-better (cals, satFat, cost): invert the delta
+     Using bench as anchor so the scale is meaningful across all pool sizes    */
+  function benchScore(val, bench, lowerBetter) {
+    if (bench === 0) return lowerBetter ? (val === 0 ? 1 : 0) : (val > 0 ? 1 : 0.5);
+    const delta = lowerBetter ? (bench - val) / Math.abs(bench) : (val - bench) / Math.abs(bench);
+    return Math.max(0, Math.min(1, 0.5 + delta * 0.5));
+  }
+
+  const nutritionScore = pool.map(c =>
+    (cfg.nutr_w_fiber    ?? 0.35) * benchScore(c.fiber,   benchFiber,   false) +
+    (cfg.nutr_w_protein  ?? 0.35) * benchScore(c.protein, benchProtein, false) +
+    (cfg.nutr_w_calories ?? 0.20) * benchScore(c.cals,    benchCalsRaw, true)  +
+    (cfg.nutr_w_satfat   ?? 0.10) * benchScore(c.satFat,  benchSatFat,  true)
+  );
+
+  const costScore = pool.map(c => benchScore(c.cost, benchCost, true));
+
   function normalise(values, lowerBetter) {
     const min = Math.min(...values), max = Math.max(...values);
     if (max === min) return values.map(() => 1.0);
     return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
   }
-  const cfg     = SCORING_CONFIG;
-  const nFiber   = normalise(pool.map(c => c.fiber),   false);
-  const nProtein = normalise(pool.map(c => c.protein), false);
-  const nCals    = normalise(pool.map(c => c.cals),    true);
-  const nSatFat  = normalise(pool.map(c => c.satFat),  true);
-  const nCost    = normalise(pool.map(c => c.cost),    true);
-  const nCO2     = normalise(pool.map(c => c.co2),     true);
-
-  const nutritionScore = pool.map((_, i) =>
-    (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
-    (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
-    (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
-    (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
-  );
+  const nCO2 = normalise(pool.map(c => c.co2), true);
 
   const WEIGHT_SETS  = getWeightSets();
   const w            = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
@@ -476,7 +495,7 @@ function scoringEngine(format, priority, userFat) {
   const userCeilIdx  = ceilIdx;
 
   const finalScores = pool.map((c, i) => {
-    const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
+    const raw = w.n * nutritionScore[i] + w.c * costScore[i] + w.s * nCO2[i];
     const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
     const stepsLeaner  = Math.max(0, userCeilIdx - candidateIdx);
     return (priority === 'balance') ? raw * (1 - trimPenalty * stepsLeaner) : raw;
