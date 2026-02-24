@@ -103,7 +103,15 @@ async function calculate() {
   renderNutriScore(recipeName, trimName, userTrimName);
   renderHSR(recipeName, trimName, userTrimName);
 
-  // Sustainability
+  // Sustainability — initialise editable beef CO2 input then render
+  initBeefCO2Input(() => {
+    // Recalculate CO2 figures using the (possibly overridden) BEEF_CO2
+    const newBlendCO2  = fablePct * SHIITAKE_CO2 + beefPct * BEEF_CO2;
+    const newBeefCO2   = 1.0 * BEEF_CO2;
+    const newCarbonPct = Math.round((1 - newBlendCO2 / newBeefCO2) * 100);
+    document.getElementById('stat-carbon').textContent = newCarbonPct + '%';
+    renderSustainability(beefPct, fablePct, trimName, newBlendCO2, newBeefCO2, newCarbonPct, userTrimName);
+  });
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
 
   // Show results
@@ -423,4 +431,34 @@ function renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, ca
   `;
   // Callout
   document.getElementById('carbon-pct').textContent = carbonPct+'% reduction';
+}
+
+/* ── Editable beef CO2 input ──────────────────────────────────────────────────
+   Reads/writes localStorage key 'beef_co2_override'.
+   Populates the input with the stored value (or the Supabase default).
+   Calls onUpdate() whenever the value changes so the caller can re-render.  */
+function initBeefCO2Input(onUpdate) {
+  const input = document.getElementById('beef-co2-input');
+  if (!input) return;
+
+  // Apply any saved override, otherwise show the Supabase default
+  const stored = localStorage.getItem('beef_co2_override');
+  if (stored !== null) {
+    const val = parseFloat(stored);
+    if (!isNaN(val) && val > 0) BEEF_CO2 = val;
+  }
+  input.value = parseFloat(BEEF_CO2).toFixed(1);
+
+  // Remove any previous listener to avoid duplicates on re-renders
+  input.replaceWith(input.cloneNode(true));
+  const freshInput = document.getElementById('beef-co2-input');
+
+  freshInput.addEventListener('input', () => {
+    const val = parseFloat(freshInput.value);
+    if (!isNaN(val) && val > 0) {
+      BEEF_CO2 = val;
+      localStorage.setItem('beef_co2_override', val);
+      onUpdate();
+    }
+  });
 }
