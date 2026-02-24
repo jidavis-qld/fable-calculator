@@ -402,7 +402,7 @@ function scoringEngine(format, priority, userFat) {
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
       const data = BEEF_PRICES[CL_ORDER_LEAN[i]];
       if (!data) continue;
-      if ((data.fat * beefPct) + (shiitakeFat * fablePct) > userFat) floorIdx = i;
+      if ((data.fat * beefPct) + (shiitakeFat * fablePct) > userFat + 0.02) floorIdx = i;
     }
     if (floorIdx !== null) return floorIdx;
     for (let i = 0; i < CL_ORDER_LEAN.length; i++) {
@@ -418,6 +418,7 @@ function scoringEngine(format, priority, userFat) {
     for (const [recipeName, [beefPct, fablePct, waterPct]] of Object.entries(RECIPES[format])) {
       if (format === 'Burger / Meatball' && waterPct > 0) continue;
       if (format === 'Burger / Meatball' && beefPct === 0.5) continue;
+      if (format !== 'Burger / Meatball' && waterPct === 0) continue;
       const floorIdx = naturalTrimIdx(beefPct, fablePct);
       const lo = Math.min(floorIdx, ceilIdx), hi = Math.max(floorIdx, ceilIdx);
       for (let i = lo; i <= hi; i++) {
@@ -470,28 +471,23 @@ function scoringEngine(format, priority, userFat) {
   const nCost    = normalise(pool.map(c => c.cost), true);
   const nCO2     = normalisePadded(pool.map(c => c.co2),  true, cfg.co2_pad  ?? 1.0);
 
-  const nutritionScore = pool.map((_, i) => Math.sqrt(
+  const nutritionScore = pool.map((_, i) =>
     (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +
     (cfg.nutr_w_protein  ?? 0.35) * nProtein[i] +
     (cfg.nutr_w_calories ?? 0.20) * nCals[i] +
     (cfg.nutr_w_satfat   ?? 0.10) * nSatFat[i]
-  ));
+  );
 
   const WEIGHT_SETS  = getWeightSets();
   const w            = WEIGHT_SETS[priority] || WEIGHT_SETS.balance;
   const trimPenalty  = cfg.trim_penalty ?? 0.05;
-  const brb          = cfg.balance_recipe_bonus ?? 0.12;
   const userCeilIdx  = ceilIdx;
 
   const finalScores = pool.map((c, i) => {
     const raw = w.n * nutritionScore[i] + w.c * nCost[i] + w.s * nCO2[i];
     const candidateIdx = CL_ORDER_LEAN.indexOf(c.trimName);
     const stepsLeaner  = Math.max(0, userCeilIdx - candidateIdx);
-    const penalised = (priority === 'balance') ? raw * (1 - trimPenalty * stepsLeaner) : raw;
-    const bonus     = (priority === 'balance')
-      ? brb * Math.exp(-Math.pow((c.fablePct + c.waterPct) - 0.40, 2) / (2 * 0.10 * 0.10))
-      : 0;
-    return penalised + bonus;
+    return (priority === 'balance') ? raw * (1 - trimPenalty * stepsLeaner) : raw;
   });
 
   return pool

@@ -14,19 +14,21 @@ The user's Q1 selection (e.g. 85CL) is the **ceiling** — the engine will never
 
 ### Beef trim floor (fattiest allowed)
 
-For each recipe the engine scans from the fattiest trim (60CL) toward the leanest, and takes the **first trim whose blended fat percentage is at or below the user's target fat**. That trim is the floor — the fattiest grade that still meets the fat specification for that recipe.
+For each recipe the engine scans from the fattiest trim (60CL) toward the leanest, and takes the **last trim whose blended fat percentage exceeds the user's target fat by more than 2 percentage points**. That trim is the floor — the fattiest grade whose blend still falls within the +2pp tolerance of the target.
 
-Example — user selects 85CL (15% fat), recipe is 70/30:
-- 75CL blend → 18.3% fat — above target, skip
-- 80CL blend → 14.8% fat — at or below target ✓ → **floor = 80CL**
+Example — user selects 85CL (15% fat target → threshold = 17%):
+- 75CL blend → 18.3% fat — above 17% threshold, skip
+- 80CL blend → 14.8% fat — at or below 17% threshold ✓ → **floor = 80CL**
 - Eligible range: 80CL and 85CL only
+
+The +2pp tolerance allows trims whose blended fat slightly exceeds the target to still be considered, without penalising recipes that land fractionally above due to rounding.
 
 Every trim from floor to ceiling (inclusive) is a candidate for that recipe.
 
 ### Format constraints
 
 - **Burger / Meatball**: rehydrated recipes (water_pct > 0) are excluded entirely — only dry recipes are candidates.
-- **Ground Beef (unformed)**: both dry and rehydrated recipes are eligible.
+- **Ground Beef (unformed)**: dry recipes (water_pct = 0) are excluded entirely — only rehydrated recipes are candidates.
 
 ### Hard constraints (optional, user-toggleable)
 
@@ -45,33 +47,32 @@ Thresholds follow the regulatory definition for the active country (`COUNTRY_CON
 
 Each raw dimension is normalised to a 0–1 scale across all candidates in the pool.
 
-### Standard normalise (nutrition dimensions)
+### Standard normalise (nutrition dimensions and cost)
 
-Maps `[min, max]` → `[0, 1]` linearly. Higher-is-better dimensions are mapped ascending; lower-is-better are inverted.
+Maps `[min, max]` → `[0, 1]` linearly. Higher-is-better dimensions are mapped ascending; lower-is-better are inverted. All four nutrition components and cost use plain normalisation.
 
-### Padded normalise (cost and CO2)
+### Padded normalise (CO2 only)
 
-Extends the range by `pad × spread` on each side before mapping, so real price/CO2 differences occupy the middle of the scale rather than snapping to 0 and 1. This prevents tiny price spreads from creating misleadingly extreme scores.
+Extends the range by `pad × spread` on each side before mapping, so CO2 differences occupy the middle of the scale rather than snapping to 0 and 1.
 
 | Dimension | Pad value (`scoring_config` key) |
 |---|---|
-| Cost ($/lb) | `cost_pad` = 1.0 |
 | CO2 (kg CO2e/kg) | `co2_pad` = 1.0 |
 
 ---
 
 ## 3. Nutrition Composite
 
-The four nutrition dimensions are combined into a single score:
+Each of the four nutrition dimensions is first normalised individually to 0–1 (see Section 2), then combined as a weighted average:
 
 ```
-nutritionRaw = (nutr_w_fiber    × nFiber)
-             + (nutr_w_protein  × nProtein)
-             + (nutr_w_calories × nCals)
-             + (nutr_w_satfat   × nSatFat)
-
-nutritionScore = √nutritionRaw   ← diminishing returns
+nutritionScore = (nutr_w_fiber    × nFiber)
+               + (nutr_w_protein  × nProtein)
+               + (nutr_w_calories × nCals)
+               + (nutr_w_satfat   × nSatFat)
 ```
+
+Because each component is already on a 0–1 scale, the weighted sum is itself bounded 0–1 and no further normalisation or transform is applied. This ensures no single dimension (e.g. calories, which is numerically larger) can dominate through scale alone.
 
 Fiber and calories/satfat favour Fable (high fiber, low calories); protein favours beef (beef has ~22g/100g vs Fable's ~2g/100g).
 
@@ -81,8 +82,6 @@ Fiber and calories/satfat favour Fable (high fiber, low calories); protein favou
 | Protein | higher = better | `nutr_w_protein` | 0.35 |
 | Calories | lower = better | `nutr_w_calories` | 0.20 |
 | Saturated Fat | lower = better | `nutr_w_satfat` | 0.10 |
-
-The nutrition composite is re-normalised 0–1 after the sqrt transform before being used in priority scoring.
 
 ---
 
@@ -109,14 +108,14 @@ rawScore = wN × nutritionScore + wC × nCost + wS × nCO2
 
 ## 5. Balance-Only Adjustments
 
-Two additional mechanics apply **only when priority = balance**. They have zero effect on cost, nutrition, or sustainability priorities.
+One additional mechanic applies **only when priority = balance**. It has zero effect on cost, nutrition, or sustainability priorities.
 
 ### Trim penalty
 
 Penalises candidates that use a fattier beef grade than the user's selected trim, encouraging the engine to prefer the user's chosen grade over cheaper but fattier alternatives.
 
 ```
-penalisedScore = rawScore × (1 − trim_penalty × stepsLeaner)
+finalScore = rawScore × (1 − trim_penalty × stepsLeaner)
 ```
 
 Where `stepsLeaner` = number of CL steps below the user's trim (each step = 5CL).
@@ -126,23 +125,6 @@ Where `stepsLeaner` = number of CL steps below the user's trim (each step = 5CL)
 | `trim_penalty` | 0.05 per step |
 
 Example: a candidate using 75CL when the user selected 85CL gets 2 steps → score multiplied by `1 − 0.05×2 = 0.90`.
-
-### Balance Recipe Bonus (BRB)
-
-A gaussian bonus centred on 40% Fable (the 60/40 recipe) to reward moderate blending as the "balanced" choice, rather than maximising Fable for nutrition or minimising it for cost.
-
-```
-bonus = brb × exp( −((fablePct + waterPct − 0.40)² / (2 × 0.10²)) )
-```
-
-`fablePct + waterPct` is used so rehydrated recipes are evaluated on their intended blend ratio (e.g. "60/40 rehydrated" stores fable_pct=0.35 + water_pct=0.05 = 0.40 combined).
-
-| Config key | Value | Notes |
-|---|---|---|
-| `balance_recipe_bonus` | 0.12 | Peak bonus at exactly 40% Fable |
-| Gaussian sigma | 0.10 | ~68% of peak at 30% or 50% Fable |
-
-The final balance score is: `penalisedScore + bonus`
 
 ---
 
@@ -168,10 +150,8 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 | `nutr_w_protein` | 0.35 | Protein weight in nutrition composite |
 | `nutr_w_calories` | 0.20 | Calories weight in nutrition composite |
 | `nutr_w_satfat` | 0.10 | Saturated fat weight in nutrition composite |
-| `cost_pad` | 1.0 | Padding multiplier for cost normalisation |
 | `co2_pad` | 1.0 | Padding multiplier for CO2 normalisation |
 | `trim_penalty` | 0.05 | Per-step penalty for balance priority (balance only) |
-| `balance_recipe_bonus` | 0.12 | Peak gaussian bonus for 60/40 recipe (balance only) |
 
 ---
 
