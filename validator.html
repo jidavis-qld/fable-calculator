@@ -455,21 +455,13 @@ function scoringEngine(format, priority, userFat) {
     if (max === min) return values.map(() => 1.0);
     return values.map(v => lowerBetter ? (max - v) / (max - min) : (v - min) / (max - min));
   }
-  function normalisePadded(values, lowerBetter, pad) {
-    const min = Math.min(...values), max = Math.max(...values);
-    const spread = max - min;
-    if (spread === 0) return values.map(() => 1.0);
-    const lo = min - spread * pad, hi = max + spread * pad;
-    return values.map(v => lowerBetter ? (hi - v) / (hi - lo) : (v - lo) / (hi - lo));
-  }
-
   const cfg     = SCORING_CONFIG;
   const nFiber   = normalise(pool.map(c => c.fiber),   false);
   const nProtein = normalise(pool.map(c => c.protein), false);
   const nCals    = normalise(pool.map(c => c.cals),    true);
   const nSatFat  = normalise(pool.map(c => c.satFat),  true);
-  const nCost    = normalise(pool.map(c => c.cost), true);
-  const nCO2     = normalisePadded(pool.map(c => c.co2),  true, cfg.co2_pad  ?? 1.0);
+  const nCost    = normalise(pool.map(c => c.cost),    true);
+  const nCO2     = normalise(pool.map(c => c.co2),     true);
 
   const nutritionScore = pool.map((_, i) =>
     (cfg.nutr_w_fiber    ?? 0.35) * nFiber[i] +

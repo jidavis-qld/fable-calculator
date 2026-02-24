@@ -45,19 +45,9 @@ Thresholds follow the regulatory definition for the active country (`COUNTRY_CON
 
 ## 2. Normalisation
 
-Each raw dimension is normalised to a 0–1 scale across all candidates in the pool.
+Each raw dimension is normalised to a 0–1 scale across all candidates in the pool using plain linear normalisation.
 
-### Standard normalise (nutrition dimensions and cost)
-
-Maps `[min, max]` → `[0, 1]` linearly. Higher-is-better dimensions are mapped ascending; lower-is-better are inverted. All four nutrition components and cost use plain normalisation.
-
-### Padded normalise (CO2 only)
-
-Extends the range by `pad × spread` on each side before mapping, so CO2 differences occupy the middle of the scale rather than snapping to 0 and 1.
-
-| Dimension | Pad value (`scoring_config` key) |
-|---|---|
-| CO2 (kg CO2e/kg) | `co2_pad` = 1.0 |
+Maps `[min, max]` → `[0, 1]` linearly. Higher-is-better dimensions are mapped ascending; lower-is-better are inverted. This applies to all dimensions: fiber, protein, calories, saturated fat, cost, and CO2.
 
 ---
 
@@ -150,7 +140,6 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 | `nutr_w_protein` | 0.35 | Protein weight in nutrition composite |
 | `nutr_w_calories` | 0.20 | Calories weight in nutrition composite |
 | `nutr_w_satfat` | 0.10 | Saturated fat weight in nutrition composite |
-| `co2_pad` | 1.0 | Padding multiplier for CO2 normalisation |
 | `trim_penalty` | 0.05 | Per-step penalty for balance priority (balance only) |
 
 ---
