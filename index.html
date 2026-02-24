@@ -317,25 +317,6 @@
     </div>
   </div>
 
-  <!-- ── Floating Contact Us button ───────────────── -->
-  <button class="contact-fab" onclick="openContactModal()" aria-label="Contact Us">
-    <span class="contact-fab-icon">💬</span>
-    <span class="contact-fab-label">Contact Us</span>
-  </button>
-
-  <!-- ── Contact Us modal ───────────────────────── -->
-  <div id="contact-modal-overlay" class="email-modal-overlay" onclick="closeContactModal(event)" style="display:none;">
-    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
-      <button class="email-modal-close" onclick="closeContactModal()" aria-label="Close">✕</button>
-      <div class="email-modal-logo">
-        <img src="images/FAB Fable logo.png" alt="Fable" style="height:32px;width:auto;">
-      </div>
-      <h2 class="email-modal-title" id="contact-modal-title">Get in touch</h2>
-      <p class="email-modal-sub">Have a question about your blend or want to talk to the Fable team?</p>
-      <script src="https://js.hsforms.net/forms/embed/20432846.js" defer></script>
-      <div class="hs-form-frame" data-region="na1" data-form-id="b50910b0-19c9-413a-b893-ad7b7c693813" data-portal-id="20432846"></div>
-    </div>
-  </div>
 
   <div class="results-sections">
 
@@ -490,6 +471,26 @@
     </div>
   </div>
 
+</div>
+
+<!-- ── Floating Contact Us button (outside #results-page to avoid overflow clipping) -->
+<button class="contact-fab" onclick="openContactModal()" aria-label="Contact Us">
+  <span class="contact-fab-icon">💬</span>
+  <span class="contact-fab-label">Contact Us</span>
+</button>
+
+<!-- ── Contact Us modal ───────────────────────── -->
+<div id="contact-modal-overlay" class="email-modal-overlay" onclick="closeContactModal(event)" style="display:none;">
+  <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+    <button class="email-modal-close" onclick="closeContactModal()" aria-label="Close">✕</button>
+    <div class="email-modal-logo">
+      <img src="images/FAB Fable logo.png" alt="Fable" style="height:32px;width:auto;">
+    </div>
+    <h2 class="email-modal-title" id="contact-modal-title">Get in touch</h2>
+    <p class="email-modal-sub">Have a question about your blend or want to talk to the Fable team?</p>
+    <script src="https://js.hsforms.net/forms/embed/20432846.js" defer></script>
+    <div class="hs-form-frame" data-region="na1" data-form-id="b50910b0-19c9-413a-b893-ad7b7c693813" data-portal-id="20432846"></div>
+  </div>
 </div>
 
 

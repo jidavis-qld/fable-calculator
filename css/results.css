@@ -214,6 +214,8 @@
     display: flex;
     gap: 12px;
     justify-content: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
     z-index: 1;
     position: relative;
   }
