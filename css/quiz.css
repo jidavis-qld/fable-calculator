@@ -197,8 +197,8 @@
   }
 
   .opt-card.selected .opt-check {
-    background: var(--sage);
-    border-color: var(--sage);
+    background: var(--fable-lime);
+    border-color: var(--fable-lime);
   }
 
   .opt-card.selected .opt-check::after {
@@ -237,8 +237,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--forest);
-    color: #cfff8e;
+    background: var(--fable-hero);
+    color: var(--fable-lime);
     font-size: 14px;
     font-weight: 700;
     display: flex;
@@ -298,8 +298,8 @@
   }
 
   .check-item.checked .check-box {
-    background: var(--sage);
-    border-color: var(--sage);
+    background: var(--fable-lime);
+    border-color: var(--fable-lime);
   }
 
   .check-item.checked .check-box::after {
@@ -343,8 +343,8 @@
   .btn-next {
     padding: 14px 40px;
     border-radius: 100px;
-    background: var(--sage);
-    color: var(--forest);
+    background: var(--fable-lime);
+    color: var(--fable-hero);
     font-family: 'Zapf Humanist', Georgia, serif;
     font-size: 15px;
     font-weight: 700;
@@ -355,8 +355,8 @@
   }
 
   .btn-next:hover {
-    background: var(--forest);
-    color: var(--sage);
+    background: var(--fable-hero);
+    color: var(--fable-lime);
     transform: scale(1.02);
     box-shadow: 0 4px 20px rgba(46,66,20,0.15);
   }
