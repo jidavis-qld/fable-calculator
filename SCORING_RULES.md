@@ -87,7 +87,7 @@ rawScore = wN × nutritionScore + wC × nCost + wS × nCO2
 |---|---|---|---|
 | Lower Cost | 0.00 | 1.00 | 0.00 |
 | Better Nutrition | 1.00 | 0.15 | 0.10 |
-| Balance | 0.50 | 0.50 | 0.00 |
+| Balance | 0.66 | 0.34 | 0.00 |
 | Sustainability | 0.15 | 0.10 | 1.00 |
 
 **Lower Cost** uses pure cost only (n=0, s=0) — it always picks the cheapest blend within the eligible trim range, with no nutrition or sustainability influence.
@@ -130,8 +130,8 @@ All weights are stored as key/value rows and loaded at runtime. Changes take eff
 | `nutrition_n` | 1.00 | Nutrition weight for nutrition priority |
 | `nutrition_c` | 0.15 | Cost weight for nutrition priority |
 | `nutrition_s` | 0.10 | Sustainability weight for nutrition priority |
-| `balance_n` | 0.50 | Nutrition weight for balance priority |
-| `balance_c` | 0.50 | Cost weight for balance priority |
+| `balance_n` | 0.66 | Nutrition weight for balance priority |
+| `balance_c` | 0.34 | Cost weight for balance priority |
 | `balance_s` | 0.00 | Sustainability weight for balance priority |
 | `sustainability_n` | 0.15 | Nutrition weight for sustainability priority |
 | `sustainability_c` | 0.10 | Cost weight for sustainability priority |
