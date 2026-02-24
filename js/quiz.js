@@ -20,17 +20,45 @@ const state = {
 function goTo(step) {
   document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
   document.getElementById('slide-'+step).classList.add('active');
-  const total = 5; // steps 2–6 are the 5 real steps
-  const progressStep = Math.max(0, step - 1); // slide 1=0, slide 2=1, ..., slide 6=5
+  // Burger path: slides 1-2-3-4-5-6   (6 slides, skip 5b)
+  // Mince path:  slides 1-2-3-4-5-5b-6 (7 slides, but user sees 6 steps)
+  const total = 6;
+  // Map slide id to progress step number
+  const stepMap = { 1:0, 2:1, 3:2, 4:3, 5:4, '5b':5, 6:6 };
+  const key = String(step).replace('slide-','');
+  const progressStep = stepMap[key] !== undefined ? stepMap[key] : Math.max(0, step - 1);
   document.getElementById('progress-bar').style.width = (progressStep / total * 100) + '%';
   document.getElementById('step-count').textContent = progressStep + ' / ' + total;
+
+  // Update slide-6 label depending on which path arrived
+  if (step === 6) {
+    const viaMince = state.q2 === 'Ground Beef (unformed)';
+    document.getElementById('slide-6-label').textContent = viaMince ? 'Step 6 of 6' : 'Step 5 of 6';
+  }
 }
 
 function selectOpt(el, group) {
   document.querySelectorAll('#'+group+'-options .opt-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  if (group === 'q1') { state.q1 = parseFloat(el.dataset.value); document.getElementById('btn-4').disabled = false; }
-  if (group === 'q2') { state.q2 = el.dataset.value; document.getElementById('btn-5').disabled = false; updateQuizFiberVisibility(); }
+  if (group === 'q1')  { state.q1 = parseFloat(el.dataset.value); document.getElementById('btn-4').disabled = false; }
+  if (group === 'q2b') { state.q2 = el.dataset.value; document.getElementById('btn-5b').disabled = false; updateQuizFiberVisibility(); }
+}
+
+/* Step 4: beef format selection — burger goes straight to slide 6, mince goes to slide 5b */
+function selectFormat(el, type) {
+  document.querySelectorAll('#q2-options .opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.q2 = el.dataset.value;
+  const btn = document.getElementById('btn-5');
+  btn.disabled = false;
+  if (type === 'burger') {
+    // Burger / Meatball — skip step 5b, go straight to priority
+    btn.onclick = () => goTo(6);
+  } else {
+    // Beef Mince / Ground Beef — go to hand-form question
+    btn.onclick = () => goTo('5b');
+  }
+  updateQuizFiberVisibility();
 }
 
 function selectBiz(el) {
@@ -59,11 +87,7 @@ function selectCountry(el) {
     document.getElementById('stat-fiber-label').textContent = `${CC.fiberSpelling.toLowerCase()} per 100g`;
     // Step 4: use "Beef Mince" for UK/EU/AU, "Ground Beef" for US
     const useMince = country !== 'United States';
-    document.getElementById('q2-unformed-title').textContent = useMince ? 'Beef Mince (unformed)' : 'Ground Beef (unformed)';
-    document.getElementById('q2-unformed-desc').textContent  = 'Loose mince — tacos, pasta, bolognese, etc.';
-    document.getElementById('q2-sub').textContent = useMince
-      ? "Select burgers/meatballs if you're giving your customers beef mince but you want them to form it themselves"
-      : "Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves";
+    document.getElementById('q2-mince-title').textContent = useMince ? 'Beef Mince / Ground Beef' : 'Ground Beef / Beef Mince';
     updateQuizFiberVisibility();
   } else {
     comingSoon.style.display = 'block';

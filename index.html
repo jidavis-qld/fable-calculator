@@ -59,7 +59,7 @@
 
     <!-- SLIDE 2: Business Type -->
     <div class="slide" id="slide-2">
-      <div class="slide-label">Step 1 of 5</div>
+      <div class="slide-label">Step 1 of 6</div>
       <h1 class="slide-question">What best describes your business?</h1>
       <p class="slide-sub">This helps us tailor your results.</p>
       <div class="options-grid cols-2" id="biz-options">
@@ -96,7 +96,7 @@
 
     <!-- SLIDE 3: Country -->
     <div class="slide" id="slide-3">
-      <div class="slide-label">Step 2 of 5</div>
+      <div class="slide-label">Step 2 of 6</div>
       <h1 class="slide-question">Where is your business based?</h1>
       <div class="options-grid cols-2" id="country-options">
         <div class="opt-card" data-value="United States" onclick="selectCountry(this)">
@@ -130,7 +130,7 @@
     </div>
 
     <div class="slide" id="slide-4">
-      <div class="slide-label">Step 3 of 5</div>
+      <div class="slide-label">Step 3 of 6</div>
       <h1 class="slide-question">How much fat should the finished product contain?</h1>
       <div class="options-grid cols-2" id="q1-options">
         <div class="opt-card" data-value="0.1" onclick="selectOpt(this,'q1')">
@@ -164,34 +164,55 @@
       </div>
     </div>
 
-    <!-- SLIDE 2 -->
+    <!-- SLIDE 5: Beef Format -->
     <div class="slide" id="slide-5">
-      <div class="slide-label">Step 4 of 5</div>
-      <h1 class="slide-question">Do you want your product to be used for making formed or unformed beef?</h1>
-      <p class="slide-sub" id="q2-sub">Select burgers/meatballs if you're giving your customers ground beef but you want them to form it themselves</p>
+      <div class="slide-label">Step 4 of 6</div>
+      <h1 class="slide-question">Which beef format do you want to make?</h1>
       <div class="options-grid cols-2" id="q2-options">
-        <div class="opt-card" data-value="Burger / Meatball" onclick="selectOpt(this,'q2')">
+        <div class="opt-card" data-value="Burger / Meatball" onclick="selectFormat(this,'burger')">
           <div class="opt-check"></div>
           <span class="opt-icon">&#x1F354;</span>
           <div class="opt-title">Burger / Meatball</div>
-          <div class="opt-desc">Formed into patties or balls before cooking</div>
         </div>
-        <div class="opt-card" data-value="Ground Beef (unformed)" onclick="selectOpt(this,'q2')">
+        <div class="opt-card" data-value="Ground Beef (unformed)" onclick="selectFormat(this,'mince')">
           <div class="opt-check"></div>
           <span class="opt-icon">&#x1FAD9;</span>
-          <div class="opt-title" id="q2-unformed-title">Ground Beef (unformed)</div>
-          <div class="opt-desc" id="q2-unformed-desc">Loose mince — tacos, pasta, bolognese, etc.</div>
+          <div class="opt-title" id="q2-mince-title">Beef Mince / Ground Beef</div>
         </div>
       </div>
       <div class="quiz-nav">
         <button class="btn-back" onclick="goTo(4)">←</button>
-        <button class="btn-next" id="btn-5" disabled onclick="goTo(6)">Continue →</button>
+        <button class="btn-next" id="btn-5" disabled onclick="goTo(5)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- SLIDE 5b: Hand-form question (mince path only) -->
+    <div class="slide" id="slide-5b">
+      <div class="slide-label">Step 5 of 6</div>
+      <h1 class="slide-question">Do you want consumers to hand-form patties or meatballs with this?</h1>
+      <div class="options-grid cols-2" id="q2b-options">
+        <div class="opt-card" data-value="Burger / Meatball" onclick="selectOpt(this,'q2b')">
+          <div class="opt-check"></div>
+          <span class="opt-icon">&#x1F44C;</span>
+          <div class="opt-title">Yes</div>
+          <div class="opt-desc">Burgers, meatballs</div>
+        </div>
+        <div class="opt-card" data-value="Ground Beef (unformed)" onclick="selectOpt(this,'q2b')">
+          <div class="opt-check"></div>
+          <span class="opt-icon">&#x1FAD9;</span>
+          <div class="opt-title">No</div>
+          <div class="opt-desc">Tacos, pasta, bolognese, etc.</div>
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-back" onclick="goTo(5)">←</button>
+        <button class="btn-next" id="btn-5b" disabled onclick="goTo(6)">Continue →</button>
       </div>
     </div>
 
     <!-- SLIDE 6: Priority -->
     <div class="slide" id="slide-6">
-      <div class="slide-label">Step 5 of 5</div>
+      <div class="slide-label" id="slide-6-label">Step 5 of 5</div>
       <h1 class="slide-question">Select what feature is most important to you</h1>
       <div class="options-grid cols-2" id="priority-options">
         <div class="opt-card" data-value="cost" onclick="selectPriority(this)">
