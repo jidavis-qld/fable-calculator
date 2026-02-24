@@ -41,10 +41,9 @@ const CONFIG = {
   },
 
   hero: {
-    eyebrow:  "Your personalised blend",
-    title:    "Your magical blend of Shiitake Infusion & Beef!",
-    /* The italic word(s) in the title — must appear exactly in title above */
-    titleItalic: "Shiitake Infusion & Beef!",
+    eyebrow:  "", // replaced by logo image — see applyConfig below
+    title:    "Your magical blend of Beef and Shiitake Mushroom",
+    titleItalic: "", // no italic on new title
     bubbleNote: "*Water is included to rehydrate the mushroom mix, as it is partially dried, and this achieves a moisture content enabling the mince to be used in the same recipes as 100% beef.",
   },
 
@@ -104,7 +103,7 @@ const CONFIG = {
   r.setProperty('--rust',   CONFIG.colors.rust);
 
   document.querySelectorAll('.quiz-logo').forEach(el => el.innerHTML = '<img src="images/FAB Fable logo.png" alt="Fable" class="quiz-logo-img">');
-  document.querySelector('.results-eyebrow').textContent = CONFIG.hero.eyebrow;
+  document.querySelector('.results-eyebrow').innerHTML = '<img src="images/FAB_logo_white.png" alt="Fable" class="hero-logo">';
   document.querySelector('.bubble-note').textContent = CONFIG.hero.bubbleNote;
   document.querySelector('.footer-thankyou').textContent = CONFIG.footer.thankYouText;
   document.querySelector('.footer-tagline').innerHTML = CONFIG.brand.tagline + ' | <a href="'+CONFIG.brand.website+'" target="_blank">'+CONFIG.brand.website.replace('https://','')+'</a>';
