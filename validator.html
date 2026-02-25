@@ -13,9 +13,10 @@
   .subtitle { font-size: 13px; color: #6b7a5c; margin-bottom: 0; }
 
   /* ── Controls ── */
-  .controls-bar { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  .controls-bar { margin-bottom: 20px; display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
                   background: #fff; border: 1px solid #dde8d4; border-radius: 10px; padding: 14px 16px; }
   .controls-bar label { font-size: 13px; color: #4a5a3a; font-weight: 500; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 5px; }
   .controls-bar select { background: #fff; color: #1a1a1a; border: 1px solid #b8ccaa;
                          border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
   .run-btn { background: #2e4214; color: #cfff8e; border: none; border-radius: 6px;
@@ -71,6 +72,7 @@
   /* ── Unified table ── */
   .tbl-wrap { background: #fff; border: 1px solid #dde8d4; border-radius: 12px;
               overflow: hidden; margin-bottom: 0; }
+  .cost-footnote { font-size: 11px; color: #6b7a5c; margin-top: 5px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 0; }
   th { background: #2e4214; color: #ffffff; font-weight: 600;
        font-size: 15px; padding: 10px 14px; text-align: left; white-space: nowrap; }
@@ -176,20 +178,24 @@
 </div>
 
 <div class="controls-bar">
-  <label>Country:</label>
-  <select id="country-select" onchange="runValidator()">
-    <option value="US">🇺🇸 United States</option>
-    <option value="UK">🇬🇧 United Kingdom</option>
-    <option value="AU">🇦🇺 Australia</option>
-    <option value="EU">🇪🇺 Europe</option>
-  </select>
-  <label>Q1 beef trim:</label>
-  <select id="q1-select">
-    <option value="0.1">90CL — 10% fat</option>
-    <option value="0.15">85CL — 15% fat</option>
-    <option value="0.2" selected>80CL — 20% fat</option>
-    <option value="0.25">75CL — 25% fat</option>
-  </select>
+  <div class="ctrl-group">
+    <label for="country-select">Country:</label>
+    <select id="country-select" onchange="runValidator()">
+      <option value="US">🇺🇸 United States</option>
+      <option value="UK">🇬🇧 United Kingdom</option>
+      <option value="AU">🇦🇺 Australia</option>
+      <option value="EU">🇪🇺 Europe</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <label for="q1-select">How much fat should the finished product contain?</label>
+    <select id="q1-select">
+      <option value="0.1">90CL — 10% fat</option>
+      <option value="0.15">85CL — 15% fat</option>
+      <option value="0.2" selected>80CL — 20% fat</option>
+      <option value="0.25">75CL — 25% fat</option>
+    </select>
+  </div>
   <div class="constraints">
     <div class="check-item" id="check-fiber" onclick="toggleConstraint('fiber')">
       <div class="check-box"></div>
@@ -811,7 +817,7 @@ function renderBalanceSection(format, userFat) {
     ...blendCols(format, '★ Recommended'),
     { header: 'Beef Trim',
       cell: (c) => c.trimName.replace(' Beef Trim', '') },
-    { header: `${CC.currency}/${priceUnit}`,
+    { header: `${CC.currency}/${priceUnit}*`,
       cell: (c, w, iw) => iw
         ? `${CC.currency}${c.cost.toFixed(2)}`
         : `${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - w.cost, CC.currency, true)}` },
@@ -833,7 +839,8 @@ function renderBalanceSection(format, userFat) {
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
   ];
 
-  return renderRankedTable(ranked, '★ Recommended', cols);
+  return renderRankedTable(ranked, '★ Recommended', cols)
+       + '<p class="cost-footnote">*ingredient cost only</p>';
 }
 
 /* ── Render cost section ── */
@@ -847,7 +854,7 @@ function renderCostSection(format, userFat) {
     ...blendCols(format, '$ Lowest Cost'),
     { header: 'Beef Trim',
       cell: (c) => c.trimName.replace(' Beef Trim', '') },
-    { header: `${CC.currency}/${priceUnit}`,
+    { header: `${CC.currency}/${priceUnit}*`,
       cell: (c, w, iw) => {
         if (iw) return `${CC.currency}${c.cost.toFixed(2)}`;
         const diff = c.cost - w.cost;
@@ -863,7 +870,8 @@ function renderCostSection(format, userFat) {
       cell: (c) => c.satFat.toFixed(1) },
   ];
 
-  return renderRankedTable(ranked, '$ Lowest Cost', cols);
+  return renderRankedTable(ranked, '$ Lowest Cost', cols)
+       + '<p class="cost-footnote">*ingredient cost only</p>';
 }
 
 /* ── Render nutrition section ── */
@@ -895,13 +903,14 @@ function renderNutritionSection(format, userFat) {
       cell: (c, w, iw) => iw
         ? c.satFat.toFixed(1)
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
-    { header: `${CC.currency}/${priceUnit}`,
+    { header: `${CC.currency}/${priceUnit}*`,
       cell: (c, w, iw) => iw
         ? `${CC.currency}${c.cost.toFixed(2)}`
         : `${CC.currency}${c.cost.toFixed(2)} ${deltaBadge(c.cost - w.cost, CC.currency, true)}` },
   ];
 
-  return renderRankedTable(ranked, '✦ Best Nutrition', cols);
+  return renderRankedTable(ranked, '✦ Best Nutrition', cols)
+       + '<p class="cost-footnote">*ingredient cost only</p>';
 }
 
 /* ── Main render ── */

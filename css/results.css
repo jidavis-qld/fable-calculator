@@ -410,6 +410,12 @@
     letter-spacing: 0.03em;
   }
 
+  .cost-footnote {
+    font-size: 11px;
+    color: var(--fable-olive);
+    margin-top: 5px;
+  }
+
   /* ── Cost table ─────────────────────────── */
   .cost-table {
     width: 100%;

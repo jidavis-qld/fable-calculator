@@ -83,7 +83,7 @@ async function calculate() {
   // Cost section
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
   document.getElementById('stat-price-label').textContent = CC.priceUnit;
-  document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}`;
+  document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}*`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
   document.getElementById('price-beef-unit').textContent = CC.priceUnit;
   renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice, userTrimName);
