@@ -5,7 +5,7 @@
    ─────────────────────────────────────────────────────────────────────────── */
 
 const SUPABASE_URL      = 'https://qrtomlulbcuantmtaxfc.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk5NzkyMjgsImV4cCI6MjA1NTU1NTIyOH0.6vPECnLZHEXhGQ1FLrjSJ-E2q3yHE1h6kHgYaCdK3dY';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
 
 function openEmailModal() {
   document.getElementById('email-modal-overlay').style.display = 'flex';

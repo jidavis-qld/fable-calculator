@@ -25,8 +25,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// ── Rate limiting: max 5 requests per IP per 15 minutes ──────────────────────
+const RATE_LIMIT_MAX    = 5;
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes in ms
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now  = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return true;
+  entry.count++;
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  // Rate limit by IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
+  if (isRateLimited(ip)) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
 
   try {
     const { firstName, lastName, email, company, results } = await req.json();
