@@ -84,7 +84,7 @@ async function calculate() {
 
   // Cost section
   document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
-  document.getElementById('stat-price-label').textContent = CC.priceUnit;
+  document.getElementById('stat-price-label').textContent = 'Ingredient cost ' + CC.priceUnit;
   document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}*`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
   document.getElementById('price-beef-unit').textContent = CC.priceUnit;
@@ -139,7 +139,7 @@ function renderBubbles(beefPct, fablePct, waterPct, trimName) {
     </div>
     ${hasWater ? `<div class="bubble bubble-sm">
       <div class="bubble-pct" style="font-size:22px">${Math.round(waterPct*100)}%</div>
-      <div class="bubble-label">Water*</div>
+      <div class="bubble-label">Water</div>
     </div>` : ''}
   `;
   document.getElementById('bubble-note-wrap')?.remove();
