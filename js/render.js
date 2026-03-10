@@ -250,8 +250,8 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
   const blendHeaderEl = document.getElementById('nutrition-blend-header');
   const beefHeaderEl  = document.getElementById('nutrition-beef-header');
   if (blendHeaderEl) blendHeaderEl.textContent = perServing
-    ? `Shiitake Infused (per ${CC.servingG}g)`
-    : 'Shiitake Infused';
+    ? `Beef & Shiitake Mushroom (per ${CC.servingG}g)`
+    : 'Beef & Shiitake Mushroom';
 
   // Nutrient list differs by country
   const isUK = CC.code === 'UK' || CC.code === 'EU';
@@ -312,7 +312,7 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
   function badgeColors(ratio, isLowerBetter) {
     const GREEN_BG = '#ddf5d0', GREEN_FG = '#2e5a14';
     const NEUTRAL_BG = '#f0efe6', NEUTRAL_FG = '#5e7462';
-    const RED_BG = '#fce4ec',   RED_FG = '#c62828';
+    const RED_BG = '#fff3cd',   RED_FG = '#92400e';
 
     // Flip ratio for higher-better so same thresholds apply
     const r = isLowerBetter ? ratio : (ratio === 0 ? 9999 : 1 / ratio);
@@ -341,8 +341,8 @@ function renderNutrition(recipeName, trimName, beefPct, fablePct, userTrimName, 
   const tbody = document.getElementById('nutrition-tbody');
   tbody.innerHTML = '';
   if (beefHeaderEl) beefHeaderEl.textContent = perServing
-    ? `100% ${userTrimName} (per ${CC.servingG}g)`
-    : '100% ' + userTrimName;
+    ? `100% ${userTrimName.replace(' Trim', '')} (per ${CC.servingG}g)`
+    : '100% ' + userTrimName.replace(' Trim', '');
   const claims = [];
 
   nutrients.forEach(({ key, label, bold, sub }) => {

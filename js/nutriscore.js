@@ -113,7 +113,7 @@ function renderTrafficLight(recipeName, trimName, userTrimName) {
 
   document.getElementById('tfl-label-blend').innerHTML = buildTflLabelHtml(bEnergyKJ, bEnergyKcal, bFat, bSaturates, bSugars, bSalt);
   document.getElementById('tfl-label-beef').innerHTML  = buildTflLabelHtml(rEnergyKJ, rEnergyKcal, rFat, rSaturates, rSugars, rSalt);
-  document.getElementById('tfl-col-beef-label').textContent = '100% ' + tn;
+  document.getElementById('tfl-col-beef-label').textContent = '100% ' + tn.replace(' Trim', '');
 }
 
 // ── EU Nutri-Score ────────────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ function renderNutriScore(recipeName, trimName, userTrimName) {
 
   document.getElementById('ns-label-blend').innerHTML = buildNsLabelHtml(blendResult.score, blendResult.grade);
   document.getElementById('ns-label-beef').innerHTML  = buildNsLabelHtml(beefResult.score,  beefResult.grade);
-  document.getElementById('ns-col-beef-label').textContent = '100% ' + userTrimName;
+  document.getElementById('ns-col-beef-label').textContent = '100% ' + userTrimName.replace(' Trim', '');
 }
 
 
@@ -308,5 +308,5 @@ function renderHSR(recipeName, trimName, userTrimName) {
 
   document.getElementById('hsr-label-blend').innerHTML = buildHsrLabelHtml(blendResult.stars);
   document.getElementById('hsr-label-beef').innerHTML  = buildHsrLabelHtml(beefResult.stars);
-  document.getElementById('hsr-col-beef-label').textContent = '100% ' + userTrimName;
+  document.getElementById('hsr-col-beef-label').textContent = '100% ' + userTrimName.replace(' Trim', '');
 }
