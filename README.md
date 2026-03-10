@@ -1,5 +1,7 @@
 # Fable Shiitake Infusion Calculator
 
+**Live:** https://jidavis-qld.github.io/fable-calculator/
+
 A browser-based tool that recommends a Fable Shiitake Infusion recipe and beef trim for a given customer priority (cost, nutrition, balance, or sustainability). Also includes a Recipe Validator for exploring all recipe/trim combinations in detail.
 
 ---
