@@ -90,7 +90,7 @@ async function calculate() {
   document.getElementById('price-beef-unit').textContent = CC.priceUnit;
   renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blendPrice, userTrimName);
   document.getElementById('price-blend').textContent = CC.currency+blendPrice.toFixed(2);
-  document.getElementById('price-beef-label').textContent = '100% ' + userTrimName;
+  document.getElementById('price-beef-label').textContent = '100% ' + (CC.code === 'US' ? 'Ground Beef' : 'Beef Mince');
   renderBeefPriceBlock(beefOnlyPrice, userTrimName, trimName);
 
   // Nutrition — reset to per-100g on each new calculation, show toggle for US only
@@ -155,7 +155,7 @@ function renderBeefPriceBlock(beefOnlyPrice, userTrimName, trimName) {
     value="${beefOnlyPrice.toFixed(2)}"
     min="0" step="any"
     inputmode="decimal"
-    style="width:70px;border:none;border-bottom:1px dashed currentColor;background:transparent;font:inherit;color:inherit;text-align:center;-moz-appearance:textfield;"
+    style="width:70px;border:1px solid #b8ccaa;border-radius:6px;background:#fff;font:inherit;color:#1a1a1a;text-align:center;padding:3px 6px;-moz-appearance:textfield;"
   />`;
   // Remove spinner arrows via inline style tag if not already present
   if (!document.getElementById('no-spinner-style')) {
@@ -193,7 +193,7 @@ function renderCostTable(beefPct, fablePct, waterPct, trimName, trimPrice, blend
       id="beef-price-input"
       value="${trimPrice.toFixed(2)}"
       min="0" step="0.01"
-      style="width:60px;border:none;border-bottom:1px dashed #999;background:transparent;font:inherit;text-align:right;-moz-appearance:textfield;"
+      style="width:60px;border:1px solid #b8ccaa;border-radius:6px;background:#fff;font:inherit;text-align:right;padding:3px 6px;-moz-appearance:textfield;"
       inputmode="decimal"
       title="Click to edit your beef price"
     /></span></td>
