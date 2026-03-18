@@ -315,7 +315,7 @@ function renderBalanceSection(format, userFat) {
 
   const cols = [
     { header: 'Recipe', className: 'col-recipe',
-      cell: (c, w, iw) => recipeCell(c, w, iw, '★ Recommended') },
+      cell: (c, w, iw) => recipeCell(c, w, iw, '★') },
     { header: 'Beef Trim',
       cell: (c, w, iw) => iw ? '' : c.trimName.replace(' Beef Trim', '') },
     { header: `${CC.currency}/${priceUnit}`,
@@ -340,7 +340,7 @@ function renderBalanceSection(format, userFat) {
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
   ];
 
-  return renderRankedTable(ranked, '★ Recommended', cols);
+  return renderRankedTable(ranked, '★', cols);
 }
 
 /* ── Render cost section ── */

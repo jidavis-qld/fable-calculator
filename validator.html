@@ -751,7 +751,7 @@ function blendCols(format) {
   const isUnformed = format !== 'Burger / Meatball';
   const pct = v => `${Math.round(v * 100)}%`;
   const cols = [
-    { header: 'Shiitake Infusion %', headerClass: 'th-center', className: 'td-center', cell: c => pct(c.fablePct) },
+    { header: 'Shiitake Infusion %', cell: c => pct(c.fablePct) },
     { header: 'Beef %',              cell: c => pct(c.beefPct) },
     { header: 'Beef CL',             cell: c => c.trimName.replace(' Beef Trim', '') },
   ];
@@ -1006,7 +1006,7 @@ function renderBalanceSection(format, userFat) {
 
   const cols = [
     { header: '', className: 'col-badge',
-      cell: (c, w, iw) => recipeCell(c, w, iw, '★ Recommended') },
+      cell: (c, w, iw) => recipeCell(c, w, iw, '★') },
     ...blendCols(format),
     { header: `${CC.currency}/${priceUnit}*`,
       cell: (c, w, iw) => iw
@@ -1030,7 +1030,7 @@ function renderBalanceSection(format, userFat) {
         : `${c.satFat.toFixed(1)} ${deltaBadge(c.satFat - w.satFat, '', true)}` },
   ];
 
-  return renderRankedTable(ranked, '★ Recommended', cols)
+  return renderRankedTable(ranked, '★', cols)
        + renderRecommendedLabels(winner, format)
        + '<p class="cost-footnote">*ingredient cost only</p>';
 }
