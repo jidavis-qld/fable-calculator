@@ -102,10 +102,8 @@
   .winner-row td:first-child { border-left: 3px solid #7db84a; }
   .rec-badge { display: inline-block; background: #2e4214; color: #cfff8e;
                font-size: 10px; font-weight: 700; padding: 2px 8px;
-               border-radius: 100px; letter-spacing: 0.05em; vertical-align: middle; margin-left: 8px; }
-  .winner-recipe-name { font-weight: 700; font-size: 16px; }
-  .winner-trim-name { font-size: 12px; color: #6b7a5c; margin-top: 2px; }
-  td.col-recipe { white-space: normal; min-width: 160px; }
+               border-radius: 100px; letter-spacing: 0.05em; }
+  td.col-badge { white-space: nowrap; width: 1%; }
   .fallback-badge { display: inline-block; background: #fff3cd; color: #92400e;
                     font-size: 10px; font-weight: 600; padding: 1px 6px;
                     border-radius: 100px; margin-left: 6px; vertical-align: middle; }
@@ -160,6 +158,39 @@
   .claim-tile-icon { font-size: 15px; line-height: 1; }
   .claim-tile-label { font-size: 12px; font-weight: 400; color: #4a5a3a; margin-top: 1px; }
 
+  /* ── Recommended recipe sub-heading ── */
+  .rec-nutrition-header { font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+                          text-transform: uppercase; color: #4a5a3a;
+                          margin-top: 28px; margin-bottom: 4px; }
+
+  /* ── Nutri-Score label (EU) ── */
+  .ns-inline { margin-top: 10px; }
+  .ns-label { display: inline-flex; align-items: stretch; font-family: Arial, Helvetica, sans-serif; }
+  .ns-title-block { background: #fff; border: 2px solid #1a1a1a; border-right: none;
+                    border-radius: 6px 0 0 6px; padding: 6px 10px; display: flex;
+                    flex-direction: column; align-items: center; justify-content: center;
+                    min-width: 64px; text-align: center; }
+  .ns-title-word  { font-size: 9px; font-weight: 900; text-transform: uppercase;
+                    letter-spacing: 0.08em; color: #1a1a1a; line-height: 1.1; }
+  .ns-title-score { font-size: 20px; font-weight: 900; color: #1a1a1a; line-height: 1; margin: 2px 0; }
+  .ns-title-sub   { font-size: 7px; color: #555; line-height: 1.2; }
+  .ns-tiles { display: flex; border: 2px solid #1a1a1a; border-radius: 0 6px 6px 0; overflow: hidden; }
+  .ns-tile  { width: 44px; display: flex; flex-direction: column; align-items: center;
+              justify-content: center; padding: 6px 0;
+              border-right: 1px solid rgba(0,0,0,0.15); }
+  .ns-tile:last-child { border-right: none; }
+  .ns-tile.inactive { opacity: 0.35; transform: scaleY(0.88); transform-origin: bottom; }
+  .ns-tile.active   { opacity: 1;    transform: scaleY(1.08); transform-origin: bottom;
+                      z-index: 1; position: relative; }
+  .ns-tile-a { background: #1e7e34; } .ns-tile-b { background: #85bb2f; }
+  .ns-tile-c { background: #fecb02; } .ns-tile-d { background: #ef7d00; }
+  .ns-tile-e { background: #e63312; }
+  .ns-tile-letter { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+  .ns-tile-c .ns-tile-letter { color: #1a1a1a; }
+
+  /* ── HSR image (AU) ── */
+  .hsr-img { display: block; height: 80px; width: auto; margin-top: 10px; }
+
   /* ── Responsive ── */
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -180,7 +211,7 @@
     th { font-size: 13px; padding: 9px 10px; }
     td { padding: 8px 10px; }
     .winner-row td { padding-top: 14px; padding-bottom: 14px; font-size: 14px; }
-    .winner-recipe-name { font-size: 14px; }
+    .rec-badge { font-size: 9px; padding: 2px 6px; }
     .delta { font-size: 11px; padding: 1px 7px; }
   }
 
@@ -704,14 +735,10 @@ function renderRankedTable(ranked, recBadgeLabel, colDefs) {
   return html;
 }
 
-/* ── Recipe name cell ── */
+/* ── Badge cell ── */
 function recipeCell(c, winner, isWinner, badgeLabel) {
-  if (isWinner) {
-    return `<div class="winner-recipe-name">${c.recipeName}
-              <span class="rec-badge">${badgeLabel}</span></div>
-            <div class="winner-trim-name">${c.trimName.replace(' Trim', '')}</div>`;
-  }
-  return c.recipeName;
+  if (isWinner) return `<span class="rec-badge">${badgeLabel}</span>`;
+  return '';
 }
 
 /* ── Blend % columns ── */
@@ -719,8 +746,9 @@ function blendCols(format) {
   const isUnformed = format !== 'Burger / Meatball';
   const pct = v => `${Math.round(v * 100)}%`;
   const cols = [
-    { header: 'Beef %', cell: c => pct(c.beefPct) },
     { header: 'Shiitake Infusion %', cell: c => pct(c.fablePct) },
+    { header: 'Beef %',              cell: c => pct(c.beefPct) },
+    { header: 'Beef CL',             cell: c => c.trimName.replace(' Beef Trim', '') },
   ];
   if (isUnformed) {
     cols.push({ header: 'Water %', cell: c => pct(c.waterPct) });
@@ -825,6 +853,114 @@ function renderTflComparison(winner, format) {
     <p class="tfl-ri-note">*RI = Reference Intake for an average adult (8,400 kJ / 2,000 kcal)</p>`;
 }
 
+/* ── Nutri-Score calculation (EU) ── */
+function nutriScorePoints(val, thresholds) {
+  for (let i = 0; i < thresholds.length; i++) { if (val <= thresholds[i]) return i; }
+  return thresholds.length;
+}
+function calcNutriScore(energyKJ, sugars, satFat, salt, fibre, protein) {
+  const sodium   = salt * 400;
+  const ptEnergy = nutriScorePoints(energyKJ, [335,670,1005,1340,1675,2010,2345,2680,3015,3350]);
+  const ptSugars = nutriScorePoints(sugars,   [4.5,9,13.5,18,22.5,27,31,36,40,45]);
+  const ptSatFat = nutriScorePoints(satFat,   [1,2,3,4,5,6,7,8,9,10]);
+  const ptSodium = nutriScorePoints(sodium,   [90,180,270,360,450,540,630,720,810,900]);
+  const pointsA  = ptEnergy + ptSugars + ptSatFat + ptSodium;
+  const ptFibre  = nutriScorePoints(fibre,   [0.9,1.9,2.8,3.7,4.7]);
+  const ptProtein= nutriScorePoints(protein, [1.6,3.2,4.8,6.4,8.0]);
+  const score = pointsA < 11
+    ? pointsA - (ptFibre + ptProtein)
+    : pointsA - ptFibre;
+  let grade;
+  if      (score < 0)   grade = 'A';
+  else if (score <= 2)  grade = 'B';
+  else if (score <= 10) grade = 'C';
+  else if (score <= 18) grade = 'D';
+  else                  grade = 'E';
+  return { score, grade };
+}
+function buildNsLabelHtml(score, grade) {
+  const grades = ['A','B','C','D','E'];
+  const tilesHtml = grades.map(g =>
+    `<div class="ns-tile ns-tile-${g.toLowerCase()} ${g === grade ? 'active' : 'inactive'}">
+       <span class="ns-tile-letter">${g}</span></div>`).join('');
+  return `<div class="ns-title-block">
+    <div class="ns-title-word">Nutri</div>
+    <div class="ns-title-score">${score}</div>
+    <div class="ns-title-sub">score</div>
+  </div><div class="ns-tiles">${tilesHtml}</div>`;
+}
+
+/* ── Health Star Rating calculation (AU) ── */
+const HSR_A_ENERGY  = [335,670,1005,1340,1675,2010,2345,2680,3015,3350,3685];
+const HSR_A_SATFAT  = [1.01,2.01,3.01,4.01,5.01,6.01,7.01,8.01,9.01,10.01,11.21,12.51,13.91,15.51,17.31,19.31,21.61,24.11,26.91,30.01];
+const HSR_A_SUGARS  = [5.01,8.91,12.81,16.81,20.71,24.61,28.51,32.41,36.31,40.31,44.21,48.11,52.01,55.91,59.81,63.81,67.71,71.61,75.51,79.41];
+const HSR_A_SODIUM  = [90,180,270,360,450,540,630,720,810,900,990,1080,1170,1260,1350,1440,1530,1620,1710,1800];
+const HSR_C_FVNL    = [40,60,67,75,80,90,95,99.5,100];
+const HSR_C_FIBRE   = [0.91,1.91,2.81,3.71,4.71,5.41,6.31,7.31,8.41,9.71,11.21,13.01,15.01,17.31,20.01];
+const HSR_C_PROTEIN = [1.61,3.20,4.81,6.41,8.01,9.61,11.61,13.91,16.71,20.01,24.01,28.91,34.71,41.61,50.01];
+function hsrPoints(val, thresholds) {
+  for (let i = 0; i < thresholds.length; i++) { if (val < thresholds[i]) return i; }
+  return thresholds.length;
+}
+function calcHSR(energyKJ, satFat, sugars, sodiumMg, fibre, protein, fvnlPct) {
+  const pointsA = hsrPoints(energyKJ, HSR_A_ENERGY) + hsrPoints(satFat, HSR_A_SATFAT)
+                + hsrPoints(sugars,   HSR_A_SUGARS)  + hsrPoints(sodiumMg, HSR_A_SODIUM);
+  const ptFVNL  = hsrPoints(fvnlPct, HSR_C_FVNL);
+  const ptFibre = hsrPoints(fibre,   HSR_C_FIBRE);
+  const ptProt  = hsrPoints(protein, HSR_C_PROTEIN);
+  const pointsC = (pointsA >= 13 && ptFVNL < 5) ? ptFVNL + ptFibre : ptFVNL + ptFibre + ptProt;
+  const netScore = pointsA - pointsC;
+  let stars;
+  if      (netScore <= -15) stars = 5.0; else if (netScore <= -10) stars = 4.5;
+  else if (netScore <=  -5) stars = 4.0; else if (netScore <=   0) stars = 3.5;
+  else if (netScore <=   5) stars = 3.0; else if (netScore <=  10) stars = 2.5;
+  else if (netScore <=  15) stars = 2.0; else if (netScore <=  20) stars = 1.5;
+  else if (netScore <=  25) stars = 1.0; else                      stars = 0.5;
+  return { netScore, stars };
+}
+function buildHsrLabelHtml(stars) {
+  const imgNum = Math.round(stars * 2);
+  return `<img class="hsr-img" src="img/hsr/${imgNum}.png" alt="${stars.toFixed(1)} Health Stars" />`;
+}
+
+/* ── Nutrition labels + claims for recommended recipe ── */
+function renderNutriScoreInline(winner, format) {
+  const { recipeName, trimName } = winner;
+  const fiberKey = 'Dietary ' + CC.fiberSpelling;
+  const result = calcNutriScore(
+    getBlendNutrient('Energy (kJ)',   recipeName, trimName, format),
+    getBlendNutrient('Total Sugars',  recipeName, trimName, format),
+    getBlendNutrient('Saturated Fat', recipeName, trimName, format),
+    getBlendNutrient('Salt',          recipeName, trimName, format),
+    getBlendNutrient(fiberKey,        recipeName, trimName, format),
+    getBlendNutrient('Protein',       recipeName, trimName, format)
+  );
+  return `<div class="tfl-section-heading">EU Nutri-Score</div>
+    <div class="ns-inline"><div class="ns-label">${buildNsLabelHtml(result.score, result.grade)}</div></div>`;
+}
+function renderHsrInline(winner, format) {
+  const { recipeName, trimName, fablePct } = winner;
+  const result = calcHSR(
+    getBlendNutrient('Energy (kJ)',    recipeName, trimName, format),
+    getBlendNutrient('Saturated Fat',  recipeName, trimName, format),
+    getBlendNutrient('Total Sugars',   recipeName, trimName, format),
+    getBlendNutrient('Sodium',         recipeName, trimName, format),
+    getBlendNutrient('Dietary Fibre',  recipeName, trimName, format),
+    getBlendNutrient('Protein',        recipeName, trimName, format),
+    fablePct * 100
+  );
+  return `<div class="tfl-section-heading">AU Health Star Rating</div>
+    <div>${buildHsrLabelHtml(result.stars)}</div>`;
+}
+function renderRecommendedLabels(winner, format) {
+  let html = '<div class="rec-nutrition-header">Recommended recipe — nutrition labels &amp; claims</div>';
+  html += renderClaimTiles(winner);
+  if      (CC.code === 'UK') html += renderTflComparison(winner, format);
+  else if (CC.code === 'EU') html += renderNutriScoreInline(winner, format);
+  else if (CC.code === 'AU') html += renderHsrInline(winner, format);
+  return html;
+}
+
 /* ── Claim tiles ── */
 function renderClaimTiles(winner) {
   const tiles = [];
@@ -864,7 +1000,7 @@ function renderBalanceSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
+    { header: '', className: 'col-badge',
       cell: (c, w, iw) => recipeCell(c, w, iw, '★ Recommended') },
     ...blendCols(format),
     { header: `${CC.currency}/${priceUnit}*`,
@@ -890,8 +1026,7 @@ function renderBalanceSection(format, userFat) {
   ];
 
   return renderRankedTable(ranked, '★ Recommended', cols)
-       + renderClaimTiles(winner)
-       + renderTflComparison(winner, format)
+       + renderRecommendedLabels(winner, format)
        + '<p class="cost-footnote">*ingredient cost only</p>';
 }
 
@@ -902,7 +1037,7 @@ function renderCostSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
+    { header: '', className: 'col-badge',
       cell: (c, w, iw) => recipeCell(c, w, iw, '$ Lowest Cost') },
     ...blendCols(format),
     { header: `${CC.currency}/${priceUnit}*`,
@@ -929,7 +1064,7 @@ function renderNutritionSection(format, userFat) {
   const priceUnit = CC.priceUnit.split(' ')[1];
 
   const cols = [
-    { header: 'Recipe', className: 'col-recipe',
+    { header: '', className: 'col-badge',
       cell: (c, w, iw) => recipeCell(c, w, iw, '✦ Best Nutrition') },
     ...blendCols(format),
     { header: `${CC.fiberSpelling} (g/100g)`,

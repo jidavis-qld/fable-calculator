@@ -459,11 +459,13 @@
 
   .vs-row {
     display: grid;
-    grid-template-columns: 1fr 20px 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr 32px 1fr;
+    gap: 12px;
     align-items: start;
     margin-top: 16px;
+    min-width: 0;
   }
+  .price-block { min-width: 0; }
 
   .vs-label {
     text-align: center;
@@ -491,11 +493,15 @@
 
   .price-block .pb-val {
     font-family: 'Zapf Humanist', Georgia, serif;
-    font-size: clamp(20px, 4.5vw, 32px);
+    font-size: clamp(22px, 5vw, 36px);
     font-weight: 700;
     color: var(--forest);
     word-break: break-word;
     overflow-wrap: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
   }
 
   .price-block .pb-unit { font-size: 14px; color: var(--fable-sage); margin-top: 2px; }
