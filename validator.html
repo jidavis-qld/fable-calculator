@@ -105,6 +105,7 @@
                border-radius: 100px; letter-spacing: 0.05em; }
   td.col-badge { white-space: nowrap; width: 1%; }
   th.th-right { text-align: right; white-space: normal; }
+  td.td-right { text-align: right; }
   .fallback-badge { display: inline-block; background: #fff3cd; color: #92400e;
                     font-size: 10px; font-weight: 600; padding: 1px 6px;
                     border-radius: 100px; margin-left: 6px; vertical-align: middle; }
@@ -750,7 +751,7 @@ function blendCols(format) {
   const isUnformed = format !== 'Burger / Meatball';
   const pct = v => `${Math.round(v * 100)}%`;
   const cols = [
-    { header: 'Shiitake Infusion %', headerClass: 'th-right', cell: c => pct(c.fablePct) },
+    { header: 'Shiitake Infusion %', headerClass: 'th-right', className: 'td-right', cell: c => pct(c.fablePct) },
     { header: 'Beef %',              cell: c => pct(c.beefPct) },
     { header: 'Beef CL',             cell: c => c.trimName.replace(' Beef Trim', '') },
   ];
