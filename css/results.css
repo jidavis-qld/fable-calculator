@@ -325,7 +325,7 @@
     background: #cfff8e;
     border: none;
     border-radius: 100px;
-    color: #2e4214;
+    color: #2c4214;
     font-size: 14px;
     font-weight: 700;
     font-family: 'Zapf Humanist', Georgia, serif;
@@ -335,7 +335,7 @@
   }
   .explore-cta-btn:hover {
     background: #ffffff;
-    color: #2e4214;
+    color: #2c4214;
   }
   @media (max-width: 600px) {
     .explore-cta { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -902,7 +902,7 @@
 
   /* ── Hero section ── */
   .results-hero {
-    background: #2e4214 !important;
+    background: #2c4214 !important;
     padding: 32px 40px 40px !important;
     page-break-after: avoid;
     break-after: avoid;
@@ -985,7 +985,7 @@
   }
 
   .key-stat-val {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 22px !important;
   }
 
@@ -995,7 +995,7 @@
   }
 
   .key-stat-badge {
-    background: #2e4214 !important;
+    background: #2c4214 !important;
     color: #cfff8e !important;
     font-size: 11px !important;
   }
@@ -1023,7 +1023,7 @@
     padding: 14px 24px !important;
   }
 
-  .section-header.cost         { background: #2e4214 !important; }
+  .section-header.cost         { background: #2c4214 !important; }
   .section-header.nutrition    { background: #4a6a22 !important; }
   .section-header.sustainability { background: #3a5518 !important; }
 
@@ -1045,13 +1045,13 @@
   /* Recipe pill */
   .recipe-pill {
     background: #e8f3d4 !important;
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 14px !important;
   }
 
   /* ── Cost table ── */
   .cost-table thead th {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 12px !important;
   }
 
@@ -1060,7 +1060,7 @@
   }
 
   .cost-table tbody tr:last-child td:last-child {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   /* Price blocks */
@@ -1069,11 +1069,11 @@
   }
 
   .price-block .pb-label {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   .price-block .pb-val {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 28px !important;
   }
 
@@ -1083,7 +1083,7 @@
 
   /* Highlighted (blend) price block */
   .price-block.highlight {
-    background: #2e4214 !important;
+    background: #2c4214 !important;
   }
 
   .price-block.highlight .pb-label {
@@ -1104,7 +1104,7 @@
 
   /* ── Nutrition table ── */
   .nutrition-table thead th {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 11px !important;
   }
 
@@ -1128,12 +1128,12 @@
 
   /* Health claims */
   .hc-label {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   .hc-chip {
     background: #e8f3d4 !important;
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   /* Serving toggle — hide, keep per-100g data visible */
@@ -1151,7 +1151,7 @@
   }
 
   .sust-block-title {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   .sust-ingredient {
@@ -1159,16 +1159,16 @@
   }
 
   .sust-val {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   .sust-total .sust-val {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
   }
 
   /* Carbon callout */
   .carbon-callout {
-    background: #2e4214 !important;
+    background: #2c4214 !important;
   }
 
   .ct-pct {
@@ -1186,20 +1186,20 @@
   }
 
   .explore-cta-text {
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 14px !important;
   }
 
   .explore-cta-btn {
     background: #cfff8e !important;
-    color: #2e4214 !important;
+    color: #2c4214 !important;
     font-size: 13px !important;
     padding: 8px 20px !important;
   }
 
   /* ── Footer: simplify to text-only, no image ── */
   .results-footer {
-    background: #2e4214 !important;
+    background: #2c4214 !important;
     padding: 20px 40px !important;
     break-before: avoid;
     page-break-before: avoid;

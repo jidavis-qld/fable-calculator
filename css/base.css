@@ -6,7 +6,7 @@
   /* ── FABLE BRAND PALETTE ─────────────────────────── 
      Primary:
        Dark brown/black  #332f21
-       Hero green         #2e4214
+       Hero green         #2c4214
        Light green        #cfff8e
        Olive              #5e590f
        Sage green         #5e7462
@@ -16,7 +16,7 @@
   ──────────────────────────────────────────────────── */
   :root {
     --fable-dark: #332f21;
-    --fable-hero: #2e4214;
+    --fable-hero: #2c4214;
     --fable-lime: #cfff8e;
     --fable-olive: #5e590f;
     --fable-sage: #5e7462;
@@ -24,7 +24,7 @@
     --fable-lavender: #ab9ed9;
     
     /* Mapped to UI roles */
-    --forest: #2e4214;
+    --forest: #2c4214;
     --moss: #5e590f;
     --fern: #5e7462;
     --sage: #cfff8e;
@@ -40,9 +40,17 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Zapf Humanist', Georgia, serif;
+    /* Body text uses a clean sans; Zapf Humanist is reserved for brand
+       elements / headings per the Fable style guide. */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, sans-serif;
     background: var(--cream);
     color: var(--ink);
     min-height: 100vh;
+  }
+
+  /* Headings carry the Zapf Humanist brand face. */
+  h1, h2, h3, h4 {
+    font-family: 'Zapf Humanist', Palatino, 'Palatino Linotype', serif;
   }
 
