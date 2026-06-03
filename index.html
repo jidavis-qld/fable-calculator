@@ -281,8 +281,14 @@
     <p class="results-subtitle" id="hero-subtitle">Based on your preferences, here\'s your recommended recipe.</p>
 
     <div class="recipe-selector" id="recipe-selector-wrap">
-      <label for="recipe-select" class="recipe-selector-label">Recipe</label>
-      <select id="recipe-select" class="recipe-select" onchange="onRecipeChange()"></select>
+      <div class="recipe-selector-group">
+        <label for="recipe-select" class="recipe-selector-label">Recipe</label>
+        <select id="recipe-select" class="recipe-select" onchange="onSelectionChange()"></select>
+      </div>
+      <div class="recipe-selector-group">
+        <label for="trim-select" class="recipe-selector-label">Beef Trim</label>
+        <select id="trim-select" class="recipe-select" onchange="onSelectionChange()"></select>
+      </div>
     </div>
 
     <div class="blend-bubbles" id="blend-bubbles"></div>

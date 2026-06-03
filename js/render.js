@@ -12,9 +12,10 @@
 // Module-level nutrition state — populated by calculate(), used by setServingMode()
 let _nutritionState = null;
 
-// The recipe the scoring engine recommended for the current quiz answers.
+// The recipe + trim the scoring engine recommended for the current quiz answers.
 // Used to label the cost pill ("recommendation" vs a manual selection).
 let _recommendedRecipe = null;
+let _recommendedTrim   = null;
 
 // 'per100g' | 'perServing'  — only relevant for US
 let _servingMode = 'per100g';
@@ -41,10 +42,12 @@ async function calculate() {
   // Scoring engine returns both recipe and trim in one pass — this is the recommendation
   const { recipeName, trimName, fiberFallback } = scoringEngine();
   _recommendedRecipe = recipeName;
+  _recommendedTrim   = trimName;
 
-  // Populate the recipe dropdown with every valid recipe for the chosen format,
-  // pre-selecting the recommended one, then render it.
+  // Populate the recipe + trim dropdowns, pre-selecting the recommended pair,
+  // then render it.
   populateRecipeSelect(recipeName);
+  populateTrimSelect(trimName);
   renderRecipe(recipeName, trimName, fiberFallback);
 
   // Show results
@@ -53,9 +56,10 @@ async function calculate() {
   window.scrollTo(0, 0);
 }
 
-/* ── Recipe dropdown ───────────────────────────────────────────────────────────
-   The recommended recipe is pre-selected. Changing the dropdown re-renders the
-   whole output for the chosen recipe (with a sensible trim for that recipe).  */
+/* ── Recipe + trim dropdowns ────────────────────────────────────────────────────
+   Both are independent manual overrides. The recommended pair is pre-selected;
+   changing either re-renders the whole output for the chosen recipe × trim
+   combination (the same freedom the validator grid offers).  */
 function recipeOptionsForFormat() {
   return Object.keys(RECIPES[state.q2] || {}).filter(name => {
     const [beefPct, , waterPct] = RECIPES[state.q2][name];
@@ -76,17 +80,27 @@ function populateRecipeSelect(recommendedName) {
   }).join('');
 }
 
-// Pick a sensible beef trim to pair with a manually-selected recipe.
-function trimForRecipe(recipeName) {
-  const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === state.q1)?.[0];
-  return pickBeefTrim(recipeName) || userTrimName || Object.keys(BEEF_PRICES)[0];
+// All beef trims (CL grades) for the active country, ordered fatty → lean.
+function trimOptions() {
+  return CL_ORDER_LEAN.filter(t => BEEF_PRICES[t]);
 }
 
-function onRecipeChange() {
-  const sel = document.getElementById('recipe-select');
+function populateTrimSelect(recommendedTrim) {
+  const sel = document.getElementById('trim-select');
   if (!sel) return;
-  const recipeName = sel.value;
-  renderRecipe(recipeName, trimForRecipe(recipeName), false);
+  sel.innerHTML = trimOptions().map(name => {
+    const short = name.replace(' Beef Trim', '');
+    const label = name === recommendedTrim ? `${short} (recommended)` : short;
+    return `<option value="${name}"${name === recommendedTrim ? ' selected' : ''}>${label}</option>`;
+  }).join('');
+}
+
+// Re-render whenever either dropdown changes, using the current recipe × trim pair.
+function onSelectionChange() {
+  const recipeSel = document.getElementById('recipe-select');
+  const trimSel   = document.getElementById('trim-select');
+  if (!recipeSel || !trimSel) return;
+  renderRecipe(recipeSel.value, trimSel.value, false);
 }
 
 function renderRecipe(recipeName, trimName, fiberFallback = false) {
@@ -137,8 +151,9 @@ function renderRecipe(recipeName, trimName, fiberFallback = false) {
     `A ${Math.round(beefPct*100)}% ${trimShort} beef & ${Math.round((fablePct+waterPct)*100)}% Shiitake Mushroom ${formatLabel}`;
 
   // Cost section
+  const isRecommended = recipeName === _recommendedRecipe && trimName === _recommendedTrim;
   document.getElementById('cost-recipe-pill').textContent =
-    (recipeName === _recommendedRecipe ? 'Recipe recommendation: ' : 'Selected recipe: ') + recipeName;
+    (isRecommended ? 'Recipe recommendation: ' : 'Selected recipe: ') + recipeName;
   document.getElementById('stat-price-label').textContent = 'Ingredient cost ' + CC.priceUnit;
   document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}*`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
