@@ -209,6 +209,50 @@
     font-weight: 600;
   }
 
+  /* ── Recipe selector (hero) ─────────────────────── */
+  .recipe-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 28px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .recipe-selector-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(207,255,142,0.55);
+  }
+
+  .recipe-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(207,255,142,0.08);
+    color: var(--fable-lime);
+    border: 1px solid rgba(207,255,142,0.35);
+    border-radius: 100px;
+    font-family: 'Zapf Humanist', Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 9px 38px 9px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    /* lime chevron */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23cfff8e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+
+  .recipe-select:hover { background-color: rgba(207,255,142,0.16); }
+  .recipe-select:focus { outline: none; border-color: var(--fable-lime); }
+
+  /* dropdown list items render on white in most browsers — keep them legible */
+  .recipe-select option { color: var(--ink); background: var(--white); }
+
   .actions-bar {
     display: flex;
     gap: 12px;

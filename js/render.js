@@ -12,6 +12,10 @@
 // Module-level nutrition state — populated by calculate(), used by setServingMode()
 let _nutritionState = null;
 
+// The recipe the scoring engine recommended for the current quiz answers.
+// Used to label the cost pill ("recommendation" vs a manual selection).
+let _recommendedRecipe = null;
+
 // 'per100g' | 'perServing'  — only relevant for US
 let _servingMode = 'per100g';
 
@@ -34,8 +38,58 @@ async function calculate() {
     return;
   }
 
-  // Scoring engine returns both recipe and trim in one pass
+  // Scoring engine returns both recipe and trim in one pass — this is the recommendation
   const { recipeName, trimName, fiberFallback } = scoringEngine();
+  _recommendedRecipe = recipeName;
+
+  // Populate the recipe dropdown with every valid recipe for the chosen format,
+  // pre-selecting the recommended one, then render it.
+  populateRecipeSelect(recipeName);
+  renderRecipe(recipeName, trimName, fiberFallback);
+
+  // Show results
+  document.getElementById('quiz-shell').style.display = 'none';
+  document.getElementById('results-page').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+/* ── Recipe dropdown ───────────────────────────────────────────────────────────
+   The recommended recipe is pre-selected. Changing the dropdown re-renders the
+   whole output for the chosen recipe (with a sensible trim for that recipe).  */
+function recipeOptionsForFormat() {
+  return Object.keys(RECIPES[state.q2] || {}).filter(name => {
+    const [beefPct, , waterPct] = RECIPES[state.q2][name];
+    // Mirror the engine's format exclusions for Burger / Meatball
+    if (state.q2 === 'Burger / Meatball' && waterPct > 0) return false;
+    if (state.q2 === 'Burger / Meatball' && beefPct === 0.5) return false;
+    return true;
+  });
+}
+
+function populateRecipeSelect(recommendedName) {
+  const sel = document.getElementById('recipe-select');
+  if (!sel) return;
+  const names = recipeOptionsForFormat();
+  sel.innerHTML = names.map(name => {
+    const label = name === recommendedName ? `${name} (recommended)` : name;
+    return `<option value="${name}"${name === recommendedName ? ' selected' : ''}>${label}</option>`;
+  }).join('');
+}
+
+// Pick a sensible beef trim to pair with a manually-selected recipe.
+function trimForRecipe(recipeName) {
+  const userTrimName = Object.entries(BEEF_PRICES).find(([, d]) => d.fat === state.q1)?.[0];
+  return pickBeefTrim(recipeName) || userTrimName || Object.keys(BEEF_PRICES)[0];
+}
+
+function onRecipeChange() {
+  const sel = document.getElementById('recipe-select');
+  if (!sel) return;
+  const recipeName = sel.value;
+  renderRecipe(recipeName, trimForRecipe(recipeName), false);
+}
+
+function renderRecipe(recipeName, trimName, fiberFallback = false) {
   const [beefPct, fablePct, waterPct] = RECIPES[state.q2][recipeName];
   const trimPrice     = BEEF_PRICES[trimName].price;
   const blendPrice    = beefPct * trimPrice + fablePct * FABLE_PRICE + waterPct * WATER_PRICE;
@@ -83,7 +137,8 @@ async function calculate() {
     `A ${Math.round(beefPct*100)}% ${trimShort} beef & ${Math.round((fablePct+waterPct)*100)}% Shiitake Mushroom ${formatLabel}`;
 
   // Cost section
-  document.getElementById('cost-recipe-pill').textContent = 'Recipe recommendation: '+recipeName;
+  document.getElementById('cost-recipe-pill').textContent =
+    (recipeName === _recommendedRecipe ? 'Recipe recommendation: ' : 'Selected recipe: ') + recipeName;
   document.getElementById('stat-price-label').textContent = 'Ingredient cost ' + CC.priceUnit;
   document.getElementById('cost-table-unit-header').textContent = `Cost/${CC.priceUnit.split(' ')[1]}*`;
   document.getElementById('price-blend-unit').textContent = CC.priceUnit;
@@ -116,11 +171,6 @@ async function calculate() {
     renderSustainability(beefPct, fablePct, trimName, newBlendCO2, newBeefCO2, newCarbonPct, userTrimName);
   });
   renderSustainability(beefPct, fablePct, trimName, blendCO2, beefCO2, carbonPct, userTrimName);
-
-  // Show results
-  document.getElementById('quiz-shell').style.display = 'none';
-  document.getElementById('results-page').style.display = 'block';
-  window.scrollTo(0, 0);
 }
 
 
