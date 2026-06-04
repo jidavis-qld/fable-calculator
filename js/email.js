@@ -67,6 +67,22 @@ async function sendResults() {
     highProtein:  String(highProtein),
   };
 
+  // Fail loud, not silent (KAN-543): these values are scraped from rendered
+  // DOM elements by id. If a calculator redesign renames an id, the scrape
+  // returns '' and we'd email a blank results card without anyone noticing.
+  // Detect that here and surface it instead of sending empty results.
+  const scraped = { blendPrice, fiber, protein, carbonPct, blendRatio };
+  const missing = Object.keys(scraped).filter((k) => !scraped[k]);
+  if (missing.length) {
+    console.error(
+      `sendResults: missing computed values [${missing.join(', ')}] — a result ` +
+      `element id may have changed (price-blend / stat-fiber / stat-protein / ` +
+      `stat-carbon / hero-subtitle). Aborting send.`
+    );
+    showError('Sorry — we could not read your results. Please recalculate and try again.');
+    return;
+  }
+
   // Send
   btn.disabled = true;
   btn.textContent = 'Sending…';
