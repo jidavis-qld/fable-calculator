@@ -1,0 +1,26 @@
+# Fable Food — gitleaks config (review finding P0-7 / KAN-535)
+# Strategy: use gitleaks' built-in ruleset + narrow allowlist for values that are PUBLIC BY DESIGN.
+# Never allowlist service_role keys, SA private keys, or API tokens.
+
+title = "Fable Food gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Client-public values safe to ship in client code, plus example/test fixtures."
+# Supabase ANON / publishable keys are RLS-bound and intended to ship in the browser bundle.
+# Allowlist them PER-REPO BY PATH (uncomment + set the real paths) so scans aren't noisy.
+# Do NOT add a blanket JWT regex — that would also hide service_role keys.
+paths = [
+  '''(.*?)\.example$''',
+  '''(.*?)\.sample$''',
+  '''(.*?)README(.*?)\.md$''',
+  # --- per-repo: paths that legitimately contain a PUBLIC anon key (review them first) ---
+  # fable-calculator:        '''js/(data|email)\.js$''', '''validator\.html$'''
+  # fablefood-hubdice-quest: '''src/integrations/supabase/client\.ts$'''
+]
+regexes = [
+  # Obvious placeholders only.
+  '''(?i)(your[_-]?(api[_-]?)?(key|token|secret)|changeme|placeholder|xxxx+)''',
+]

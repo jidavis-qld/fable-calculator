@@ -1,0 +1,8 @@
+# Fable Food — pre-commit secret scanning (review finding P0-7 / KAN-535).
+# Run once after install:  pre-commit install
+# This blocks secrets BEFORE they reach a commit — the cheapest place to stop them.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
