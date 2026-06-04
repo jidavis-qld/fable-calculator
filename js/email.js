@@ -2,10 +2,10 @@
    openEmailModal()  — show the lightbox
    closeEmailModal() — hide it (also closes on overlay click)
    sendResults()     — validate, collect state, POST to Supabase Edge Function
-   ─────────────────────────────────────────────────────────────────────────── */
 
-const SUPABASE_URL      = 'https://qrtomlulbcuantmtaxfc.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
+   SUPABASE_URL / SUPABASE_KEY are declared in js/supabase-config.js, which must
+   load before this file.
+   ─────────────────────────────────────────────────────────────────────────── */
 
 function openEmailModal() {
   document.getElementById('email-modal-overlay').style.display = 'flex';
@@ -76,8 +76,8 @@ async function sendResults() {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
-        'apikey':        SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
       },
       body: JSON.stringify({ firstName, lastName, email, company, results }),
     });

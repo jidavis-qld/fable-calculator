@@ -34,13 +34,13 @@ A browser-based tool that recommends a Fable Shiitake Infusion recipe and beef t
 ├── js/
 │   ├── config.js           # Brand text + footer image config (headings, quiz copy)
 │   ├── country.js          # COUNTRY_CONFIG (all 4 countries), active CC, shared data stores
-│   ├── data.js             # Supabase credentials + sbFetch() + loadData() for calculator
+│   ├── data.js             # sbFetch() + loadData() for calculator (creds from supabase-config.js)
 │   ├── engine.js           # Scoring engine — candidate pool, normalise, pick winner
 │   ├── quiz.js             # Quiz navigation and state
 │   ├── render.js           # Results rendering (cost, nutrition, sustainability, stat tiles)
 │   ├── nutriscore.js       # UK Traffic Light + AU Health Star + EU Nutri-Score label logic
 │   ├── misc.js             # restart(), savePDF()
-│   └── validator.js        # Standalone refactor of validator logic (not yet loaded by validator.html)
+│   └── supabase-config.js  # Shared Supabase URL + anon key (loaded by both pages)
 │
 ├── images/
 │   ├── banner.jpg          # Footer food photography (Fable Shiitake Infused formats)
@@ -56,12 +56,12 @@ A browser-based tool that recommends a Fable Shiitake Infusion recipe and beef t
 ### JS load order (index.html)
 
 ```
-config → country → data → engine → quiz → render → nutriscore → misc
+config → country → supabase-config → data → engine → quiz → render → nutriscore → misc
 ```
 
-`country.js` must be first — it declares all shared global data stores that the other modules write to.
+`country.js` must be before `data.js` — it declares all shared global data stores that the other modules write to. `supabase-config.js` must be before `data.js` — it declares the `SUPABASE_URL` / `SUPABASE_KEY` credentials that `data.js` (and `email.js`) reference.
 
-`validator.html` loads `country.js` only, then runs its own self-contained inline `<script>` which duplicates the data-loading and rendering logic for the validator UI.
+`validator.html` loads `js/supabase-config.js` only (for the shared credentials), then runs its own self-contained inline `<script>` which duplicates the data-loading and rendering logic for the validator UI.
 
 ---
 

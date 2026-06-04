@@ -1,15 +1,12 @@
-/* ── Supabase connection & data loading (calculator) ────────────────────────────
-   SUPABASE_URL / SUPABASE_KEY: connection credentials.
+/* ── Supabase data loading (calculator) ─────────────────────────────────────────
+   SUPABASE_URL / SUPABASE_KEY: connection credentials — declared in
+               js/supabase-config.js, which must load before this file.
    sbFetch():   thin wrapper around the Supabase REST API — shared by both pages.
    loadData():  calculator-specific loader. Uses CC (from country.js) to filter
                by country, then populates BEEF_PRICES, RECIPES, HEALTH_REF,
                SHIITAKE_CO2, BEEF_CO2, SCORING_CONFIG.
-               The validator page has its own loadData() in js/validator.js.
+               The validator page runs its own inline loader in validator.html.
    ─────────────────────────────────────────────────────────────────────────── */
-
-/* ── SUPABASE CONFIG ──────────────────────────────── */
-const SUPABASE_URL = 'https://qrtomlulbcuantmtaxfc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydG9tbHVsYmN1YW50bXRheGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTU3MDgsImV4cCI6MjA4NzA5MTcwOH0.hcA0SYB5DEPGjxTdvfbKroixsFbJ83Syi_F9BCn7B9k';
 
 async function sbFetch(table, params = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*${params ? '&' + params : ''}`, {

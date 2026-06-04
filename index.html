@@ -521,7 +521,7 @@
 
 
 <!-- ── JavaScript ──────────────────────────────────────────────────────────
-     Load order matters: config → country → data → engine → quiz → render → labels → misc
+     Load order matters: config → country → supabase-config → data → engine → quiz → render → labels → misc
      All modules share globals declared in country.js (CC, BEEF_PRICES, RECIPES, HEALTH_REF).
   ──────────────────────────────────────────────────────────────────────── -->
 
@@ -531,7 +531,10 @@
 <!-- Country configs (COUNTRY_CONFIG, CC) and data stores -->
 <script src="js/country.js"></script>
 
-<!-- Supabase connection & data loading -->
+<!-- Supabase credentials (shared by index.html + validator.html) -->
+<script src="js/supabase-config.js"></script>
+
+<!-- Supabase data loading -->
 <script src="js/data.js"></script>
 
 <!-- Blend scoring & calculation engine -->
