@@ -3,12 +3,36 @@
 <!-- FABLE-CONTINUOUS-IMPROVEMENT:BEGIN (managed — edit the toolkit, not this copy) -->
 ## Continuous Improvement
 
-This repo is under continuous improvement. Its quality is tracked in `IMPROVEMENT_LOG.md`
-(repo root) — the shared memory of what's been fixed, what's queued, and what was
-deliberately left alone. **Do not delete it.** It also carries the **App profile**: this
-app's risk surfaces, key outputs + how to independently re-derive them, invariants,
-working verification commands, sharp edges, and **owed live checks** (verifications a
-prior run couldn't complete — always settle these first).
+This repo is under continuous improvement. Its memory lives in two places — **do not
+delete either**:
+
+- `IMPROVEMENT_LOG.md` (repo root) — the Health line, recent History (~3 months), the
+  Won't-do list, and the **App profile**: this app's risk surfaces, key outputs + how to
+  independently re-derive them, invariants, working verification commands, sharp edges,
+  and **owed live checks** (verifications a prior run couldn't complete — always settle
+  these first).
+- `docs/` — organised per the toolkit's `REPO_DOCS.md`: `docs/INDEX.md` is the front door
+  (every doc has a status: ACTIVE / REFERENCE / ARCHIVED); the ranked backlog lives in
+  `docs/backlog/BACKLOG.md` (legacy repos: still in the log's "Next candidates" — one
+  place per repo, never both); open questions + Ji's rulings in
+  `docs/decisions/DECISIONS.md`; reusable app-specific prompts in `docs/prompts/`;
+  dated one-off reports and closed programs in `docs/archive/<year>/`. Keep INDEX.md
+  current in the same commit as any docs change; keep the repo root clean (no ad-hoc
+  PROGRESS/QUESTIONS/tracker files).
+
+**Posture — every session in this repo, not just the fable-* commands:**
+1. **Orient:** before real work, skim `docs/INDEX.md`, the backlog, and DECISIONS.md —
+   don't re-find known issues, redo won't-dos, or re-ask ruled questions.
+2. **Build the backlog:** a confirmed issue you notice but won't fix this session goes on
+   the backlog (file:line + impact + safe-for-daily/needs-decision) before you finish.
+   A finding that only lives in chat is lost.
+3. **Drain it:** when the asked work is done and verified, offer the top safe backlog item
+   as the natural next step. Don't do it unasked; make it easy to say yes.
+4. **Move decisions:** if a DECISIONS.md question blocks work or the session is wrapping
+   up, surface the 1–2 most valuable open ones — with the default and what a ruling
+   unblocks. The moment Ji rules, record it in Rulings (date + answer) in the same session.
+5. **Leave the docs truer than you found them:** fix stale INDEX rows, drifted profile
+   claims, and done-but-open backlog items on sight.
 
 - **Daily ratchet — `/fable-daily`:** run after a coding session or on a regular cadence.
   Each run makes exactly ONE safe, verified improvement and logs it. It settles owed
@@ -32,6 +56,7 @@ before writing the code), not a merge gate — once the user has approved the ch
 global PR automation policy in `~/.claude/CLAUDE.md` governs whether to auto-merge or
 leave for the human.
 
-Prompts live in `~/Documents/GitHub/claude/fable-app-toolkit/` (NEW_APP.md, DAILY.md,
-THOROUGH_AUDIT.md, FLEET.md, LESSONS.md; FABLE_APP_TOOLKIT.md is the index).
+Prompts live in `~/dev/claude/fable-app-toolkit/` (NEW_APP.md, DAILY.md,
+THOROUGH_AUDIT.md, FLEET.md, LESSONS.md, REPO_DOCS.md, prompts/;
+FABLE_APP_TOOLKIT.md is the index).
 <!-- FABLE-CONTINUOUS-IMPROVEMENT:END -->
