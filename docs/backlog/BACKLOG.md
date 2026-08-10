@@ -60,3 +60,19 @@ _(none)_
   scoring weights live in Supabase rather than git, so an output can change with no commit.
   `README.md` is excellent and covers the app itself, so the fix is a short Stack/Deploy section
   plus a pointer, not new prose. **safe-for-daily.**
+
+- **[L3] The `gitleaks` CI job has failed on every `main` run since 2026-06-04.** Confirmed while
+  opening the onboarding PR: `gh run list --workflow=gitleaks.yml --branch=main` returns
+  `failure` for all four most recent runs (`a45f064`, `4e2ef17`, `f66dadb`, `02206b2`) — it has
+  never been green. The cause is structural, not a new leak:
+  `.github/workflows/gitleaks.yml` scans full history (`--log-opts="--all"`) with
+  `--exit-code 1` and **no** `--baseline-path`, so historical findings fail the build forever.
+  **Impact:** the repo's only security check is permanently red, so nobody can distinguish a
+  *new* leak from the old ones — the signal is already spent. **The fix is proven in-fleet:**
+  `claude-plugins` solved exactly this by committing `.gitleaks-baseline.json` (12 known
+  findings) and passing `--baseline-path .gitleaks-baseline.json` at its `gitleaks.yml:31`; its
+  scan is green and a new secret now fails cleanly. Generate the baseline, **review what is in
+  it before committing** — that review is the whole point, and anything live should be rotated
+  rather than baselined — then wire the flag. **needs-decision** → `DECISIONS.md` D2, because
+  accepting a baseline means accepting the findings inside it. This predates today's docs work;
+  the onboarding commit's own diff contains no secret.
