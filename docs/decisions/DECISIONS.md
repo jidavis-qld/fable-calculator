@@ -1,5 +1,7 @@
 # Decisions — fable-calculator
 
+> **Note (2026-11 handover): "Ji" in this file means the previous owner, Ji Davis; questions marked "waiting on Ji" are now for the app's maintainer (see `HANDOVER.md`).**
+>
 > The single home for anything waiting on Ji, and for rulings already made.
 > Open questions: newest on top; each states its default-if-unanswered. Rulings: never
 > re-litigate — link here instead. Created 2026-08-10 (repo-memory onboarding; toolkit
