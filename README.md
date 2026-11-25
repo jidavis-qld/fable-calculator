@@ -1,6 +1,6 @@
 # Fable Shiitake Infusion Calculator
 
-**Live:** https://jidavis-qld.github.io/fable-calculator/
+**Live:** https://jidavis-qld.github.io/fable-calculator/ (this address belongs to the GitHub account that owns the repo, and **changes when the repo is transferred** to the new maintainer unless a custom domain is set: see [`HANDOVER.md`](HANDOVER.md)).
 
 A browser-based tool that recommends a Fable Shiitake Infusion recipe and beef trim for a given customer priority (cost, nutrition, balance, or sustainability). Also includes a Recipe Validator for exploring all recipe/trim combinations in detail.
 
@@ -40,17 +40,21 @@ A browser-based tool that recommends a Fable Shiitake Infusion recipe and beef t
 │   ├── render.js           # Results rendering (cost, nutrition, sustainability, stat tiles)
 │   ├── nutriscore.js       # UK Traffic Light + AU Health Star + EU Nutri-Score label logic
 │   ├── misc.js             # restart(), savePDF()
+│   ├── email.js            # "Email me these results" modal; calls the send-results edge function
 │   └── supabase-config.js  # Shared Supabase URL + anon key (loaded by both pages)
 │
 ├── images/
 │   ├── banner.jpg          # Footer food photography (Fable Shiitake Infused formats)
-│   └── sticker.png         # Fable Mushroom Hand Sticker (hero, top-right)
+│   └── ...                 # logos, the "Infusion Tool Icons" set and other brand images
 │
 └── supabase/
+    ├── functions/send-results/   # Edge Function: HubSpot contact + results email (deployed by hand)
+    ├── schema_snapshot.sql       # point-in-time schema snapshot (not applied by anything)
     └── migrations/
         ├── 20260220_multi_country.sql   # Initial multi-country schema — renamed tables, country column, UK data
         ├── 20260220_eu_region.sql       # EU beef prices, nutrition, recipes
-        └── 20260220_au_region.sql       # AU beef prices, nutrition, recipes (FSANZ — kJ + Sodium in mg)
+        ├── 20260220_au_region.sql       # AU beef prices, nutrition, recipes (FSANZ — kJ + Sodium in mg)
+        └── 20260310_security_fixes.sql  # row-level security (read-only public policies)
 ```
 
 ### JS load order (index.html)
